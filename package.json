@@ -1,0 +1,23 @@
+{
+  "name": "complete-doctor",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@8.15.4",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "pnpm --filter web dev",
+    "dev:admin": "pnpm --filter admin dev",
+    "build:web": "pnpm --filter web build",
+    "build:admin": "pnpm --filter admin build",
+    "start:web": "pnpm --filter web start",
+    "start:admin": "pnpm --filter admin start",
+    "lint": "pnpm --filter '*' lint"
+  },
+  "devDependencies": {
+    "typescript": "5.2.2",
+    "eslint": "8.49.0"
+  }
+}
