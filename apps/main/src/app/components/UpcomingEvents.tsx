@@ -22,72 +22,13 @@ const UpcomingEvents = () => {
     }
   };
 
-  const items = [
-    {
-      title: 'Upload signature',
-      description:
-        "You're required to upload signatures for members of the company for the C&C Form",
-      deadline: '12/09/2024',
-      action: 'Upload',
-    },
-    {
-      title: 'Renew annual year returns',
-      description:
-        "You're required to upload signatures for members of the company for the C&C Form",
-      deadline: '12/09/2024',
-      action: 'Make Payment',
-    },
-    {
-      title: 'Make Payment',
-      description:
-        "You're required to upload signatures for members of the company for the C&C Form",
-      deadline: '12/09/2024',
-      action: 'Upload',
-    },
-    {
-      title: 'Make Payment',
-      description:
-        "You're required to upload signatures for members of the company for the C&C Form",
-      deadline: '12/09/2024',
-      action: 'Upload',
-    },
-    {
-      title: 'Make Payment',
-      description:
-        "You're required to upload signatures for members of the company for the C&C Form",
-      deadline: '12/09/2024',
-      action: 'Upload',
-    },
-    {
-      title: 'Make Payment',
-      description:
-        "You're required to upload signatures for members of the company for the C&C Form",
-      deadline: '12/09/2024',
-      action: 'Upload',
-    },
-    {
-      title: 'Make Payment',
-      description:
-        "You're required to upload signatures for members of the company for the C&C Form",
-      deadline: '12/09/2024',
-      action: 'Upload',
-    },
-    {
-      title: 'Make Payment',
-      description:
-        "You're required to upload signatures for members of the company for the C&C Form",
-      deadline: '12/09/2024',
-      action: 'Upload',
-    },
-  ];
-
   return (
-    <div className='pl-5 py-10'>
+    <div className='px-5 py-10 md: flex flex-col'>
       <div className='flex justify-between items-center mb-8'>
         <div>
           <section className='flex items-center gap-2'>
             <h2 className='font-medium text-[#0C0C0C]'>Upcoming Events</h2>
-            <div className='flex gap-2'>
+            <div className='flex md:hidden gap-2'>
               <span
                 onClick={() => scroll('left')}
                 className='flex items-center justify-center rounded-full w-[2.25rem] h-[2.25rem] bg-white cursor-pointer border border-[#E2E4E9] active:bg-neutral-200'
@@ -107,7 +48,7 @@ const UpcomingEvents = () => {
 
       <div
         ref={scrollRef}
-        className='w-auto h-[260.6px] flex gap-[15px] overflow-x-hidden scroll-smooth'
+        className='w-auto h-[260.6px] md:h-auto flex md:flex-wrap gap-[15px] overflow-x-hidden scroll-smooth'
       >
         {events.map((event, index) => (
           <Card
@@ -149,7 +90,7 @@ const UpcomingEvents = () => {
           </Card>
         ))}
       </div>
-      <button className='text-white text-[13px] font-semibold bg-[#007AFF] w-full max-w-[330px] h-[46px] mt-[30px] mx-auto'>View Full Calendar</button>
+      <button className='text-white text-[13px] font-semibold bg-[#007AFF] w-full max-w-[330px] md:max-w-[198px] h-[46px] mt-[30px] mx-auto rounded-[1px]'>View Full Calendar</button>
     </div>
   );
 };
