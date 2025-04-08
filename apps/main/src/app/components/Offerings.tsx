@@ -3,7 +3,7 @@ import { offerings } from '@/lib/data/offerings';
 
 const Offerings = () => {
   return (
-    <div className='w-full h-auto py-10 lg:py-20 px-[30px] lg:px-25 flex flex-col items-center gap-20'>
+    <div className='w-full h-auto py-10 lg:py-20 px-[30px] lg:px-25 flex flex-col items-center gap-20 bg-[#FAFAFA]'>
       <div className='w-full lg:w-[528px] h-[118px] lg:h-[97px] flex flex-col gap-[20px] lg:gap-[30px] justify-center items-center'>
         <div className='w-[101px] lg:w-[109px] flex justify-center items-center gap-[15px]'>
           <span className='w-[4px] h-[4px] bg-[#007AFF]'></span>
@@ -25,7 +25,7 @@ const Offerings = () => {
         {offerings.map((offering) => (
           <div
             key={offering.id}
-            className='flex flex-col items-center justify-center w-full lg:w-[350px] h-[133px] lg:h-full rounded-[6.5px] gap-5 bg-white'
+            className='flex flex-col items-center justify-center w-full lg:w-[350px] h-[133px] lg:h-full rounded-[6.5px] gap-5'
           >
             <div className='w-10 h-10 flex justify-center items-center'>
               <offering.icon />
