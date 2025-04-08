@@ -3,15 +3,17 @@ import Hero from './components/Hero';
 import Offerings from './components/Offerings';
 import PitchResources from './components/PitchResources';
 import UpcomingEvents from './components/UpcomingEvents';
+import Profile from './components/Profile';
 
 export default function Home() {
   return (
-    <main className="">
+    <main className=''>
       <Hero />
       <PitchResources />
       <UpcomingEvents />
       <Offerings />
       <ArchiveSearch />
+      <Profile />
     </main>
   );
 }
