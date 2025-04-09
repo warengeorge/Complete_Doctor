@@ -4,6 +4,7 @@ import Offerings from './components/Offerings';
 import PitchResources from './components/PitchResources';
 import UpcomingEvents from './components/UpcomingEvents';
 import Profile from './components/Profile';
+import Testimonials from './components/Testimonials';
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
       <Offerings />
       <ArchiveSearch />
       <Profile />
+      <Testimonials />
     </main>
   );
 }

@@ -3,7 +3,7 @@ import Image from 'next/image';
 
 const Profile = () => {
   return (
-    <div className='w-full h-auto py-[50px] lg:py-[60px] xl:py-[80px] px-[20px] lg:px-[50px] xl:px-[140px] flex items-center justify-center bg-[#F8F7F4]'>
+    <div className='w-full h-auto py-[50px] lg:py-[60px] xl:py-[80px] px-5 lg:px-[50px] xl:px-[140px] flex items-center justify-center bg-[#F8F7F4]'>
       <div className='w-full h-auto flex flex-col lg:flex-row items-center justify-center gap-[20px] lg:gap-[50px]'>
         <Image
           src='https://res.cloudinary.com/dlahyjhur/image/upload/v1744128371/Frame_2147226243_h8nvqc.png'
