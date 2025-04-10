@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { Card } from '@/components/ui/card';
 import {
   Accordion,
   AccordionContent,
@@ -51,7 +50,7 @@ const FAQ = () => {
         </div>
         <div>
           <Accordion type='single' collapsible className='w-full'>
-            <AccordionItem value='item-1' className='bg-[#FAFAFA]'>
+            <AccordionItem value='item-2' className='bg-[#FAFAFA]'>
             <AccordionTrigger className='flex items-center gap-2 px-4 lg:px-[35px] hover:no-underline border-[0.605px] border-[#ECECEC] rounded-[7.5px] lg:h-[66px]'>
                 <div className='flex items-center gap-2 flex-1'>
                   <span className='text-xs lg:text-[15px] font-semibold text-[#646464]'>
@@ -70,7 +69,7 @@ const FAQ = () => {
         </div>
         <div>
           <Accordion type='single' collapsible className='w-full'>
-            <AccordionItem value='item-1' className='bg-[#FAFAFA]'>
+            <AccordionItem value='item-3' className='bg-[#FAFAFA]'>
             <AccordionTrigger className='flex items-center gap-2 px-4 lg:px-[35px] hover:no-underline border-[0.605px] border-[#ECECEC] rounded-[7.5px] lg:h-[66px]'>
                 <div className='flex items-center gap-2 flex-1'>
                   <span className='text-xs lg:text-[15px] font-semibold text-[#646464]'>
@@ -90,7 +89,7 @@ const FAQ = () => {
         </div>
         <div>
           <Accordion type='single' collapsible className='w-full'>
-            <AccordionItem value='item-1' className='bg-[#FAFAFA]'>
+            <AccordionItem value='item-4' className='bg-[#FAFAFA]'>
             <AccordionTrigger className='flex items-center gap-2 px-4 lg:px-[35px] hover:no-underline border-[0.605px] border-[#ECECEC] rounded-[7.5px] lg:h-[66px]'>
                 <div className='flex items-center gap-2 flex-1'>
                   <span className='text-xs lg:text-[15px] font-semibold text-[#646464]'>
@@ -110,7 +109,7 @@ const FAQ = () => {
         </div>
         <div>
           <Accordion type='single' collapsible className='w-full'>
-            <AccordionItem value='item-1' className='bg-[#FAFAFA]'>
+            <AccordionItem value='item-5' className='bg-[#FAFAFA]'>
             <AccordionTrigger className='flex items-center gap-2 px-4 lg:px-[35px] hover:no-underline border-[0.605px] border-[#ECECEC] rounded-[7.5px] lg:h-[66px]'>
                 <div className='flex items-center gap-2 flex-1'>
                   <span className='text-xs lg:text-[15px] font-semibold text-[#646464]'>
