@@ -5,6 +5,8 @@ import PitchResources from './components/PitchResources';
 import UpcomingEvents from './components/UpcomingEvents';
 import Profile from './components/Profile';
 import Testimonials from './components/Testimonials';
+import FAQ from './components/FAQ';
+import ContactUs from './components/ContactUs';
 
 export default function Home() {
   return (
@@ -16,6 +18,8 @@ export default function Home() {
       <ArchiveSearch />
       <Profile />
       <Testimonials />
+      <FAQ />
+      <ContactUs />
     </main>
   );
 }

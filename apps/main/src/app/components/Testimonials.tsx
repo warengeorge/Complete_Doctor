@@ -54,8 +54,8 @@ const Testimonials = () => {
                 <div className='w-[82.7px] h-[14px] flex items-center gap-[5px]  text-white'>
                   
                     {Array.from({ length: testimonial.stars }, (_, i) => (
-                      <span className='w-[12px] h-[14px] bg-[#009747] flex items-center justify-center'><svg
-                        key={i}
+                      <span key={i} className='w-[12px] h-[14px] bg-[#009747] flex items-center justify-center'><svg
+                        
                         width='14'
                         height='14'
                         viewBox='0 0 14 14'

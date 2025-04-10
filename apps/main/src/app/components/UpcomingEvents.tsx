@@ -3,7 +3,7 @@
 import React, { useRef } from 'react';
 
 import { Card } from '@/components/ui/card';
-import { RxCaretRight, RxCaretLeft } from 'react-icons/rx';
+import { FaArrowLeft, FaArrowRight } from 'react-icons/fa6';
 import Image from 'next/image';
 import { events } from '@/lib/data/events';
 import { Clock } from './icons/icons';
@@ -33,13 +33,13 @@ const UpcomingEvents = () => {
                 onClick={() => scroll('left')}
                 className='flex items-center justify-center rounded-full w-[2.25rem] h-[2.25rem] bg-white cursor-pointer border border-[#E2E4E9] active:bg-neutral-200'
               >
-                <RxCaretLeft />
+                <FaArrowLeft />
               </span>
               <span
                 onClick={() => scroll('right')}
                 className='flex items-center justify-center rounded-full w-[2.25rem] h-[2.25rem] bg-white cursor-pointer border border-[#E2E4E9] active:bg-neutral-200'
               >
-                <RxCaretRight />
+                <FaArrowRight />
               </span>
             </div>
           </section>

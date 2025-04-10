@@ -3,7 +3,7 @@ import React from 'react';
 
 const Resources = () => {
   return (
-    <div className='w-full xl:w-[606px] h-auto flex flex-wrap gap-2.5 items-center'>
+    <div className='w-full xl:w-[606px] h-auto flex flex-wrap gap-2.5 items-center justify-center'>
       {resources.map((resource, index) => (
         <div
           key={resource.id}
