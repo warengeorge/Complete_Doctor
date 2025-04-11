@@ -2,30 +2,37 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import useModalStore from '@/lib/store/useModal'
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
   className?: string;
 }
 
-const HeaderLinks = ({ className }: HeaderProps) => {
+const HeaderLinksMobile = ({ className }: HeaderProps) => {
   const pathname = usePathname();
+
+  const { closeMenu } = useModalStore()
+
+  const handleMenu = () => {
+    closeMenu()
+  }
 
   return (
     <div
       className={cn(
-        'hidden sm:flex items-center justify-between lg:w-auto lg:h-[36px]',
+        'w-full h-full sm:hidden items-center justify-center',
         className
       )}
     >
-      <nav className='flex items-center lg:gap-[25px] list-none'>
+      <nav className='flex flex-col list-none gap-2.5'>
         <HeaderLink href='/' active={pathname === '/'}>
-          <span className='text-[0.625rem] md:text-[0.8125rem] p-2.5'>
+          <span className='text-base px-5 py-3 font-medium h-10 border-t' onClick={handleMenu}>
             Home
           </span>
         </HeaderLink>
         <HeaderLink href='/courses' active={pathname === '/courses'}>
-          <span className='text-[0.625rem] md:text-[0.8125rem] p-2.5'>
+          <span className='text-base px-5 py-3 font-medium h-10' onClick={handleMenu}>
             Courses
           </span>
         </HeaderLink>
@@ -33,18 +40,23 @@ const HeaderLinks = ({ className }: HeaderProps) => {
           href='/webinars-events'
           active={pathname === '/webinars-events'}
         >
-          <span className='text-[0.625rem] md:text-[0.8125rem] p-2.5'>
+          <span className='text-base px-5 py-3 font-medium h-10' onClick={handleMenu}>
             Webinars & Events
           </span>
         </HeaderLink>
         <HeaderLink href='/about-us' active={pathname === '/about-us'}>
-          <span className='text-[0.625rem] md:text-[0.8125rem] p-2.5'>
+          <span className='text-base px-5 py-3 font-medium h-10' onClick={handleMenu}>
             About Us
           </span>
         </HeaderLink>
         <HeaderLink href='/contact-us' active={pathname === '/contact-us'}>
-          <span className='text-[0.625rem] md:text-[0.8125rem] p-2.5'>
+          <span className='text-base px-5 py-3 font-medium h-10' onClick={handleMenu}>
             Contact Us
+          </span>
+        </HeaderLink>
+        <HeaderLink href='/contact-us' active={pathname === '/contact-us'}>
+          <span className='text-base px-5 py-3 font-medium h-10' onClick={handleMenu}>
+            Sign in
           </span>
         </HeaderLink>
       </nav>
@@ -52,7 +64,7 @@ const HeaderLinks = ({ className }: HeaderProps) => {
   );
 };
 
-export default HeaderLinks;
+export default HeaderLinksMobile;
 
 interface HeaderLinkProps {
   href: string;

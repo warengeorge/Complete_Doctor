@@ -1,8 +1,17 @@
+'use client'
 import Image from 'next/image';
 import React from 'react';
 import HeaderLinks from './HeaderLinks';
+import useModalStore from '@/lib/store/useModal'
 
 const Navbar = () => {
+
+  const { openMenu } = useModalStore()  
+
+  const handleMenu = () => {
+    openMenu()
+  }
+
   return (
     <div className='flex justify-between items-center py-3 px-8 lg:px-20 w-full h-[3.375rem] lg:h-20 bg-white'>
       <Image
@@ -24,7 +33,7 @@ const Navbar = () => {
         <span className='lg:p-2'>
           <Image src='/icons/cart.svg' alt='logo' width={18.75} height={15} />
         </span>
-        <span className='sm:hidden'>
+        <span className='sm:hidden' onClick={handleMenu}>
           <Image
             src='/icons/hamburger.svg'
             alt='logo'
