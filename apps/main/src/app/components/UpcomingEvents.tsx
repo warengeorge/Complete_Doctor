@@ -23,7 +23,7 @@ const UpcomingEvents = () => {
   };
 
   return (
-    <div className='px-5 py-10 md: flex flex-col'>
+    <div className='px-5 md:px-10 lg:px-20 py-10 md:py-15 flex flex-col'>
       <div className='flex justify-between items-center mb-8'>
         <div>
           <section className='flex items-center gap-2'>

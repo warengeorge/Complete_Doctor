@@ -40,7 +40,7 @@ const Menu = () => {
       role="dialog"
       aria-modal="true"
     >
-      <div className="w-full h-[86px] flex items-center justify-center px-5 py-[30px]">
+      <div className="w-full h-[86px] flex sm:hidden items-center justify-center px-5 py-[30px]">
         <div className="w-full flex items-center justify-between">
           <Link href="/">
             <Image src="/icons/complete-doc-logo.svg" alt="logo" width={125} height={26} />

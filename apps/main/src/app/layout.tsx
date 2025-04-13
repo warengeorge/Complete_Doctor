@@ -1,6 +1,6 @@
 'use client'
 
-import type { Metadata } from "next";
+
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import Navbar from './components/Navbar';

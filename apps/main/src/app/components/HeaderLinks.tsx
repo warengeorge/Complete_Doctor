@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from "react"
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { FaAngleDown } from 'react-icons/fa6';
 
 interface HeaderProps {
   className?: string;
@@ -11,6 +13,28 @@ interface HeaderProps {
 const HeaderLinks = ({ className }: HeaderProps) => {
   const pathname = usePathname();
 
+  const [isOpen, setIsOpen] = useState(false)
+  const [selectedCourse, setSelectedCourse] = useState<string | null>(null)
+
+  const mainCourses = [
+    "MRCGP AKT Courses",
+    "MRCGP SCA",
+    "MSRA",
+    "UKMLA PLAB 1",
+    "UKMLA PLAB 2",
+    "FY2 Standalone"
+  ]
+
+  const subCourses = {
+    "MRCGP AKT Courses": [
+      "AKT Ultimate Package",
+      "AKT Live Course Programme",
+      "AKT Video Courses",
+      "AKT Audiobook",
+      "AKT Mock Exams"
+    ]
+  }
+
   return (
     <div
       className={cn(
@@ -18,36 +42,74 @@ const HeaderLinks = ({ className }: HeaderProps) => {
         className
       )}
     >
-      <nav className='flex items-center lg:gap-[25px] list-none'>
-        <HeaderLink href='/' active={pathname === '/'}>
-          <span className='text-[0.625rem] md:text-[0.8125rem] p-2.5'>
+      <ul className='flex items-center lg:gap-[25px] list-none'>
+        <li className='text-[0.625rem] md:text-[0.8125rem] p-2.5'>
+          <HeaderLink href='/' active={pathname === '/'}>
             Home
-          </span>
-        </HeaderLink>
-        <HeaderLink href='/courses' active={pathname === '/courses'}>
-          <span className='text-[0.625rem] md:text-[0.8125rem] p-2.5'>
-            Courses
-          </span>
-        </HeaderLink>
-        <HeaderLink
-          href='/webinars-events'
-          active={pathname === '/webinars-events'}
-        >
-          <span className='text-[0.625rem] md:text-[0.8125rem] p-2.5'>
+          </HeaderLink>
+        </li>
+        <li className='text-[0.625rem] flex items-center gap-1 md:text-[0.8125rem] p-2.5 relative' onClick={() => setIsOpen(!isOpen)}>
+          <HeaderLink href='#' active={pathname === '/courses'}>
+            <span className='flex items-center gap-2'>Courses
+            <FaAngleDown className='text-[0.625rem] mt-0.5' /></span>
+          </HeaderLink>
+          {isOpen && (
+          <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+            <ul className="py-1">
+              {mainCourses.map((course) => (
+                <li
+                  key={course}
+                  className="relative"
+                  onMouseEnter={() => setSelectedCourse(course)}
+                  onMouseLeave={() => setSelectedCourse(null)}
+                >
+                  <button
+                    className="w-full text-left px-4 py-2 hover:bg-blue-50 text-gray-700"
+                  >
+                    {course}
+                  </button>
+
+                  {/* Submenu */}
+                  {selectedCourse === course && subCourses[course as keyof typeof subCourses] && (
+                    <div className="absolute left-full top-0 w-64 bg-white rounded-md shadow-lg border border-gray-200">
+                      <ul className="py-1">
+                        {subCourses[course as keyof typeof subCourses].map((subCourse) => (
+                          <li key={subCourse}>
+                            <button
+                              className="w-full text-left px-4 py-2 hover:bg-blue-50 text-gray-700"
+                            >
+                              {subCourse}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        </li>
+        <li className='text-[0.625rem] md:text-[0.8125rem] p-2.5'>
+          <HeaderLink
+            href='/webinars-events'
+            active={pathname === '/webinars-events'}
+          >
             Webinars & Events
-          </span>
-        </HeaderLink>
-        <HeaderLink href='/about-us' active={pathname === '/about-us'}>
-          <span className='text-[0.625rem] md:text-[0.8125rem] p-2.5'>
+          </HeaderLink>
+        </li>
+        <li className='text-[0.625rem] md:text-[0.8125rem] p-2.5'>
+          <HeaderLink href='/about-us' active={pathname === '/about-us'}>
             About Us
-          </span>
-        </HeaderLink>
-        <HeaderLink href='/contact-us' active={pathname === '/contact-us'}>
-          <span className='text-[0.625rem] md:text-[0.8125rem] p-2.5'>
+          </HeaderLink>
+        </li>
+        <li className='text-[0.625rem] md:text-[0.8125rem] p-2.5'>
+          <HeaderLink href='/contact-us' active={pathname === '/contact-us'}>
             Contact Us
-          </span>
-        </HeaderLink>
-      </nav>
+          </HeaderLink>
+        </li>
+      </ul>
     </div>
   );
 };

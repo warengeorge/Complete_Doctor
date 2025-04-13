@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import useModalStore from '@/lib/store/useModal'
+import useModalStore from '@/lib/store/useModal';
+import { FaAngleDown } from 'react-icons/fa6';
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
@@ -12,54 +13,74 @@ interface HeaderProps {
 const HeaderLinksMobile = ({ className }: HeaderProps) => {
   const pathname = usePathname();
 
-  const { closeMenu } = useModalStore()
+  const { closeMenu } = useModalStore();
 
   const handleMenu = () => {
-    closeMenu()
-  }
+    closeMenu();
+  };
 
   return (
     <div
-      className={cn(
-        'w-full h-full sm:hidden items-center justify-center',
-        className
-      )}
+      className={cn('w-full h-full flex sm:hidden justify-center', className)}
     >
-      <nav className='flex flex-col list-none gap-2.5'>
-        <HeaderLink href='/' active={pathname === '/'}>
-          <span className='text-base px-5 py-3 font-medium h-10 border-t' onClick={handleMenu}>
+      <ul className='w-full flex flex-col list-none gap-2.5'>
+        <li
+          className='text-base pl-5 flex items-center font-medium w-full h-10 border-b-[.4px] border-[#ECECEC]'
+          onClick={handleMenu}
+        >
+          <HeaderLink href='/' active={pathname === '/'}>
             Home
-          </span>
-        </HeaderLink>
-        <HeaderLink href='/courses' active={pathname === '/courses'}>
-          <span className='text-base px-5 py-3 font-medium h-10' onClick={handleMenu}>
-            Courses
-          </span>
-        </HeaderLink>
+          </HeaderLink>
+        </li>
+        <li
+          className='text-base px-5 flex items-center justify-between font-medium w-full h-10 border-b-[.4px] border-[#ECECEC]'
+          onClick={handleMenu}
+        >
+          <HeaderLink href='/courses' active={pathname === '/courses'}>
+            <div className='h-full sm:h-[screen] flex justify-between items-center border border-red-500'>
+              <span>Courses</span>
+              <span className='ml-[calc(.675*100vw)]'>
+                <FaAngleDown />
+              </span>
+            </div>
+          </HeaderLink>
+        </li>
         <HeaderLink
           href='/webinars-events'
           active={pathname === '/webinars-events'}
         >
-          <span className='text-base px-5 py-3 font-medium h-10' onClick={handleMenu}>
+          <li
+            className='text-base pl-5 flex items-center font-medium w-full h-10 border-b-[.4px] border-[#ECECEC]'
+            onClick={handleMenu}
+          >
             Webinars & Events
-          </span>
+          </li>
         </HeaderLink>
         <HeaderLink href='/about-us' active={pathname === '/about-us'}>
-          <span className='text-base px-5 py-3 font-medium h-10' onClick={handleMenu}>
+          <li
+            className='text-base pl-5 flex items-center font-medium w-full h-10 border-b-[.4px] border-[#ECECEC]'
+            onClick={handleMenu}
+          >
             About Us
-          </span>
+          </li>
         </HeaderLink>
-        <HeaderLink href='/contact-us' active={pathname === '/contact-us'}>
-          <span className='text-base px-5 py-3 font-medium h-10' onClick={handleMenu}>
+        <li
+          className='text-base pl-5 flex items-center font-medium w-full h-10 border-b-[.4px] border-[#ECECEC]'
+          onClick={handleMenu}
+        >
+          <HeaderLink href='/contact-us' active={pathname === '/contact-us'}>
             Contact Us
-          </span>
-        </HeaderLink>
-        <HeaderLink href='/contact-us' active={pathname === '/contact-us'}>
-          <span className='text-base px-5 py-3 font-medium h-10' onClick={handleMenu}>
+          </HeaderLink>
+        </li>
+        <li
+          className='text-base pl-5 flex items-center font-medium w-full h-10 border-b-[.4px] border-[#ECECEC]'
+          onClick={handleMenu}
+        >
+          <HeaderLink href='/login' active={pathname === '/login'}>
             Sign in
-          </span>
-        </HeaderLink>
-      </nav>
+          </HeaderLink>
+        </li>
+      </ul>
     </div>
   );
 };

@@ -19,7 +19,7 @@ export default function Hero() {
         </div>
       </div>
       <div className='absolute top-0 left-0 w-full h-[459px] lg:h-[575px] xl:h-[694px] flex justify-center lg:justify-start items-center border'>
-        <div className='w-[315px] xl:w-[668px] h-auto xl:h-[273px] gap-[30px] xl:gap-[50px] flex flex-col justify-center items-center text-white  xl:ml-[90px]'>
+        <div className='w-[315px] xl:w-[668px] h-auto xl:h-[273px] gap-[30px]  xl:gap-[50px] flex flex-col justify-center items-center text-white lg:ml-18 xl:ml-[90px]'>
           <div className='xl:w-full xl:flex xl:flex-col xl:gap-[12px] xl:items-start'>
             <h1 className='xl:h-[110px] text-[32px] xl:text-[42px] text-center xl:text-left font-bold'>
               Your Trusted Guide for MRCGP AKT, SCA, MSRA & PLAB Success
