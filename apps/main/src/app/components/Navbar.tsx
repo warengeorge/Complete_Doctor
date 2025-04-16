@@ -1,16 +1,16 @@
-'use client'
+'use client';
 import Image from 'next/image';
 import React from 'react';
 import HeaderLinks from './HeaderLinks';
-import useModalStore from '@/lib/store/useModal'
+import useModalStore from '@/lib/store/useModal';
+import { Separator } from "@/components/ui/separator"
 
 const Navbar = () => {
-
-  const { openMenu } = useModalStore()  
+  const { openMenu } = useModalStore();
 
   const handleMenu = () => {
-    openMenu()
-  }
+    openMenu();
+  };
 
   return (
     <div className='flex justify-between items-center py-3 px-8 lg:px-20 w-full h-[3.375rem] lg:h-20 bg-white'>
@@ -41,7 +41,7 @@ const Navbar = () => {
             height={15}
           />
         </span>
-        <div className='hidden md:flex items-center justify-center'>|</div>
+        <Separator orientation="vertical" />
         <button className='hidden sm:block text-white text-xs h-full px-4 bg-[#007AFF] rounded-xs'>
           Sign in
         </button>
