@@ -37,7 +37,7 @@ const HeaderLinksMobile = ({ className }: HeaderProps) => {
           onClick={handleMenu}
         >
           <HeaderLink href='/courses' active={pathname === '/courses'}>
-            <div className='h-full sm:h-[screen] flex justify-between items-center border border-red-500'>
+            <div className='h-full sm:h-[screen] flex justify-between items-center'>
               <span>Courses</span>
               <span className='ml-[calc(.675*100vw)]'>
                 <FaAngleDown />

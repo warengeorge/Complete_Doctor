@@ -41,7 +41,7 @@ const Navbar = () => {
             height={15}
           />
         </span>
-        <Separator orientation="vertical" />
+        <Separator orientation="vertical" className='hidden md:block' />
         <button className='hidden sm:block text-white text-xs h-full px-4 bg-[#007AFF] rounded-xs'>
           Sign in
         </button>

@@ -25,10 +25,10 @@ const UpcomingEvents = () => {
   return (
     <div className='px-5 md:px-10 lg:px-20 py-10 md:py-15 flex flex-col'>
       <div className='flex justify-between items-center mb-8'>
-        <div>
-          <section className='flex items-center gap-2'>
+        
+          <section className='w-full flex items-center justify-between'>
             <h2 className='font-medium text-[#0C0C0C] xl:text-[20px]'>Upcoming Events</h2>
-            <div className='flex md:hidden gap-2'>
+            <div className='flex md:hidden justify-between w-1/3'>
               <span
                 onClick={() => scroll('left')}
                 className='flex items-center justify-center rounded-full w-[2.25rem] h-[2.25rem] bg-white cursor-pointer border border-[#E2E4E9] active:bg-neutral-200'
@@ -43,7 +43,7 @@ const UpcomingEvents = () => {
               </span>
             </div>
           </section>
-        </div>
+        
       </div>
 
       <div
