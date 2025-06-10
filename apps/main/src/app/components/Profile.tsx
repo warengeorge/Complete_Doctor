@@ -9,7 +9,6 @@ const Profile = () => {
           src='https://res.cloudinary.com/dlahyjhur/image/upload/v1744128371/Frame_2147226243_h8nvqc.png'
           width={335}
           height={350}
-          objectFit='cover'
           className='sm:hidden'
           alt='doctors profile picture'
         />
@@ -17,7 +16,6 @@ const Profile = () => {
           src='https://res.cloudinary.com/dlahyjhur/image/upload/v1744128371/Frame_2147226243_h8nvqc.png'
           width={500}
           height={459}
-          objectFit='cover'
           className='hidden sm:block'
           alt='doctors profile picture'
         />

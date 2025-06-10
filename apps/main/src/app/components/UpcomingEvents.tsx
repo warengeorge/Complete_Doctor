@@ -59,7 +59,6 @@ const UpcomingEvents = () => {
               src={event.image}
               width={275}
               height={135}
-              objectFit='cover'
               alt='event'
               className='xl:hidden'
             />
@@ -67,7 +66,6 @@ const UpcomingEvents = () => {
               src={event.image}
               width={368}
               height={179}
-              objectFit='cover'
               alt='event'
               className='hidden xl:block w-full h-[179px] rounded-[6px]'
             />

@@ -1,11 +1,10 @@
-import React from 'react'
+import Auth from '../components/Auth';
+import LoginForm from '../components/login/LoginForm';
 
-const page = () => {
+export default function LoginPage() {
   return (
-    <div className='bg-amber-500 w-100vw h-screen flex justify-center items-center'>
-      <h1 className='text-2xl md:text-4xl text-white'>Login Page</h1>
-    </div>
-  )
+    <Auth>
+      <LoginForm />
+    </Auth>
+  );
 }
-
-export default page

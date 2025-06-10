@@ -4,6 +4,7 @@ import React from 'react';
 import HeaderLinks from './HeaderLinks';
 import useModalStore from '@/lib/store/useModal';
 import { Separator } from "@/components/ui/separator"
+import Link from 'next/link';
 
 const Navbar = () => {
   const { openMenu } = useModalStore();
@@ -42,9 +43,9 @@ const Navbar = () => {
           />
         </span>
         <Separator orientation="vertical" className='hidden md:block' />
-        <button className='hidden sm:block text-white text-xs h-full px-4 bg-[#007AFF] rounded-xs'>
+        <Link href='/login' className='hidden sm:flex justify-center items-center text-white text-xs h-full px-4 bg-[#007AFF] rounded-xs'>
           Sign in
-        </button>
+        </Link>
       </div>
     </div>
   );
