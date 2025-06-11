@@ -26,13 +26,8 @@ const HeaderLinks = ({ className }: HeaderProps) => {
   ]
 
   const subCourses = {
-    "MRCGP AKT Courses": [
-      "AKT Ultimate Package",
-      "AKT Live Course Programme",
-      "AKT Video Courses",
-      "AKT Audiobook",
-      "AKT Mock Exams"
-    ]
+    "MRCGP AKT Courses": [{id: 234, name: "AKT Ultimate Package"}, {id: 235, name: "AKT Live Course"}, {id: 236, name: "AKT Video Course"}, {id: 237, name: "AKT Audiobook"}, {id: 238, name: "AKT Mock Exams"}],
+    
   }
 
   return (
@@ -74,13 +69,13 @@ const HeaderLinks = ({ className }: HeaderProps) => {
                     <div className="absolute left-full top-0 w-64 bg-white rounded-md shadow-lg border border-gray-200">
                       <ul className="py-1">
                         {subCourses[course as keyof typeof subCourses].map((subCourse) => (
-                          <li key={subCourse}>
+                          <Link key={subCourse.id} href={`/courses/${subCourse.id}`}>
                             <button
                               className="w-full text-left px-4 py-2 hover:bg-blue-50 text-gray-700"
                             >
-                              {subCourse}
+                              {subCourse.name}
                             </button>
-                          </li>
+                          </Link>
                         ))}
                       </ul>
                     </div>

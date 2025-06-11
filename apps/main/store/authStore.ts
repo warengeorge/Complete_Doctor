@@ -59,7 +59,7 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: "qartt-auth-storage",
+      name: "complete-doc-auth-storage",
     },
   ),
 )

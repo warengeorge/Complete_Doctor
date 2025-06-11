@@ -23,6 +23,8 @@ export default function LoginForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    console.log('Email:', email, 'Password:', password); // Debugging
+
     if (!email || !password) {
       setError('Please enter both email and password');
       return;
@@ -31,8 +33,10 @@ export default function LoginForm() {
     const success = loginUser(email, password);
 
     if (success) {
+      console.log('Login successful'); // Debugging
       router.push('/');
     } else {
+      console.log('Login failed'); // Debugging
       setError('Invalid email or password');
     }
   };
