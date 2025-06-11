@@ -34,22 +34,26 @@ const Navbar = () => {
   };
 
   return (
-    <div className='flex justify-between items-center py-3 px-8 lg:px-20 w-full h-[3.375rem] lg:h-20 bg-white'>
+    <div className='flex justify-between items-center px-5 py-[30px] lg:px-20 w-full h-[86px] lg:h-20 bg-white'>
       {/* Logo */}
-      <Image
-        src='/icons/complete-doc-logo.svg'
-        alt='logo'
-        width={120.56}
-        height={30}
-        className='lg:hidden'
-      />
-      <Image
-        src='/icons/complete-doc-logo.svg'
-        alt='logo'
-        width={160}
-        height={40}
-        className='hidden lg:block'
-      />
+      <Link href='/' className='lg:hidden'>
+        <Image
+          src='/icons/complete-doc-logo.svg'
+          alt='logo'
+          width={125}
+          height={26}
+          
+        />
+      </Link>
+      <Link href='/' className='hidden lg:block'>
+        <Image
+          src='/icons/complete-doc-logo.svg'
+          alt='logo'
+          width={160}
+          height={40}
+          
+        />
+      </Link>
 
       {/* Header Links */}
       <HeaderLinks />
@@ -73,7 +77,10 @@ const Navbar = () => {
         {currentUser ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant='ghost' className='hidden sm:flex relative h-10 px-0'>
+              <Button
+                variant='ghost'
+                className='hidden sm:flex relative h-10 px-0'
+              >
                 <div className='flex items-center gap-2'>
                   <Image
                     src={`https://ui-avatars.com/api/?name=${currentUser.firstname}+${currentUser.lastname}`}

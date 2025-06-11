@@ -4,13 +4,16 @@ import { persist } from 'zustand/middleware';
 export interface Course {
   id: string;
   name: string;
+  code: string;
+  date: string;
+  time: string;
   description: string;
   instructor: string;
   price: number;
 }
 
 interface CourseState {
-  courses: Course[]; 
+  courses: Course[];
 }
 
 export const useCourseStore = create<CourseState>()(
@@ -20,6 +23,9 @@ export const useCourseStore = create<CourseState>()(
         {
           id: '234',
           name: 'AKT Ultimate Package',
+          code: 'MRCGP AKT',
+          date: 'Fri, 21 March, 2025',
+          time: '07:00 AM - 09:00 AM',
           description: 'Description for Course 1',
           instructor: 'Instructor 1',
           price: 100,
@@ -27,6 +33,9 @@ export const useCourseStore = create<CourseState>()(
         {
           id: '235',
           name: 'AKT Live Course',
+          code: 'MSRA 235',
+          date: 'Fri, 21 March, 2025',
+          time: '07:00 AM - 09:00 AM',
           description: 'Description for Course 2',
           instructor: 'Instructor 2',
           price: 200,
@@ -34,6 +43,9 @@ export const useCourseStore = create<CourseState>()(
         {
           id: '236',
           name: 'AKT Video Course',
+          code: 'UKMLA 357',
+          date: 'Fri, 21 March, 2025',
+          time: '07:00 AM - 09:00 AM',
           description: 'Description for Course 2',
           instructor: 'Instructor 2',
           price: 200,
@@ -41,6 +53,9 @@ export const useCourseStore = create<CourseState>()(
         {
           id: '237',
           name: 'AKT Audiobook',
+          code: 'PLAB 187',
+          date: 'Fri, 21 March, 2025',
+          time: '07:00 AM - 09:00 AM',
           description: 'Description for Course 2',
           instructor: 'Instructor 2',
           price: 200,
@@ -48,6 +63,9 @@ export const useCourseStore = create<CourseState>()(
         {
           id: '238',
           name: 'AKT Mock Exams',
+          code: 'FY2W 135',
+          date: 'Fri, 21 March, 2025',
+          time: '07:00 AM - 09:00 AM',
           description: 'Description for Course 2',
           instructor: 'Instructor 2',
           price: 200,
