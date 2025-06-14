@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import useModalStore from '@/lib/store/useModal';
 import Menu from './components/Menu';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import Bottom from './components/Bottom';
 
 export default function ClientLayout({
   children,
@@ -17,6 +19,8 @@ export default function ClientLayout({
       <Navbar />
       {isMenuOpen && <Menu />}
       {children}
+      <Footer />
+      <Bottom />
     </>
   );
 }

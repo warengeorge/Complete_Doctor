@@ -7,7 +7,7 @@ const Bottom = () => {
   return (
     <div className='w-full h-[138px] flex justify-center items-center py-[30px] px-5 md:px-15 lg:px-25'>
       <div className='w-full flex flex-col-reverse md:flex-row justify-center md:justify-between items-center gap-[30px]'>
-        <div className='text-xs md:text-base flex gap-[15px]'>
+        <div className='text-sm font-medium md:text-base flex gap-3'>
           <span>&copy;</span>
           <span>Complete Doctor, {new Date().getFullYear()}</span>
         </div>
