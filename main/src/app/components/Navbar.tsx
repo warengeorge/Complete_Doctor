@@ -16,7 +16,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, ShoppingCart } from 'lucide-react';
+import { HiOutlineMenuAlt2 } from "react-icons/hi";
 
 const Navbar = () => {
   const { openMenu } = useModalStore();
@@ -42,7 +43,6 @@ const Navbar = () => {
           alt='logo'
           width={125}
           height={26}
-          
         />
       </Link>
       <Link href='/' className='hidden lg:block'>
@@ -51,7 +51,6 @@ const Navbar = () => {
           alt='logo'
           width={160}
           height={40}
-          
         />
       </Link>
 
@@ -60,16 +59,11 @@ const Navbar = () => {
 
       {/* Right Section */}
       <div className='flex justify-around md:justify-between items-center w-[4.406875rem] sm:w-[100px] md:w-[125px] lg:w-[250px] h-7 lg:h-8'>
-        <span className='lg:p-2'>
-          <Image src='/icons/cart.svg' alt='cart' width={18.75} height={15} />
-        </span>
+        <Link href='/cart' className='lg:p-2'>
+          <ShoppingCart />
+        </Link>
         <span className='sm:hidden' onClick={handleMenu}>
-          <Image
-            src='/icons/hamburger.svg'
-            alt='menu'
-            width={18.75}
-            height={15}
-          />
+          <HiOutlineMenuAlt2 className='cursor-pointer w-7 h-7' />
         </span>
         <Separator orientation='vertical' className='hidden md:block' />
 

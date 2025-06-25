@@ -3,7 +3,7 @@ import Hero from './components/Hero';
 import Offerings from './components/Offerings';
 import PitchResources from './components/PitchResources';
 import UpcomingEvents from './components/UpcomingEvents';
-import Profile from './components/Profile';
+// import Profile from './components/Profile';
 import Testimonials from './components/Testimonials';
 import FAQ from './components/FAQ';
 import ContactUs from './components/ContactUs';
@@ -16,7 +16,7 @@ export default function Home() {
       <UpcomingEvents />
       <Offerings />
       <ArchiveSearch />
-      <Profile />
+      {/* <Profile /> */}
       <Testimonials />
       <FAQ />
       <ContactUs />

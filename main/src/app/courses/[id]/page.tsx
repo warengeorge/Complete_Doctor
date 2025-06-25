@@ -9,7 +9,6 @@ import {
   Share2,
   Calendar,
   AlarmClockCheck,
-  Bookmark,
   Check,
   ShoppingCart,
 } from 'lucide-react';
@@ -20,7 +19,7 @@ import { useCourseStore } from '../../../../store/useStore';
 export default function CoursePage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { courses, expandedSections, toggleSection, hasHydrated } =
+  const { addToCart, courses, expandedSections, toggleSection, hasHydrated } =
     useCourseStore();
 
   // Wait for hydration to complete
@@ -50,7 +49,7 @@ export default function CoursePage() {
         {/* Navigation Header */}
         <div className='w-full h-7.5 flex items-center justify-between'>
           <div className='flex items-center justify-center gap-2'>
-            <Link href='/' className='text-[10px] 3xl:text-sm'>
+            <Link href='/' className='text-[10px] 3xl:text-sm font-medium'>
               Home
             </Link>
             <ChevronLeft
@@ -115,7 +114,13 @@ export default function CoursePage() {
             </span>
           </div>
           <div className='flex items-center justify-between text-sm'>
-            <button className='flex-1 h-10 bg-[#007AFF] text-white rounded-sm mr-4 hover:bg-blue-600 transition-colors'>
+            <button
+              className='flex-1 h-10 bg-[#007AFF] text-white rounded-sm mr-4 hover:bg-blue-600 transition-colors'
+              onClick={() => {
+                addToCart(course);
+                router.push('/cart');
+              }}
+            >
               Enrol
             </button>
             <div className='py-2.5 px-3.75 border border-[#ECECEC] rounded-sm flex items-center gap-2 hover:bg-gray-50 transition-colors cursor-pointer'>
@@ -371,7 +376,13 @@ export default function CoursePage() {
                 </span>
               </div>
               <div className='flex items-center justify-between text-[15px]'>
-                <button className='flex-1 h-10 bg-[#007AFF] font-medium text-white rounded-sm mr-4 hover:bg-blue-600 transition-colors'>
+                <button
+                  className='flex-1 h-10 bg-[#007AFF] font-medium text-white rounded-sm mr-4 hover:bg-blue-600 transition-colors'
+                  onClick={() => {
+                    addToCart(course);
+                    router.push('/cart');
+                  }}
+                >
                   Enrol
                 </button>
                 <div className='py-2.5 px-3.75 border border-[#ECECEC] rounded-sm flex items-center gap-2 hover:bg-gray-50 transition-colors cursor-pointer'>
