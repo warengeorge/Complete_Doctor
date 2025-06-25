@@ -7,6 +7,10 @@ export interface SyllabusSection {
   content: string[];
 }
 
+interface CartItem extends Course {
+  quantity: number
+}
+
 export interface Course {
   id: string;
   name: string;
@@ -26,6 +30,7 @@ export interface Course {
 
 interface CourseState {
   courses: Course[];
+  cartItems: CartItem[]
   expandedSections: Record<string, string[]>; // courseId -> expanded section IDs
   hasHydrated: boolean;
   setHasHydrated: (state: boolean) => void;
@@ -35,6 +40,12 @@ interface CourseState {
   collapseAll: (courseId: string) => void;
   expandAll: (courseId: string) => void;
   getCourseById: (courseId: string) => Course | undefined;
+  clearCart: () => void
+  getCartTotal: () => number
+  getCartSubtotal: () => number
+  addToCart: (course: Course) => void
+  removeFromCart: (courseId: string) => void
+  updateCartItemQuantity: (courseId: string, quantity: number) => void
 }
 
 const defaultSyllabusData: Record<string, SyllabusSection[]> = {
@@ -398,6 +409,7 @@ export const useCourseStore = create<CourseState>()(
           syllabus: defaultSyllabusData['238'],
         },
       ],
+      cartItems:[],
       expandedSections: {
         '234': ['01'], // AKT Ultimate Package starts with first section expanded
         '235': [],
@@ -475,7 +487,47 @@ export const useCourseStore = create<CourseState>()(
         const state = get();
         return state.courses.find((course) => course.id === courseId);
       },
-    }),
+// Cart and utility methods moved inside the main store object
+addToCart: (course: Course) =>
+  set((state) => {
+    const existingItem = state.cartItems.find((item) => item.id === course.id);
+
+    if (existingItem) {
+      return {
+        cartItems: state.cartItems.map((item) =>
+          item.id === course.id ? { ...item, quantity: item.quantity + 1 } : item
+        ),
+      };
+    }
+
+    return {
+      cartItems: [...state.cartItems, { ...course, quantity: 1 }],
+    };
+  }),
+
+removeFromCart: (courseId: string) =>
+  set((state) => ({
+    cartItems: state.cartItems.filter((item) => item.id !== courseId),
+  })),
+
+updateCartItemQuantity: (courseId: string, quantity: number) =>
+  set((state) => ({
+    cartItems: state.cartItems.map((item) =>
+      item.id === courseId ? { ...item, quantity } : item
+    ),
+  })),
+
+clearCart: () => set({ cartItems: [] }),
+
+getCartSubtotal: () => {
+  const { cartItems } = get();
+  return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+},
+
+getCartTotal: () => {
+  return get().getCartSubtotal(); // No discount for now
+},
+}), 
     {
       name: 'course-storage', // Key for localStorage
       onRehydrateStorage: () => (state) => {

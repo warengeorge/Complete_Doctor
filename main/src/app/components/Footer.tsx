@@ -4,7 +4,7 @@ import Image from 'next/image';
 const Footer = () => {
   return (
     <div className='w-full h-auto py-15 lg:py-20 px-[30px] lg:px-25 bg-gray-200/80'>
-      <div className='w-full h-[255px] flex flex-col md:flex-row items-center gap-[50px] md:justify-between'>
+      <div className='w-full h-[375px] md:h-[143px] flex flex-col md:flex-row items-center gap-[50px] md:justify-between'>
         <div className='w-full h-[95px] gap-[15px] flex flex-col'>
           <Image
             src='/icons/complete-doc-logo.svg'
