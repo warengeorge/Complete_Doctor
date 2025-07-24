@@ -58,7 +58,7 @@ const Navbar = () => {
       <HeaderLinks />
 
       {/* Right Section */}
-      <div className='flex justify-around md:justify-between items-center w-[4.406875rem] sm:w-[100px] md:w-[125px] lg:w-[250px] h-7 lg:h-8'>
+      <div className='flex justify-around md:justify-between items-center w-[4.406875rem] sm:w-[100px] md:w-[125px] h-7 lg:h-8'>
         <Link href='/cart' className='lg:p-2'>
           <ShoppingCart />
         </Link>
@@ -83,9 +83,9 @@ const Navbar = () => {
                     height={32}
                     className='rounded-full'
                   />
-                  <span className='hidden sm:block text-sm text-[#151515] font-semibold'>
+                  {/* <span className='hidden sm:block text-sm text-[#151515] font-semibold'>
                     {currentUser.firstname} {currentUser.lastname}
-                  </span>
+                  </span> */}
                 </div>
                 <span className='flex items-center justify-center w-[19px] h-[19px] border border-[#5C5C5C] rounded-full'>
                   <ChevronDown />

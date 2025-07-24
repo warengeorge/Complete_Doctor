@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -15,10 +14,9 @@ interface HeaderProps {
 
 const HeaderLinksMobile = ({ className }: HeaderProps) => {
   const pathname = usePathname()
-
-  const [isOpen, setIsOpen] = useState(false)
+  const [isCoursesOpen, setIsCoursesOpen] = useState(false)
+  const [isResourcesOpen, setIsResourcesOpen] = useState(false)
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null)
-
   const { closeMenu } = useModalStore()
 
   const mainCourses = ["MRCGP AKT Courses", "MRCGP SCA", "MSRA", "UKMLA PLAB 1", "UKMLA PLAB 2", "FY2 Standalone"]
@@ -33,13 +31,24 @@ const HeaderLinksMobile = ({ className }: HeaderProps) => {
     ],
   }
 
+  const resourcesLinks = [
+    { name: "Neurology Points - Free", href: "/resources/neurology-points-free" },
+    { name: "Neurology Points - Premium", href: "/resources/neurology-points-premium" },
+    { name: "Neurology Points - Final", href: "/resources/neurology-points-final" },
+  ]
+
   const handleMenu = () => {
     closeMenu()
   }
 
   const handleCoursesClick = (e: React.MouseEvent) => {
     e.preventDefault()
-    setIsOpen(!isOpen)
+    setIsCoursesOpen(!isCoursesOpen)
+  }
+
+  const handleResourcesClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsResourcesOpen(!isResourcesOpen)
   }
 
   return (
@@ -54,7 +63,7 @@ const HeaderLinksMobile = ({ className }: HeaderProps) => {
           </HeaderLink>
         </li>
 
-        {/* Courses dropdown - Fixed positioning */}
+        {/* Courses dropdown */}
         <li className="relative text-base font-medium w-full border-b-[.4px] border-[#ECECEC]">
           <div
             className="px-5 flex items-center justify-between w-full h-10 cursor-pointer hover:text-gray-900"
@@ -63,16 +72,17 @@ const HeaderLinksMobile = ({ className }: HeaderProps) => {
             <span
               className={cn(
                 "transition-colors",
-                pathname === "/courses" ? "text-[#151515] font-semibold" : "text-gray-500",
+                pathname.startsWith("/courses") ? "text-[#151515] font-semibold" : "text-gray-500",
               )}
             >
               Courses
             </span>
-            <FaAngleDown className={cn("transition-transform duration-200", isOpen ? "rotate-180" : "rotate-0")} />
+            <FaAngleDown
+              className={cn("transition-transform duration-200", isCoursesOpen ? "rotate-180" : "rotate-0")}
+            />
           </div>
-
           {/* Dropdown menu */}
-          {isOpen && (
+          {isCoursesOpen && (
             <div className="w-full bg-white border-t border-gray-200">
               <ul className="py-1">
                 {mainCourses.map((course) => (
@@ -85,7 +95,6 @@ const HeaderLinksMobile = ({ className }: HeaderProps) => {
                     <button className="w-full text-left px-8 py-2 hover:bg-blue-50 text-gray-700 text-sm">
                       {course}
                     </button>
-
                     {/* Submenu */}
                     {selectedCourse === course && subCourses[course as keyof typeof subCourses] && (
                       <div className="w-full bg-gray-50 border-t border-gray-100 border">
@@ -117,6 +126,43 @@ const HeaderLinksMobile = ({ className }: HeaderProps) => {
             Webinars & Events
           </li>
         </HeaderLink>
+
+        {/* Resources dropdown */}
+        <li className="relative text-base font-medium w-full border-b-[.4px] border-[#ECECEC]">
+          <div
+            className="px-5 flex items-center justify-between w-full h-10 cursor-pointer hover:text-gray-900"
+            onClick={handleResourcesClick}
+          >
+            <span
+              className={cn(
+                "transition-colors",
+                pathname.startsWith("/resources") ? "text-[#151515] font-semibold" : "text-gray-500",
+              )}
+            >
+              Resources
+            </span>
+            <FaAngleDown
+              className={cn("transition-transform duration-200", isResourcesOpen ? "rotate-180" : "rotate-0")}
+            />
+          </div>
+          {/* Resources dropdown menu */}
+          {isResourcesOpen && (
+            <div className="w-full bg-white border-t border-gray-200">
+              <ul className="py-1">
+                {resourcesLinks.map((resource) => (
+                  <li key={resource.name}>
+                    <Link href={resource.href} onClick={handleMenu}>
+                      <button className="w-full text-left px-8 py-2 hover:bg-blue-50 text-gray-700 text-sm">
+                        {resource.name}
+                      </button>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </li>
+
         <HeaderLink href="/about-us" active={pathname === "/about-us"}>
           <li
             className="text-base pl-5 flex items-center font-medium w-full h-10 border-b-[.4px] border-[#ECECEC]"
@@ -125,6 +171,7 @@ const HeaderLinksMobile = ({ className }: HeaderProps) => {
             About Us
           </li>
         </HeaderLink>
+
         <li
           className="text-base pl-5 flex items-center font-medium w-full h-10 border-b-[.4px] border-[#ECECEC]"
           onClick={handleMenu}
@@ -133,6 +180,7 @@ const HeaderLinksMobile = ({ className }: HeaderProps) => {
             Contact Us
           </HeaderLink>
         </li>
+
         <li
           className="text-base pl-5 flex items-center font-medium w-full h-10 border-b-[.4px] border-[#ECECEC]"
           onClick={handleMenu}
