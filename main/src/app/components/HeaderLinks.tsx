@@ -41,11 +41,8 @@ const HeaderLinks = ({ className }: HeaderProps) => {
 
   const subCourses = {
     "MRCGP AKT Courses": [
-      { id: 234, name: "AKT Ultimate Package" },
-      { id: 235, name: "AKT Live Course" },
-      { id: 236, name: "AKT Video Course" },
-      { id: 237, name: "AKT Audiobook" },
-      { id: 238, name: "AKT Mock Exams" },
+      { id: 'mrcpsych-paper-a', name: "MRCPsych Paper A Live Course" },
+      { id: 'mrcpsych-paper-b', name: "MRCPsych Paper B Live Course" },
     ],
   }
 

@@ -181,7 +181,7 @@ export default function CartPage() {
                                 </div>
                                 <div className='flex items-center gap-1 md:gap-2'>
                                   <Clock className='w-3 md:w-4 h-3 md:h-4' />
-                                  <span>{item.time}</span>
+                                  <span>{item.duration}</span>
                                 </div>
                               </div>
                             </div>
