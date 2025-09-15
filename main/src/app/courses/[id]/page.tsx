@@ -87,7 +87,7 @@ export default function CoursePage() {
               <div className='flex items-center gap-3'>
                 <AlarmClockCheck className='w-3 h-3' />
                 <span className='text-[10px] text-[#646464] font-semibold'>
-                  {course.time}
+                  {course.duration}
                 </span>
               </div>
             </div>
@@ -131,14 +131,16 @@ export default function CoursePage() {
         </div>
 
         {/* About Course Section */}
-        <div className='w-full p-3.75 bg-white rounded-lg shadow-sm border border-gray-200 divide-y divide-gray-200 flex flex-col gap-8.75'>
-          <div className=''>
-            <h2 className='text-sm font-semibold text-[#081021] mb-2'>
-              About this course
-            </h2>
-            <p className='text-xs text-justify text-[#737373] leading-[20.776px] mb-8.75'>
-              {course.about}
-            </p>
+        <div className="w-full p-3.75 bg-white rounded-lg shadow-sm border border-gray-200 divide-y divide-gray-200 flex flex-col gap-8.75">
+          <div className="">
+            <h2 className="text-sm font-semibold text-[#081021] mb-2">About this course</h2>
+            <p className="text-xs text-justify text-[#737373] leading-[20.776px] mb-8.75">{course.about}</p>
+          </div>
+
+          {/* Time Commitment */}
+          <div className="">
+            <h2 className="text-sm font-semibold text-[#081021] mb-2">Time Commitment</h2>
+            <p className="text-xs text-[#737373] leading-[20.776px] mb-8.75">{course.time}</p>
           </div>
 
           {/* Course Objectives */}
@@ -280,7 +282,7 @@ export default function CoursePage() {
                   <h1 className='text-[22px] text-[#121212] font-semibold'>
                     {course.name}
                   </h1>
-                  <span className='w-auto h-5.5 py-1.5 px-3 font-medium text-[10px] bg-[rgba(234,234,234,0.80)] rounded-full flex items-center justify-center'>
+                  <span className='w-auto h-5.5 py-1.5 px-3 font-semibold text-[10px] bg-[rgba(234,234,234,0.80)] rounded-full flex items-center justify-center'>
                     {course.code}
                   </span>
                 </div>
@@ -294,14 +296,14 @@ export default function CoursePage() {
                   <div className='flex items-center gap-3'>
                     <AlarmClockCheck className='w-3 h-3' />
                     <span className='text-sm text-[#646464] font-semibold'>
-                      {course.time}
+                      {course.duration}
                     </span>
                   </div>
                 </div>
               </div>
             </div>
             {/* About Course Section */}
-            <div className='w-full p-[25px_25px_40px_25px] bg-white rounded-lg shadow-sm border border-gray-200 divide-y divide-gray-200 flex flex-col gap-10'>
+            {/* <div className='w-full p-[25px_25px_40px_25px] bg-white rounded-lg shadow-sm border border-gray-200 divide-y divide-gray-200 flex flex-col gap-10'>
               <div className=''>
                 <h2 className='text-base font-semibold text-[#081021] mb-2'>
                   About this course
@@ -309,7 +311,18 @@ export default function CoursePage() {
                 <p className='text-sm text-justify text-[#737373] leading-[24px] mb-10'>
                   {course.about}
                 </p>
-              </div>
+              </div> */}
+              <div className="w-full p-3.75 bg-white rounded-lg shadow-sm border border-gray-200 divide-y divide-gray-200 flex flex-col gap-8.75">
+          <div className="">
+            <h2 className="text-base font-semibold text-[#081021] mb-2">About this course</h2>
+            <p className="text-sm text-justify text-[#737373] leading-[20.776px] mb-8.75">{course.about}</p>
+          </div>
+
+          {/* Time Commitment */}
+          <div className="">
+            <h2 className="text-base font-semibold text-[#081021] mb-2">Time Commitment</h2>
+            <p className="text-sm text-[#737373] leading-[20.776px] mb-8.75">{course.time}</p>
+          </div>
 
               {/* Course Objectives */}
 
