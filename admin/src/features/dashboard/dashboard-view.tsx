@@ -4,9 +4,9 @@ import { StatsCards } from "./components/stats-cards";
 import { QuickActions } from "./components/quick-actions";
 import { UpcomingEvents } from "./components/upcoming-events";
 import { events } from "./data/events";
-// import { EnrollmentChart } from "./components/enrollment-chart";
-// import { EnrollmentCategory } from "./components/enrollment-category";
-// import { TopCoursesChart } from "./components/top-courses-chart";
+import { EnrollmentChart } from "./components/enrollment-chart";
+import { EnrollmentCategory } from "./components/enrollment-category";
+import { TopCoursesChart } from "./components/top-courses-chart";
 
 export function DashboardView() {
   return (
@@ -35,15 +35,15 @@ export function DashboardView() {
       </div>
 
       {/* Charts row */}
-      {/* <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <EnrollmentChart />
         </div>
         <EnrollmentCategory />
-      </div> */}
+      </div>
 
       {/* Bottom chart */}
-      {/* <TopCoursesChart /> */}
+      <TopCoursesChart />
     </div>
   );
 }

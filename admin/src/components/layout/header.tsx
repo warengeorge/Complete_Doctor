@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 export function AppHeader() {
   const { isMobile } = useSidebar();
   return (
-    <header className="flex h-18.75 items-center justify-between border-b bg-white px-6">
+    <header className="sticky top-0 z-50 flex h-18.75 items-center justify-between border-b bg-white px-6">
       {/* Left */}
       <SidebarTrigger />
       <div className="flex items-center gap-4">
