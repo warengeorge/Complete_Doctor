@@ -15,7 +15,14 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -152,7 +159,9 @@ export function ScheduleEventModal({
                 <Input
                   type="date"
                   value={form.startDate}
-                  onChange={(event) => updateField("startDate", event.target.value)}
+                  onChange={(event) =>
+                    updateField("startDate", event.target.value)
+                  }
                   className={cn(fieldClassName, "placeholder:text-[#B1B1B3]")}
                   required
                 />
@@ -160,7 +169,9 @@ export function ScheduleEventModal({
                 <Input
                   type="date"
                   value={form.endDate}
-                  onChange={(event) => updateField("endDate", event.target.value)}
+                  onChange={(event) =>
+                    updateField("endDate", event.target.value)
+                  }
                   className={fieldClassName}
                   required
                 />
@@ -172,7 +183,9 @@ export function ScheduleEventModal({
                 <Input
                   type="time"
                   value={form.startTime}
-                  onChange={(event) => updateField("startTime", event.target.value)}
+                  onChange={(event) =>
+                    updateField("startTime", event.target.value)
+                  }
                   className={fieldClassName}
                   required
                 />
@@ -180,7 +193,9 @@ export function ScheduleEventModal({
                 <Input
                   type="time"
                   value={form.endTime}
-                  onChange={(event) => updateField("endTime", event.target.value)}
+                  onChange={(event) =>
+                    updateField("endTime", event.target.value)
+                  }
                   className={fieldClassName}
                   required
                 />
@@ -190,7 +205,9 @@ export function ScheduleEventModal({
             <FieldRow icon={AlignLeft} label="Description">
               <Input
                 value={form.description}
-                onChange={(event) => updateField("description", event.target.value)}
+                onChange={(event) =>
+                  updateField("description", event.target.value)
+                }
                 placeholder="Add a description"
                 className={fieldClassName}
               />
@@ -259,7 +276,7 @@ export function ScheduleEventModal({
                 {coverImage ? (
                   <div className="flex items-center justify-between gap-3 rounded-xl border border-[#E7E7EA] bg-[#FCFCFD] p-2">
                     <div className="flex min-w-0 items-center gap-3">
-                      <div className="h-[52px] w-[52px] shrink-0 overflow-hidden rounded-md bg-[#EDEDEF]">
+                      <div className="h-13 w-13 shrink-0 overflow-hidden rounded-md bg-[#EDEDEF]">
                         <img
                           src={coverImage.previewUrl}
                           alt={coverImage.name}

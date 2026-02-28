@@ -21,7 +21,7 @@ export function EventsToolbar({ query, onQueryChange }: EventsToolbarProps) {
       </div>
 
       <div className="flex w-full gap-2 sm:w-auto">
-        <div className="relative w-full sm:w-[240px]">
+        <div className="relative w-full sm:w-60">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#808080]" />
           <Input
             value={query}
