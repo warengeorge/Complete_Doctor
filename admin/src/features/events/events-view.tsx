@@ -16,7 +16,9 @@ export function EventsView() {
   const [query, setQuery] = useState("");
   const [now, setNow] = useState(new Date());
   const [eventItems, setEventItems] = useState<EventItem[]>(events);
-  const [activeEditEvent, setActiveEditEvent] = useState<EventItem | null>(null);
+  const [activeEditEvent, setActiveEditEvent] = useState<EventItem | null>(
+    null,
+  );
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -32,7 +34,9 @@ export function EventsView() {
 
     return eventItems.filter((event) => {
       const titleMatch = event.title.toLowerCase().includes(normalized);
-      const descriptionMatch = event.description.toLowerCase().includes(normalized);
+      const descriptionMatch = event.description
+        .toLowerCase()
+        .includes(normalized);
       return titleMatch || descriptionMatch;
     });
   }, [eventItems, query]);
@@ -66,7 +70,9 @@ export function EventsView() {
         grouped.map((group, index) => (
           <div key={group.key} className="space-y-4">
             {index > 0 ? (
-              <h2 className="text-3xl font-semibold text-[#0C0C0C]">{group.label}</h2>
+              <h2 className="text-[15px] font-semibold text-[#121212]">
+                {group.label}
+              </h2>
             ) : null}
             <div className="space-y-4">
               {group.events.map((event) => (

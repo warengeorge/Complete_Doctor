@@ -54,17 +54,26 @@ export function EventActionsMenu({ onAction }: EventActionsMenuProps) {
               key={action.key}
               className={cn(
                 action.danger
-                  ? "text-[#FF0000] focus:bg-[#FFF1F1]"
-                  : "text-[#2D2F33] focus:bg-[#F4F5F8]",
+                  ? "text-[#DC0000] focus:bg-[#FFFFFF]"
+                  : "text-[#313131] focus:bg-[#ECECEC]",
               )}
               onSelect={() => onAction?.(action.key)}
             >
-              <Icon
+              <span
                 className={cn(
-                  action.danger ? "h-2.5 w-2.5 fill-current stroke-current" : "h-4 w-4",
+                  "inline-flex items-center justify-center",
+                  action.danger && "h-5 w-5 rounded-full bg-[#DC00001A]",
                 )}
-              />
-              <span>{action.label}</span>
+              >
+                <Icon
+                  className={cn(
+                    action.danger
+                      ? "h-2 w-2 fill-current stroke-current"
+                      : "h-4 w-4",
+                  )}
+                />
+              </span>
+              <span className="font-medium text-[14px]">{action.label}</span>
             </DropdownMenuItem>
           );
         })}
