@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock } from "lucide-react";
@@ -45,9 +46,12 @@ export function UpcomingEvents({ events }: { events: Event[] }) {
         <h2 className="text-[15px] font-semibold text-[#0C0C0C]">
           Upcoming Events
         </h2>
-        <span className="text-sm font-medium text-[#646464] cursor-pointer">
+        <Link
+          href="/dashboard/events"
+          className="cursor-pointer text-sm font-medium text-[#646464] hover:underline"
+        >
           View all
-        </span>
+        </Link>
       </div>
 
       {events.map((event) => {
