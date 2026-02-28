@@ -22,24 +22,24 @@ export function EnrollmentCategory() {
   const total = data.reduce((acc, item) => acc + item.value, 0);
 
   return (
-    <Card className="p-6">
+    <Card className="p-4 sm:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           <h2 className="text-base font-semibold">Enrollment by Category</h2>
           <Info size={16} className="text-muted-foreground" />
         </div>
 
-        <select className="border rounded-md px-3 py-1 text-sm bg-background">
+        <select className="w-full rounded-md border bg-background px-3 py-1 text-sm sm:w-auto">
           <option>This year</option>
           <option>Last year</option>
         </select>
       </div>
 
       {/* Content */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:justify-between">
         {/* Donut Chart */}
-        <div className="relative h-64 w-64">
+        <div className="relative h-56 w-56 sm:h-64 sm:w-64">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -64,7 +64,7 @@ export function EnrollmentCategory() {
         </div>
 
         {/* Custom Legend */}
-        <div className="space-y-4">
+        <div className="w-full space-y-4 sm:w-auto">
           {data.map((entry, index) => (
             <div key={entry.name} className="flex items-center gap-3">
               <span

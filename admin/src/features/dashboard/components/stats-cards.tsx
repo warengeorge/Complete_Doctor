@@ -45,7 +45,7 @@ export function StatsCards() {
       {stats.map((stat) => {
         const Icon = stat.icon;
         return (
-          <Card key={stat.label} className="p-3 max-w-57.25 max-h-[74.18px]">
+          <Card key={stat.label} className="w-full p-3">
             <div className="flex items-center justify-between">
               <div className="space-y-2.5">
                 <p className="text-[11.5px]  text-[#313131] font-medium">

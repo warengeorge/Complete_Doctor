@@ -31,11 +31,11 @@ export function QuickActions() {
         {actions.map((action, idx) => (
           <Card
             key={idx}
-            className="flex  gap-4 p-4 cursor-pointer bg-white max-w-100 transition "
+            className="w-full cursor-pointer bg-white p-4 transition"
           >
             {/* Icon container */}
-            <div className="flex max-w-47.25 justify-between items-center">
-              <div className="bg-[#007AFF1A] w-12 h-12 rounded-md flex items-center justify-center">
+            <div className="flex w-full min-w-0 items-center gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[#007AFF1A]">
                 {action.icon}
               </div>
 

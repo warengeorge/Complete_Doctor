@@ -55,12 +55,9 @@ export function UpcomingEvents({ events }: { events: Event[] }) {
         const hasStarted = !timeLeft;
 
         return (
-          <Card
-            key={event.id}
-            className="p-3 pt-2 pb-2 max-w-188.75 max-h-30.5"
-          >
-            <div className="flex gap-4">
-              <div className="relative h-26.25 w-37.5 overflow-hidden rounded-md">
+          <Card key={event.id} className="w-full p-3 sm:pt-2 sm:pb-2">
+            <div className="flex flex-col gap-4 sm:flex-row">
+              <div className="relative h-40 w-full overflow-hidden rounded-md sm:h-26.25 sm:w-37.5 sm:shrink-0">
                 <Image
                   src={event.image}
                   alt={event.title}
@@ -69,13 +66,13 @@ export function UpcomingEvents({ events }: { events: Event[] }) {
                 />
               </div>
 
-              <div className="flex flex-1 flex-col justify-between p-1">
+              <div className="flex min-w-0 flex-1 flex-col justify-between p-1">
                 <div>
                   <h3 className="font-semibold text-sm text-[#081021]">
                     {event.title}
                   </h3>
 
-                  <div className="mt-2 flex items-center gap-6  font-semibold text-[11px] text-[#646464] ">
+                  <div className="mt-2 flex flex-wrap items-center gap-3 font-semibold text-[11px] text-[#646464] sm:gap-6">
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
                       {new Date(event.startDate).toDateString()}

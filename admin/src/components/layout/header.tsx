@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 export function AppHeader() {
   const { isMobile } = useSidebar();
   return (
-    <header className="sticky top-0 z-50 flex h-18.75 items-center justify-between border-b bg-white px-6">
+    <header className="sticky top-0 z-50 flex h-18.75 w-full items-center justify-between border-b bg-white px-4 sm:px-6">
       {/* Left */}
       <SidebarTrigger />
       <div className="flex items-center gap-4">
@@ -25,7 +25,7 @@ export function AppHeader() {
       </div>
 
       {/* Right */}
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-3 sm:gap-6">
         {/* Notification */}
         <div className={`relative`}>
           <Tooltip>
@@ -51,11 +51,11 @@ export function AppHeader() {
         </div>
 
         {/* User */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#EAEAEA] bg-opacity-80 text-sm font-medium">
             JF
           </div>
-          <span className="text-sm text-[#646464] font-semibold">
+          <span className="hidden text-sm font-semibold text-[#646464] sm:inline">
             Joanne Featherington
           </span>
           <Button

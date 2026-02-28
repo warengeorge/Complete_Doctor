@@ -10,7 +10,7 @@ import { TopCoursesChart } from "./components/top-courses-chart";
 
 export function DashboardView() {
   return (
-    <div className="space-y-6 p-6 container">
+    <div className="container w-full space-y-6">
       {/* Greeting */}
       <div className="flex items-start justify-between">
         <div>
@@ -28,18 +28,22 @@ export function DashboardView() {
 
       {/* Quick Actions + Upcoming */}
       <div className="grid gap-6 lg:grid-cols-3">
-        <QuickActions />
-        <div className="lg:col-span-2">
+        <div className="min-w-0">
+          <QuickActions />
+        </div>
+        <div className="min-w-0 lg:col-span-2">
           <UpcomingEvents events={events} />
         </div>
       </div>
 
       {/* Charts row */}
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="min-w-0 lg:col-span-2">
           <EnrollmentChart />
         </div>
-        <EnrollmentCategory />
+        <div className="min-w-0">
+          <EnrollmentCategory />
+        </div>
       </div>
 
       {/* Bottom chart */}
