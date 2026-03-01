@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -8,11 +8,19 @@ import { cn } from "@/lib/utils";
 import { courseCategories, descriptionMaxLength } from "../constants";
 import type { CourseCreateForm } from "../types";
 
+type OverviewEditableField =
+  | "courseName"
+  | "category"
+  | "price"
+  | "description"
+  | "tagInput";
+
 type CourseOverviewFormProps = {
   form: CourseCreateForm;
-  onChange: (name: keyof CourseCreateForm, value: string) => void;
+  onChange: (name: OverviewEditableField, value: string) => void;
   onLearningOutcomeChange: (index: number, value: string) => void;
   onAddLearningOutcome: () => void;
+  onRemoveLearningOutcome: (index: number) => void;
 };
 
 const inputClassName =
@@ -23,6 +31,7 @@ export function CourseOverviewForm({
   onChange,
   onLearningOutcomeChange,
   onAddLearningOutcome,
+  onRemoveLearningOutcome,
 }: CourseOverviewFormProps) {
   return (
     <section className="overflow-hidden rounded-xl border border-[#E5E5E8] bg-white">
@@ -105,15 +114,26 @@ export function CourseOverviewForm({
           </label>
           <div className="space-y-3">
             {form.learningOutcomes.map((value, index) => (
-              <Input
-                key={`${index}-${value.length}`}
-                value={value}
-                onChange={(event) =>
-                  onLearningOutcomeChange(index, event.target.value)
-                }
-                placeholder="Default text"
-                className={inputClassName}
-              />
+              <div key={`${index}-${value.length}`} className="flex items-center gap-2">
+                <Input
+                  value={value}
+                  onChange={(event) =>
+                    onLearningOutcomeChange(index, event.target.value)
+                  }
+                  placeholder="Default text"
+                  className={inputClassName}
+                />
+                {form.learningOutcomes.length > 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => onRemoveLearningOutcome(index)}
+                    aria-label={`Remove learning outcome ${index + 1}`}
+                    className="rounded-full bg-[#EFEFF1] p-1.5 text-[#5D5D5D] hover:bg-[#E3E3E6]"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                ) : null}
+              </div>
             ))}
           </div>
 
