@@ -3,6 +3,12 @@ export type CourseStep = {
   label: string;
 };
 
+export type CourseCoverImage = {
+  name: string;
+  sizeKb: number;
+  previewUrl: string;
+};
+
 export type CourseCreateForm = {
   courseName: string;
   category: string;
@@ -11,5 +17,5 @@ export type CourseCreateForm = {
   learningOutcomes: string[];
   tagInput: string;
   tags: string[];
-  coverImageName: string | null;
+  coverImage: CourseCoverImage | null;
 };

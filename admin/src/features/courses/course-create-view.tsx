@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { courseSteps, descriptionMaxLength } from "./constants";
 import { CourseOverviewForm } from "./components/course-overview-form";
@@ -17,11 +17,20 @@ const initialForm: CourseCreateForm = {
   learningOutcomes: [""],
   tagInput: "",
   tags: [],
-  coverImageName: null,
+  coverImage: null,
 };
 
 export function CourseCreateView() {
   const [form, setForm] = useState<CourseCreateForm>(initialForm);
+  const coverImageUrlRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (coverImageUrlRef.current) {
+        URL.revokeObjectURL(coverImageUrlRef.current);
+      }
+    };
+  }, []);
 
   const canPublish = useMemo(() => {
     return Boolean(form.courseName.trim() && form.category.trim());
@@ -73,9 +82,29 @@ export function CourseCreateView() {
   };
 
   const handleCoverImageSelect = (file: File | null) => {
+    if (coverImageUrlRef.current) {
+      URL.revokeObjectURL(coverImageUrlRef.current);
+      coverImageUrlRef.current = null;
+    }
+
+    if (!file) {
+      setForm((prev) => ({
+        ...prev,
+        coverImage: null,
+      }));
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    coverImageUrlRef.current = previewUrl;
+
     setForm((prev) => ({
       ...prev,
-      coverImageName: file?.name ?? null,
+      coverImage: {
+        name: file.name,
+        sizeKb: Math.max(1, Math.round(file.size / 1024)),
+        previewUrl,
+      },
     }));
   };
 
@@ -115,7 +144,7 @@ export function CourseCreateView() {
 
         <div className="min-w-0">
           <CourseSidebarPanel
-            coverImageName={form.coverImageName}
+            coverImage={form.coverImage}
             tagInput={form.tagInput}
             tags={form.tags}
             onTagInputChange={(value) => updateField("tagInput", value)}
