@@ -6,10 +6,17 @@ import { courseSteps, descriptionMaxLength } from "./constants";
 import { CourseContentForm } from "./components/course-content-form";
 import { CourseContentSidebar } from "./components/course-content-sidebar";
 import { CourseOverviewForm } from "./components/course-overview-form";
+import { CourseScheduleForm } from "./components/course-schedule-form";
+import { CourseScheduleSidebar } from "./components/course-schedule-sidebar";
 import { CourseSidebarPanel } from "./components/course-sidebar-panel";
 import { CreateCourseHeader } from "./components/create-course-header";
 import { CreateCourseStepper } from "./components/create-course-stepper";
-import type { CourseContentAsset, CourseCreateForm, CourseModule } from "./types";
+import type {
+  CourseContentAsset,
+  CourseCreateForm,
+  CourseModule,
+  CourseScheduleEntry,
+} from "./types";
 
 type EditableField = "courseName" | "category" | "price" | "description" | "tagInput";
 
@@ -19,6 +26,18 @@ function createModule(id: string): CourseModule {
     title: "",
     description: "",
     subModules: [""],
+  };
+}
+
+function createSchedule(id: string): CourseScheduleEntry {
+  return {
+    id,
+    moduleId: "",
+    startDate: "",
+    endDate: "",
+    startTime: "",
+    endTime: "",
+    location: "",
   };
 }
 
@@ -32,6 +51,7 @@ const initialForm: CourseCreateForm = {
   lectureNotes: null,
   lectureVideos: null,
   studyMaterials: null,
+  schedules: [createSchedule("schedule-1")],
   tagInput: "",
   tags: [],
   coverImage: null,
@@ -41,6 +61,7 @@ export function CourseCreateView() {
   const [activeStep, setActiveStep] = useState(1);
   const [form, setForm] = useState<CourseCreateForm>(initialForm);
   const moduleCounterRef = useRef(1);
+  const scheduleCounterRef = useRef(1);
   const coverImageUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -224,6 +245,45 @@ export function CourseCreateView() {
     }));
   };
 
+  const handleAddSchedule = () => {
+    scheduleCounterRef.current += 1;
+    setForm((prev) => ({
+      ...prev,
+      schedules: [
+        ...prev.schedules,
+        createSchedule(`schedule-${scheduleCounterRef.current}`),
+      ],
+    }));
+  };
+
+  const handleRemoveSchedule = (scheduleId: string) => {
+    setForm((prev) => {
+      if (prev.schedules.length <= 1) return prev;
+      return {
+        ...prev,
+        schedules: prev.schedules.filter((schedule) => schedule.id !== scheduleId),
+      };
+    });
+  };
+
+  const handleScheduleFieldChange = (
+    scheduleId: string,
+    field: keyof Omit<CourseScheduleEntry, "id">,
+    value: string,
+  ) => {
+    setForm((prev) => ({
+      ...prev,
+      schedules: prev.schedules.map((schedule) =>
+        schedule.id === scheduleId ? { ...schedule, [field]: value } : schedule,
+      ),
+    }));
+  };
+
+  const handleSaveSchedule = (scheduleId: string) => {
+    const selected = form.schedules.find((schedule) => schedule.id === scheduleId);
+    console.log("Save schedule", selected);
+  };
+
   const handleSaveDraft = () => {
     // Placeholder for API integration.
     console.log("Save draft", form);
@@ -306,21 +366,26 @@ export function CourseCreateView() {
             </div>
           </>
         ) : (
-          <div className="col-span-full rounded-xl border border-[#E5E5E8] bg-white p-6">
-            <h2 className="text-[16px] font-semibold text-[#151515]">Course Schedule</h2>
-            <p className="mt-2 text-sm text-[#646464]">
-              Step 3 form can be added next. Use Previous to go back.
-            </p>
-            <div className="mt-4">
-              <button
-                type="button"
-                onClick={handlePrevious}
-                className="h-10 rounded-lg border border-[#E1E1E4] bg-[#F3F3F5] px-4 text-sm font-semibold text-[#313131]"
-              >
-                Previous
-              </button>
+          <>
+            <div className="min-w-0">
+              <CourseScheduleForm
+                modules={form.modules}
+                schedules={form.schedules}
+                onAddSchedule={handleAddSchedule}
+                onAddAnotherSchedule={handleAddSchedule}
+                onRemoveSchedule={handleRemoveSchedule}
+                onScheduleFieldChange={handleScheduleFieldChange}
+                onSaveSchedule={handleSaveSchedule}
+              />
             </div>
-          </div>
+            <div className="min-w-0">
+              <CourseScheduleSidebar
+                schedules={form.schedules}
+                onPrevious={handlePrevious}
+                onFinish={handlePublish}
+              />
+            </div>
+          </>
         )}
       </div>
     </section>

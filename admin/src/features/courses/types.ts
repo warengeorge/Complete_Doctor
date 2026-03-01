@@ -21,6 +21,16 @@ export type CourseContentAsset = {
   sizeKb: number;
 };
 
+export type CourseScheduleEntry = {
+  id: string;
+  moduleId: string;
+  startDate: string;
+  endDate: string;
+  startTime: string;
+  endTime: string;
+  location: string;
+};
+
 export type CourseCreateForm = {
   courseName: string;
   category: string;
@@ -31,6 +41,7 @@ export type CourseCreateForm = {
   lectureNotes: CourseContentAsset | null;
   lectureVideos: CourseContentAsset | null;
   studyMaterials: CourseContentAsset | null;
+  schedules: CourseScheduleEntry[];
   tagInput: string;
   tags: string[];
   coverImage: CourseCoverImage | null;
