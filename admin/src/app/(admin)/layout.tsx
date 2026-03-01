@@ -18,7 +18,7 @@ export default function AdminLayout({
           <AppSidebar />
 
           <SidebarInset className="min-w-0 flex-1">
-            <div className="mx-auto flex w-full flex-1 justify-center px-4 py-4 sm:px-6 sm:py-6">
+            <div className="mx-auto flex w-full flex-1 justify-center px-4 py-4 sm:px-6 sm:py-6 bg-[#FAFAFA]">
               <div className="w-full">{children}</div>
             </div>
           </SidebarInset>

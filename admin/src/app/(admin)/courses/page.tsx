@@ -1,3 +1,5 @@
-export default function Course() {
-  return <>Courses</>;
+import { CourseCreateView } from "@/features/courses";
+
+export default function CoursePage() {
+  return <CourseCreateView />;
 }

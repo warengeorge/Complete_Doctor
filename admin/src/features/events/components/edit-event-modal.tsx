@@ -114,10 +114,15 @@ export function EditEventModal({
 
   const canSubmit = useMemo(() => {
     if (!form) return false;
-    return Boolean(form.title.trim() && form.startDate.trim() && form.startTime.trim());
+    return Boolean(
+      form.title.trim() && form.startDate.trim() && form.startTime.trim(),
+    );
   }, [form]);
 
-  const updateField = (name: keyof EditEventFormState, value: string | boolean) => {
+  const updateField = (
+    name: keyof EditEventFormState,
+    value: string | boolean,
+  ) => {
     setForm((prev) => {
       if (!prev) return prev;
       return { ...prev, [name]: value };
@@ -157,7 +162,11 @@ export function EditEventModal({
       coverImageName: form.coverImageName,
       coverImageSizeKb: form.coverImageSizeKb,
       setReminder: form.setReminder,
-      startDate: parseEditDateTime(form.startDate, form.startTime, event.startDate),
+      startDate: parseEditDateTime(
+        form.startDate,
+        form.startTime,
+        event.startDate,
+      ),
       endDate: parseEditDateTime(form.endDate, form.endTime, event.endDate),
     };
 
@@ -175,7 +184,9 @@ export function EditEventModal({
       >
         <form className="space-y-6" onSubmit={handleSubmit}>
           <DialogHeader className="items-center">
-            <DialogTitle className="text-[35px]">Edit event details</DialogTitle>
+            <DialogTitle className="text-[35px]">
+              Edit event details
+            </DialogTitle>
             <DialogClose asChild>
               <Button
                 type="button"
@@ -193,7 +204,9 @@ export function EditEventModal({
             <FieldRow icon={PencilLine} label="Event Title">
               <Input
                 value={form.title}
-                onChange={(inputEvent) => updateField("title", inputEvent.target.value)}
+                onChange={(inputEvent) =>
+                  updateField("title", inputEvent.target.value)
+                }
                 className={editableFieldClass(form.title)}
                 placeholder="Add an event name/title"
               />
@@ -212,7 +225,9 @@ export function EditEventModal({
                 <MoveRight className="mx-auto h-4 w-4 text-[#767676]" />
                 <Input
                   value={form.endDate}
-                  onChange={(inputEvent) => updateField("endDate", inputEvent.target.value)}
+                  onChange={(inputEvent) =>
+                    updateField("endDate", inputEvent.target.value)
+                  }
                   placeholder="DD/MM/YY"
                   className={editableFieldClass(form.endDate)}
                 />
@@ -232,7 +247,9 @@ export function EditEventModal({
                 <MoveRight className="mx-auto h-4 w-4 text-[#767676]" />
                 <Input
                   value={form.endTime}
-                  onChange={(inputEvent) => updateField("endTime", inputEvent.target.value)}
+                  onChange={(inputEvent) =>
+                    updateField("endTime", inputEvent.target.value)
+                  }
                   placeholder="--"
                   className={editableFieldClass(form.endTime)}
                 />
@@ -242,7 +259,9 @@ export function EditEventModal({
             <FieldRow icon={AlignLeft} label="Description">
               <textarea
                 value={form.description}
-                onChange={(inputEvent) => updateField("description", inputEvent.target.value)}
+                onChange={(inputEvent) =>
+                  updateField("description", inputEvent.target.value)
+                }
                 className={cn(
                   "min-h-24 w-full rounded-xl bg-[#FCFCFD] px-3 py-3 text-base outline-none",
                   "focus-visible:ring-2 focus-visible:ring-[#007AFF]",
@@ -256,7 +275,9 @@ export function EditEventModal({
             <FieldRow icon={Link2} label="Link">
               <Input
                 value={form.link}
-                onChange={(inputEvent) => updateField("link", inputEvent.target.value)}
+                onChange={(inputEvent) =>
+                  updateField("link", inputEvent.target.value)
+                }
                 className={editableFieldClass(form.link)}
                 placeholder="http://"
               />
@@ -265,7 +286,7 @@ export function EditEventModal({
             <FieldRow icon={ImageIcon} label="Cover image">
               <div className="flex items-center justify-between gap-3 rounded-xl border border-[#E7E7EA] bg-[#FCFCFD] p-2">
                 <div className="flex min-w-0 items-center gap-3">
-                  <div className="relative h-[52px] w-[52px] shrink-0 overflow-hidden rounded-md bg-[#EDEDEF]">
+                  <div className="relative h-13 w-13 shrink-0 overflow-hidden rounded-md bg-[#EDEDEF]">
                     {form.coverImageSrc ? (
                       <Image
                         src={form.coverImageSrc}
@@ -280,7 +301,9 @@ export function EditEventModal({
                       {form.coverImageName || "No cover image selected"}
                     </p>
                     {form.coverImageSizeKb > 0 ? (
-                      <p className="text-sm text-[#6B6B6B]">{form.coverImageSizeKb}KB</p>
+                      <p className="text-sm text-[#6B6B6B]">
+                        {form.coverImageSizeKb}KB
+                      </p>
                     ) : null}
                   </div>
                 </div>
@@ -326,10 +349,14 @@ export function EditEventModal({
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
-              <span className="text-[30px] font-medium text-[#313131]">Set reminder</span>
+              <span className="text-[30px] font-medium text-[#313131]">
+                Set reminder
+              </span>
               <Switch
                 checked={form.setReminder}
-                onCheckedChange={(checked) => updateField("setReminder", checked)}
+                onCheckedChange={(checked) =>
+                  updateField("setReminder", checked)
+                }
                 aria-label="Set reminder"
               />
             </div>
