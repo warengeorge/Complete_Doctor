@@ -3,6 +3,18 @@ export type CourseStep = {
   label: string;
 };
 
+export type CourseStatus = "Ongoing" | "Upcoming" | "Ended";
+
+export type CourseListItem = {
+  id: string;
+  title: string;
+  category: string;
+  status: CourseStatus;
+  enrolledStudents: number;
+  createdAt: string;
+  image: string;
+};
+
 export type CourseCoverImage = {
   name: string;
   sizeKb: number;

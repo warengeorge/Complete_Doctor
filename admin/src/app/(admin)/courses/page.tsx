@@ -1,5 +1,5 @@
-import { CourseCreateView } from "@/features/courses";
+import { CoursesListView } from "@/features/courses";
 
 export default function CoursePage() {
-  return <CourseCreateView />;
+  return <CoursesListView />;
 }
