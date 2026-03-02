@@ -111,7 +111,7 @@ export function CoursesListTable({
   );
 }
 
-function getStatusClass(status: CourseListItem["status"]) {
+export function getStatusClass(status: CourseListItem["status"]) {
   switch (status) {
     case "Ongoing":
       return "text-[#008409] ";

@@ -10,6 +10,7 @@ import {
   type CoursesFilterTab,
 } from "./components/courses-list-toolbar";
 import { CoursesListTable } from "./components/courses-list-table";
+import { CoursesListGrid } from "./components/courses-list-grid";
 
 export function CoursesListView() {
   const [activeTab, setActiveTab] = useState<CoursesFilterTab>("All");
@@ -17,17 +18,14 @@ export function CoursesListView() {
   const [currentPage, setCurrentPage] = useState(1);
   const [resultsPerPage, setResultsPerPage] = useState(10);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [viewType, setViewType] = useState<"table" | "grid">("table");
 
   const filtered = useMemo(() => {
     const normalized = search.trim().toLowerCase();
 
     return coursesListData.filter((course) => {
       const matchesTab =
-        activeTab === "All"
-          ? true
-          : activeTab === "Drafts"
-            ? course.status === "Draft"
-            : course.status === activeTab;
+        activeTab === "All" ? true : course.status === activeTab;
 
       const matchesSearch =
         normalized.length === 0
@@ -83,15 +81,25 @@ export function CoursesListView() {
           onTabChange={handleTabChange}
           search={search}
           onSearchChange={handleSearchChange}
+          viewType={viewType}
+          onViewTypeChange={setViewType}
         />
 
         <div className="mt-3">
-          <CoursesListTable
-            rows={currentRows}
-            selectedIds={selectedIds}
-            onToggleRow={handleToggleRow}
-            onToggleAll={handleToggleAll}
-          />
+          {viewType === "table" ? (
+            <CoursesListTable
+              rows={currentRows}
+              selectedIds={selectedIds}
+              onToggleRow={handleToggleRow}
+              onToggleAll={handleToggleAll}
+            />
+          ) : (
+            <CoursesListGrid
+              rows={currentRows}
+              selectedIds={selectedIds}
+              onToggleRow={handleToggleRow}
+            />
+          )}
         </div>
 
         <div className="mt-4">

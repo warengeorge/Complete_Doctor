@@ -1,27 +1,31 @@
 "use client";
 
-import { Filter, List, Search } from "lucide-react";
+import { Filter, List, Search, Grid } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-type CoursesFilterTab = "All" | "Ongoing" | "Upcoming" | "Ended" | "Drafts";
+type CoursesFilterTab = "All" | "Ongoing" | "Upcoming" | "Ended";
 
 type CoursesListToolbarProps = {
   activeTab: CoursesFilterTab;
   onTabChange: (tab: CoursesFilterTab) => void;
   search: string;
   onSearchChange: (value: string) => void;
+  viewType: "table" | "grid";
+  onViewTypeChange: (view: "table" | "grid") => void;
 };
 
-const tabs: CoursesFilterTab[] = ["All", "Ongoing", "Upcoming", "Ended", "Drafts"];
+const tabs: CoursesFilterTab[] = ["All", "Ongoing", "Upcoming", "Ended"];
 
 export function CoursesListToolbar({
   activeTab,
   onTabChange,
   search,
   onSearchChange,
+  viewType,
+  onViewTypeChange,
 }: CoursesListToolbarProps) {
   return (
     <div className="space-y-4">
@@ -64,10 +68,26 @@ export function CoursesListToolbar({
         <Button
           type="button"
           variant="outline"
-          className="h-10 rounded-lg border-[#E1E1E4] bg-[#F3F3F5] px-4 text-[14px] font-medium text-[#151515] hover:bg-[#ECECEF]"
+          onClick={() => onViewTypeChange("table")}
+          className={cn(
+            "h-10 rounded-lg border-[#E1E1E4] bg-[#F3F3F5] px-4 text-[14px] font-medium text-[#151515] hover:bg-[#ECECEF]",
+            viewType === "table" && "bg-[#ECECEC] text-[#0C0C0C]",
+          )}
         >
           <List className="h-4 w-4" />
           List
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => onViewTypeChange("grid")}
+          className={cn(
+            "h-10 rounded-lg border-[#E1E1E4] bg-[#F3F3F5] px-4 text-[14px] font-medium text-[#151515] hover:bg-[#ECECEF]",
+            viewType === "grid" && "bg-[#ECECEC] text-[#0C0C0C]",
+          )}
+        >
+          <Grid className="h-4 w-4" />
+          Grid
         </Button>
       </div>
     </div>
