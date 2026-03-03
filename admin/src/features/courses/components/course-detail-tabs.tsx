@@ -1,6 +1,5 @@
 "use client";
 
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
 const tabItems = [
@@ -23,23 +22,23 @@ export function CourseDetailTabs({
   onValueChange: (v: string) => void;
 }) {
   return (
-    <Tabs value={value} onValueChange={onValueChange} className="w-full">
-      <TabsList className="flex flex-wrap gap-0 border-b border-[#E5E5E8] bg-transparent rounded-none p-0 h-auto">
+    <div className="w-full border-b border-[#E5E5E8]">
+      <div className="flex flex-wrap gap-0 -mb-px overflow-x-auto scrollbar-hide">
         {tabItems.map((label) => (
-          <TabsTrigger
+          <button
             key={label}
-            value={label}
+            onClick={() => onValueChange(label)}
             className={cn(
-              "px-4 py-2 text-[14px] font-medium rounded-none border-b-2 border-transparent data-[state=active]:border-[#007AFF] data-[state=active]:text-[#121212] data-[state=inactive]:text-[#6B6B6B]",
+              "px-4 py-2 text-[14px] font-medium border-b-2 transition-colors whitespace-nowrap",
+              value === label
+                ? "border-[#007AFF] text-[#121212]"
+                : "border-transparent text-[#6B6B6B] hover:text-[#313131]",
             )}
           >
             {label}
-          </TabsTrigger>
+          </button>
         ))}
-      </TabsList>
-      <TabsContent value={value} className="mt-4">
-        {/* content is rendered by parent via state */}
-      </TabsContent>
-    </Tabs>
+      </div>
+    </div>
   );
 }

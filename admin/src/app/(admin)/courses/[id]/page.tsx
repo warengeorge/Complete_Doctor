@@ -4,11 +4,13 @@ import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { coursesListData } from "@/features/courses/data/courses-list";
+import { enrolledStudentsData, pendingStudentsData } from "@/features/courses/data/course-students";
 import type { CourseListItem } from "@/features/courses/types";
 import {
   CourseDetailHeader,
   CourseDetailTabs,
   CourseDetailOverview,
+  CourseDetailStudents,
 } from "@/features/courses/components";
 
 type TabLabel =
@@ -80,7 +82,13 @@ export default function Course() {
 
       <div>
         {activeTab === "Overview" && <CourseDetailOverview {...detailInfo} />}
-        {activeTab !== "Overview" && (
+        {activeTab === "Students" && (
+          <CourseDetailStudents
+            enrolledStudents={enrolledStudentsData}
+            pendingStudents={pendingStudentsData}
+          />
+        )}
+        {activeTab !== "Overview" && activeTab !== "Students" && (
           <p className="text-center text-[#6B6B6B] py-20">
             {activeTab} content goes here
           </p>

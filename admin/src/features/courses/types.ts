@@ -15,6 +15,15 @@ export type CourseListItem = {
   image: string;
 };
 
+export type EnrolledStudent = {
+  id: string;
+  name: string;
+  email: string;
+  enrolledDate: string;
+  avatar?: string;
+  initials: string;
+};
+
 export type CourseCoverImage = {
   name: string;
   sizeKb: number;
