@@ -1,6 +1,6 @@
 "use client";
 
-import type { CourseListItem } from "../types";
+import type { CourseListItem } from "../../types";
 import { CourseDetailNav } from "./course-detail-nav";
 import { CourseInfoCard } from "./course-info-card";
 import { CourseStatsCard } from "./course-enrolled-stats";

@@ -1,6 +1,11 @@
 export { CourseOverviewForm } from "./course-overview-form";
-export { CourseDetailHeader } from "./course-detail-header";
-export { CourseDetailTabs } from "./course-detail-tabs";
-export { CourseDetailOverview } from "./course-detail-overview";
-export { CourseDetailStudents } from "./course-detail-students";
+export {
+  CourseDetailHeader,
+  CourseDetailTabs,
+  CourseDetailOverview,
+  CourseDetailStudents,
+  CourseDetailNav,
+  CourseInfoCard,
+  CourseStatsCard,
+} from "./course-detail";
 export { CoursesListPagination } from "./courses-list-pagination";

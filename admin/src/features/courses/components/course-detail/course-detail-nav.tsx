@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-import type { CourseListItem } from "../types";
+import type { CourseListItem } from "../../types";
 
 export type CourseDetailNavProps = {
   course: CourseListItem;

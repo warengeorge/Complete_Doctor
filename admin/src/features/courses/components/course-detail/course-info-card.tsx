@@ -1,7 +1,7 @@
 "use client";
 
-import type { CourseListItem } from "../types";
-import { getStatusTextClass, getStatusBgClass } from "./courses-list-table";
+import type { CourseListItem } from "../../types";
+import { getStatusTextClass, getStatusBgClass } from "../courses-list-table";
 
 export type CourseInfoCardProps = {
   course: CourseListItem;

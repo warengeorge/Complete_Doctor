@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Search, Filter, MoreHorizontal } from "lucide-react";
-import type { EnrolledStudent } from "../types";
+import type { EnrolledStudent } from "../../types";
 
 export type CourseDetailStudentsProps = {
   enrolledStudents: EnrolledStudent[];

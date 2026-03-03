@@ -1,0 +1,7 @@
+export { CourseDetailHeader } from "./course-detail-header";
+export { CourseDetailNav } from "./course-detail-nav";
+export { CourseDetailTabs } from "./course-detail-tabs";
+export { CourseDetailOverview } from "./course-detail-overview";
+export { CourseDetailStudents } from "./course-detail-students";
+export { CourseInfoCard } from "./course-info-card";
+export { CourseStatsCard } from "./course-enrolled-stats";
