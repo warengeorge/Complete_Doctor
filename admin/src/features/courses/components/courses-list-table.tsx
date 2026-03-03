@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import Image from "next/image";
 import { MoreHorizontal } from "lucide-react";
 
@@ -64,7 +65,10 @@ export function CoursesListTable({
                 </td>
 
                 <td className="px-3 py-3">
-                  <div className="flex items-center gap-3">
+                  <Link
+                    href={`/courses/${course.id}`}
+                    className="flex items-center gap-3 hover:opacity-75 transition-opacity"
+                  >
                     <div className="relative h-12 w-16 overflow-hidden rounded-md">
                       <Image
                         src={course.image}
@@ -73,17 +77,17 @@ export function CoursesListTable({
                         className="object-cover"
                       />
                     </div>
-                    <span className="max-w-[16rem] text-[14px] font-medium text-[#313131]">
+                    <span className="max-w-[16rem] text-[14px] font-medium text-[#313131] hover:text-[#007AFF]">
                       {course.title}
                     </span>
-                  </div>
+                  </Link>
                 </td>
 
                 <td className="px-3 py-3 text-[14px] text-[#313131]">
                   {course.category}
                 </td>
                 <td
-                  className={`px-3 py-3 text-[14px] ${getStatusClass(course.status)}`}
+                  className={`px-3 py-3 text-[14px] ${getStatusTextClass(course.status)}`}
                 >
                   {course.status}
                 </td>
@@ -111,15 +115,28 @@ export function CoursesListTable({
   );
 }
 
-export function getStatusClass(status: CourseListItem["status"]) {
+export function getStatusTextClass(status: CourseListItem["status"]) {
   switch (status) {
     case "Ongoing":
-      return "text-[#008409] ";
+      return "text-[#008409]";
     case "Upcoming":
       return "text-[#007AFF]";
     case "Ended":
       return "text-[#DC0000]";
     default:
       return "text-[#404043]";
+  }
+}
+
+export function getStatusBgClass(status: CourseListItem["status"]) {
+  switch (status) {
+    case "Ongoing":
+      return "bg-[#008409]/10";
+    case "Upcoming":
+      return "bg-[#007AFF]/10";
+    case "Ended":
+      return "bg-[#DC0000]/10";
+    default:
+      return "bg-[#404043]/10";
   }
 }

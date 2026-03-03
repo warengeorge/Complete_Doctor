@@ -1,11 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import Image from "next/image";
 import { Calendar } from "lucide-react";
 
 import type { CourseListItem } from "../types";
 import { CoursesIcon } from "@/components/icons/courses-icon";
-import { getStatusClass } from "./courses-list-table";
+import { getStatusTextClass, getStatusBgClass } from "./courses-list-table";
 
 type CoursesListGridProps = {
   rows: CourseListItem[];
@@ -21,10 +22,13 @@ export function CoursesListGrid({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {rows.map((course) => (
-        <div
+        <Link
           key={course.id}
-          className="relative rounded-xl border border-[#E5E5E8] bg-white shadow-sm overflow-hidden"
+          href={`/courses/${course.id}`}
+          className="block hover:shadow-md transition-shadow"
         >
+          <div className="relative rounded-xl border border-[#E5E5E8] bg-white shadow-sm overflow-hidden hover:border-[#007AFF]"
+          >
           <div className="relative h-40 w-full">
             <Image
               src={course.image}
@@ -37,7 +41,7 @@ export function CoursesListGrid({
           {/* status badge */}
           <span
             className={`absolute top-2 left-2 rounded-full px-2 py-1 text-[10px] font-semibold 
-              ${getStatusClass(course.status)} bg-white`}
+              ${getStatusTextClass(course.status)} ${getStatusBgClass(course.status)}`}
           >
             {course.status}
           </span>
@@ -74,6 +78,7 @@ export function CoursesListGrid({
             </div>
           </div>
         </div>
+        </Link>
       ))}
     </div>
   );
