@@ -1,9 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Search, Filter, MoreHorizontal } from "lucide-react";
+import { Search, Filter, MoreHorizontal, X } from "lucide-react";
 import type { EnrolledStudent } from "../../types";
 import { CoursesListPagination } from "../courses-list-pagination";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export type CourseDetailStudentsProps = {
   enrolledStudents: EnrolledStudent[];
@@ -31,14 +38,28 @@ export function CourseDetailStudents({
   enrolledStudents,
   pendingStudents,
 }: CourseDetailStudentsProps) {
+  const [enrolledList, setEnrolledList] =
+    useState<EnrolledStudent[]>(enrolledStudents);
+  const [pendingList, setPendingList] =
+    useState<EnrolledStudent[]>(pendingStudents);
   const [activeTab, setActiveTab] = useState<TabType>("enrolled");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [isConfirmPaymentOpen, setIsConfirmPaymentOpen] = useState(false);
+  const [selectedPendingStudent, setSelectedPendingStudent] =
+    useState<EnrolledStudent | null>(null);
+
+  useEffect(() => {
+    setEnrolledList(enrolledStudents);
+  }, [enrolledStudents]);
+
+  useEffect(() => {
+    setPendingList(pendingStudents);
+  }, [pendingStudents]);
 
   // Get the students based on active tab
-  const currentStudents =
-    activeTab === "enrolled" ? enrolledStudents : pendingStudents;
+  const currentStudents = activeTab === "enrolled" ? enrolledList : pendingList;
 
   // Handle tab change - reset pagination
   const handleTabChange = (tab: TabType) => {
@@ -69,6 +90,29 @@ export function CourseDetailStudents({
   useEffect(() => {
     setCurrentPage((prev) => Math.min(prev, totalPages));
   }, [totalPages]);
+
+  const handleOpenConfirmPayment = (student: EnrolledStudent) => {
+    setSelectedPendingStudent(student);
+    setIsConfirmPaymentOpen(true);
+  };
+
+  const handleConfirmPendingStudent = () => {
+    if (!selectedPendingStudent) {
+      return;
+    }
+
+    setPendingList((prev) =>
+      prev.filter((student) => student.id !== selectedPendingStudent.id),
+    );
+    setEnrolledList((prev) => [...prev, selectedPendingStudent]);
+    setIsConfirmPaymentOpen(false);
+    setSelectedPendingStudent(null);
+  };
+
+  const handleCloseConfirmPayment = () => {
+    setIsConfirmPaymentOpen(false);
+    setSelectedPendingStudent(null);
+  };
 
   return (
     <div className="space-y-4">
@@ -172,7 +216,11 @@ export function CourseDetailStudents({
                 </td>
                 <td className="px-4 py-3 text-center">
                   {activeTab === "pending" ? (
-                    <button className="inline-flex items-center rounded bg-[#007AFF] px-3 py-1 text-[14px] font-medium text-white hover:bg-[#006DE0]">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenConfirmPayment(student)}
+                      className="inline-flex items-center rounded bg-[#007AFF] px-3 py-1 text-[14px] font-medium text-white hover:bg-[#006DE0]"
+                    >
                       Confirm
                     </button>
                   ) : (
@@ -206,6 +254,59 @@ export function CourseDetailStudents({
           setCurrentPage(1);
         }}
       />
+
+      <Dialog
+        open={isConfirmPaymentOpen}
+        onOpenChange={(open) => {
+          setIsConfirmPaymentOpen(open);
+          if (!open) {
+            setSelectedPendingStudent(null);
+          }
+        }}
+      >
+        <DialogContent
+          className="max-w-140 border-[#E5E5E8] p-6 sm:p-6"
+          showCloseButton={false}
+        >
+          <div className="flex items-start justify-between">
+            <DialogTitle className="text-[18px] font-semibold text-[#121212]">
+              Confirm Payment
+            </DialogTitle>
+            <DialogClose asChild>
+              <button
+                type="button"
+                className="inline-flex h-6.5 w-6.5 items-center justify-center rounded-full bg-[#EFEFEF] text-[#1D1D1D] transition-colors hover:bg-[#DDDEE2]"
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </DialogClose>
+          </div>
+          <div className="max-w-125 space-y-8.75">
+            <DialogDescription className="mt-8 text-[16px] text-[#646464]">
+              Are you sure you want to confirm this payment and enroll the user
+              into the course?
+            </DialogDescription>
+
+            <div className="grid grid-cols-2 gap-5">
+              <button
+                type="button"
+                onClick={handleCloseConfirmPayment}
+                className="inline-flex h-12.5 items-center justify-center rounded-[2px] bg-[#ECECEC] text-[15px] font-medium text-[##151515] transition-colors hover:bg-[#D1D1D4]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmPendingStudent}
+                className="inline-flex h-12.5 items-center justify-center rounded-[2px] bg-[#007AFF] text-[15px] font-medium text-white transition-colors hover:bg-[#006DE0]"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
