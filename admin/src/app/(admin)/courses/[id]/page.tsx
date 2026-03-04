@@ -4,13 +4,20 @@ import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { coursesListData } from "@/features/courses/data/courses-list";
-import { enrolledStudentsData, pendingStudentsData } from "@/features/courses/data/course-students";
+import {
+  enrolledStudentsData,
+  pendingStudentsData,
+} from "@/features/courses/data/course-students";
+import { courseEventsData } from "@/features/courses/data/course-events";
+import { courseQuestionsData } from "@/features/courses/data/course-questions";
 import type { CourseListItem } from "@/features/courses/types";
 import {
   CourseDetailHeader,
   CourseDetailTabs,
   CourseDetailOverview,
   CourseDetailStudents,
+  CourseDetailEvents,
+  CourseDetailQuestionBank,
 } from "@/features/courses/components";
 
 type TabLabel =
@@ -88,11 +95,20 @@ export default function Course() {
             pendingStudents={pendingStudentsData}
           />
         )}
-        {activeTab !== "Overview" && activeTab !== "Students" && (
-          <p className="text-center text-[#6B6B6B] py-20">
-            {activeTab} content goes here
-          </p>
+        {activeTab === "Events & Schedule" && (
+          <CourseDetailEvents events={courseEventsData} />
         )}
+        {activeTab === "Question Bank" && (
+          <CourseDetailQuestionBank questions={courseQuestionsData} />
+        )}
+        {activeTab !== "Overview" &&
+          activeTab !== "Students" &&
+          activeTab !== "Events & Schedule" &&
+          activeTab !== "Question Bank" && (
+            <p className="text-center text-[#6B6B6B] py-20">
+              {activeTab} content goes here
+            </p>
+          )}
       </div>
     </section>
   );

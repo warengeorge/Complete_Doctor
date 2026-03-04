@@ -5,3 +5,5 @@ export { CourseDetailOverview } from "./course-detail-overview";
 export { CourseDetailStudents } from "./course-detail-students";
 export { CourseInfoCard } from "./course-info-card";
 export { CourseStatsCard } from "./course-enrolled-stats";
+export { CourseDetailEvents } from "./course-detail-events";
+export { CourseDetailQuestionBank } from "./course-detail-question-bank";

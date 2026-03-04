@@ -67,3 +67,20 @@ export type CourseCreateForm = {
   tags: string[];
   coverImage: CourseCoverImage | null;
 };
+
+export type CourseEvent = {
+  id: string;
+  image: string;
+  title: string;
+  date: string;
+  time: string;
+  status: string;
+  venue: string;
+  link?: string;
+};
+
+export type CourseQuestion = {
+  id: string;
+  question: string;
+  createdAt: string;
+};
