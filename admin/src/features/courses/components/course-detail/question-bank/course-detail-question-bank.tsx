@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { emptySettings } from "./constants";
 import { CourseDetailQuestionBankBuilderState } from "./course-detail-question-bank-builder-state";
 import { CourseDetailQuestionBankEmptyState } from "./course-detail-question-bank-empty-state";
+import { CourseDetailQuestionBankPublishedState } from "./course-detail-question-bank-published-state";
 import { CourseDetailQuestionBankSetupState } from "./course-detail-question-bank-setup-state";
 import type {
   CourseDetailQuestionBankProps,
@@ -77,6 +78,19 @@ export function CourseDetailQuestionBank({
       setExpandedQuestionId(starter.id);
     }
 
+    setView("builder");
+  };
+
+  const handlePublish = () => {
+    setView("published");
+  };
+
+  const handleEditPublished = () => {
+    const fallback = draftQuestions[0];
+    if (fallback) {
+      setActiveQuestionId(fallback.id);
+      setExpandedQuestionId(fallback.id);
+    }
     setView("builder");
   };
 
@@ -283,6 +297,7 @@ export function CourseDetailQuestionBank({
           onToggleExpand={toggleQuestionExpansion}
           onAddQuestion={addNewQuestion}
           onSaveAndContinue={handleSaveAndContinue}
+          onPublish={handlePublish}
           onDuplicateQuestion={duplicateQuestion}
           onDeleteQuestion={deleteQuestion}
           onChangeQuestionType={handleChangeQuestionType}
@@ -291,6 +306,14 @@ export function CourseDetailQuestionBank({
           onRemoveOption={removeOption}
           onAddOption={addOption}
           onChangeMedia={updateQuestionMedia}
+        />
+      ) : null}
+
+      {view === "published" ? (
+        <CourseDetailQuestionBankPublishedState
+          settings={settings}
+          questions={draftQuestions}
+          onEdit={handleEditPublished}
         />
       ) : null}
     </div>

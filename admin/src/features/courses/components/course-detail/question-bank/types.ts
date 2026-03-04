@@ -1,6 +1,6 @@
 import type { CourseQuestion } from "../../../types";
 
-export type QuestionBankState = "empty" | "setup" | "builder";
+export type QuestionBankState = "empty" | "setup" | "builder" | "published";
 export type QuestionType = "Multiple choice" | "Yes/No";
 export type PassMarkUnit = "%" | "Points";
 

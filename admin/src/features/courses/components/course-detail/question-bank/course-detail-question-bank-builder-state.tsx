@@ -28,6 +28,7 @@ type CourseDetailQuestionBankBuilderStateProps = {
   onToggleExpand: (questionId: string) => void;
   onAddQuestion: () => void;
   onSaveAndContinue: () => void;
+  onPublish: () => void;
   onDuplicateQuestion: (questionId: string) => void;
   onDeleteQuestion: (questionId: string) => void;
   onChangeQuestionType: (questionId: string, type: QuestionType) => void;
@@ -46,6 +47,7 @@ export function CourseDetailQuestionBankBuilderState({
   onToggleExpand,
   onAddQuestion,
   onSaveAndContinue,
+  onPublish,
   onDuplicateQuestion,
   onDeleteQuestion,
   onChangeQuestionType,
@@ -374,6 +376,7 @@ export function CourseDetailQuestionBankBuilderState({
             </button>
             <button
               type="button"
+              onClick={onPublish}
               className="rounded-sm bg-[#007AFF] px-6 py-2 text-[14px] font-semibold text-white transition-colors hover:bg-[#006DE0]"
             >
               Publish
