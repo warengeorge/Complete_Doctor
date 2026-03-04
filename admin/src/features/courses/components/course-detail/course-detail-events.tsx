@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, Filter, Plus } from "lucide-react";
 import type { CourseEvent } from "../../types";
 import { ScheduleEventModal } from "@/features/events/components/schedule-event-modal";
+import { CoursesListPagination } from "../courses-list-pagination";
 
 const ITEMS_PER_PAGE_DEFAULT = 10;
 
@@ -27,9 +28,13 @@ export function CourseDetailEvents({ events }: CourseDetailEventsProps) {
     [events, searchTerm],
   );
 
-  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
   const startIdx = (currentPage - 1) * itemsPerPage;
   const pageItems = filtered.slice(startIdx, startIdx + itemsPerPage);
+
+  useEffect(() => {
+    setCurrentPage((prev) => Math.min(prev, totalPages));
+  }, [totalPages]);
 
   return (
     <div className="space-y-4">
@@ -92,7 +97,7 @@ export function CourseDetailEvents({ events }: CourseDetailEventsProps) {
             </tr>
           </thead>
           <tbody>
-            {pageItems.map((ev, idx) => (
+            {pageItems.map((ev) => (
               <tr
                 key={ev.id}
                 className="border-b border-[#E5E5E8] transition-colors hover:bg-[#F9F9FB]"
@@ -135,75 +140,17 @@ export function CourseDetailEvents({ events }: CourseDetailEventsProps) {
         </table>
       </div>
 
-      {/* pagination and info */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-[14px] text-[#6B6B6B]">
-          {filtered.length === 0
-            ? "No events found"
-            : `${startIdx + 1}-${Math.min(startIdx + itemsPerPage, filtered.length)} of ${filtered.length}`}
-        </div>
-        <div className="flex items-center gap-1 overflow-x-auto">
-          <button
-            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-            disabled={currentPage === 1}
-            className="rounded border border-[#E5E5E8] px-3 py-2 text-[14px] font-medium text-[#313131] disabled:opacity-50 hover:bg-[#F5F5F7]"
-          >
-            Back
-          </button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-            if (
-              page === 1 ||
-              page === totalPages ||
-              Math.abs(page - currentPage) <= 1
-            ) {
-              return (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`rounded px-3 py-2 text-[14px] font-medium ${
-                    page === currentPage
-                      ? "bg-[#121212] text-white"
-                      : "border border-[#E5E5E8] text-[#313131] hover:bg-[#F5F5F7]"
-                  }`}
-                >
-                  {page}
-                </button>
-              );
-            } else if (page === 2 || page === totalPages - 1) {
-              return (
-                <span key={page} className="px-2 py-2 text-[14px]">
-                  ...
-                </span>
-              );
-            }
-            return null;
-          })}
-          <button
-            onClick={() =>
-              setCurrentPage(Math.min(totalPages, currentPage + 1))
-            }
-            disabled={currentPage === totalPages}
-            className="rounded border border-[#E5E5E8] px-3 py-2 text-[14px] font-medium text-[#313131] disabled:opacity-50 hover:bg-[#F5F5F7]"
-          >
-            Next
-          </button>
-        </div>
-        <div className="text-[14px] text-[#6B6B6B]">
-          Result per page:{" "}
-          <select
-            value={itemsPerPage}
-            onChange={(e) => {
-              setItemsPerPage(Number(e.target.value));
-              setCurrentPage(1);
-            }}
-            className="rounded border border-[#E5E5E8] bg-white px-2 py-1 text-[14px] font-medium"
-          >
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-            <option value={50}>50</option>
-          </select>
-        </div>
-      </div>
+      <CoursesListPagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        resultsPerPage={itemsPerPage}
+        totalResults={filtered.length}
+        onPageChange={setCurrentPage}
+        onResultsPerPageChange={(value) => {
+          setItemsPerPage(value);
+          setCurrentPage(1);
+        }}
+      />
       <ScheduleEventModal
         open={isScheduleOpen}
         onOpenChange={setIsScheduleOpen}

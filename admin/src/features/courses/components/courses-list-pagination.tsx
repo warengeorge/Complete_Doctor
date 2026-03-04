@@ -19,18 +19,27 @@ export function CoursesListPagination({
   onPageChange,
   onResultsPerPageChange,
 }: CoursesListPaginationProps) {
-  const start = (currentPage - 1) * resultsPerPage + 1;
-  const end = Math.min(currentPage * resultsPerPage, totalResults);
+  const normalizedTotalPages = Math.max(1, totalPages);
+  const safeCurrentPage = Math.min(
+    Math.max(currentPage, 1),
+    normalizedTotalPages,
+  );
+  const start =
+    totalResults === 0 ? 0 : (safeCurrentPage - 1) * resultsPerPage + 1;
+  const end =
+    totalResults === 0
+      ? 0
+      : Math.min(safeCurrentPage * resultsPerPage, totalResults);
 
-  const pageItems = getPageItems(totalPages);
+  const pageItems = getPageItems(safeCurrentPage, normalizedTotalPages);
 
   return (
     <div className="flex flex-col gap-3 pt-1 lg:flex-row lg:items-center lg:justify-between">
       <div className="flex flex-wrap items-center gap-2 text-[14px] text-[#313131]">
         <button
           type="button"
-          disabled={currentPage === 1}
-          onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
+          disabled={safeCurrentPage === 1}
+          onClick={() => onPageChange(Math.max(safeCurrentPage - 1, 1))}
           className="inline-flex h-8 items-center gap-1 rounded-md border border-[#E1E1E4] bg-[#F3F3F5] px-3 text-[#7A7A7D] disabled:opacity-60"
         >
           <ChevronLeft className="h-3.5 w-3.5" />
@@ -48,7 +57,7 @@ export function CoursesListPagination({
               type="button"
               onClick={() => onPageChange(item)}
               className={`h-8 min-w-8 rounded-md px-2 ${
-                item === currentPage
+                item === safeCurrentPage
                   ? "bg-[#333336] text-white"
                   : "text-[#313131] hover:bg-[#F3F3F5]"
               }`}
@@ -60,8 +69,10 @@ export function CoursesListPagination({
 
         <button
           type="button"
-          disabled={currentPage === totalPages}
-          onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
+          disabled={safeCurrentPage === normalizedTotalPages}
+          onClick={() =>
+            onPageChange(Math.min(safeCurrentPage + 1, normalizedTotalPages))
+          }
           className="inline-flex h-8 items-center gap-1 rounded-md border border-[#E1E1E4] bg-[#F3F3F5] px-3 text-[#313131] disabled:opacity-60"
         >
           Next
@@ -90,10 +101,30 @@ export function CoursesListPagination({
   );
 }
 
-function getPageItems(totalPages: number): Array<number | "ellipsis"> {
+function getPageItems(
+  currentPage: number,
+  totalPages: number,
+): Array<number | "ellipsis"> {
   if (totalPages <= 9) {
     return Array.from({ length: totalPages }, (_, index) => index + 1);
   }
 
-  return [1, 2, 3, 4, 5, 6, 7, 8, "ellipsis", totalPages];
+  const items: Array<number | "ellipsis"> = [1];
+  const left = Math.max(2, currentPage - 2);
+  const right = Math.min(totalPages - 1, currentPage + 2);
+
+  if (left > 2) {
+    items.push("ellipsis");
+  }
+
+  for (let page = left; page <= right; page += 1) {
+    items.push(page);
+  }
+
+  if (right < totalPages - 1) {
+    items.push("ellipsis");
+  }
+
+  items.push(totalPages);
+  return items;
 }
