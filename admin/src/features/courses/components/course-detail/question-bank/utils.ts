@@ -1,6 +1,21 @@
 import type { CourseQuestion } from "../../../types";
 import { LAST_UPDATED_FALLBACK } from "./constants";
-import type { QuestionDraft, QuestionOption } from "./types";
+import type { QuestionDraft, QuestionOption, QuestionType } from "./types";
+
+export function createQuestionId(prefix = "question"): string {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+export function createOptionsByType(type: QuestionType, seed: string): QuestionOption[] {
+  if (type === "Yes/No") {
+    return [
+      { id: `option-${seed}-1`, label: "A", text: "Yes" },
+      { id: `option-${seed}-2`, label: "B", text: "No" },
+    ];
+  }
+
+  return createOptionsFromSeed(seed);
+}
 
 export function createOptionsFromSeed(seed: string): QuestionOption[] {
   const labels = ["A", "B", "C", "D"];
@@ -11,12 +26,16 @@ export function createOptionsFromSeed(seed: string): QuestionOption[] {
   }));
 }
 
-export function createQuestionDraft(id: string, prompt = ""): QuestionDraft {
+export function createQuestionDraft(
+  id: string,
+  prompt = "",
+  type: QuestionType = "Multiple choice",
+): QuestionDraft {
   return {
     id,
-    type: "Multiple choice",
+    type,
     prompt,
-    options: createOptionsFromSeed(prompt || id),
+    options: createOptionsByType(type, prompt || id),
   };
 }
 

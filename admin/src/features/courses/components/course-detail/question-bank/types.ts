@@ -1,7 +1,8 @@
 import type { CourseQuestion } from "../../../types";
 
 export type QuestionBankState = "empty" | "setup" | "builder";
-export type QuestionType = "Multiple choice";
+export type QuestionType = "Multiple choice" | "Yes/No";
+export type PassMarkUnit = "%" | "Points";
 
 export type QuestionOption = {
   id: string;
@@ -24,6 +25,8 @@ export type QuestionBankSettings = {
   shuffleQuestions: boolean;
   skipQuestions: boolean;
   passMark: boolean;
+  passMarkValue: string;
+  passMarkUnit: PassMarkUnit;
 };
 
 export type CourseDetailQuestionBankProps = {

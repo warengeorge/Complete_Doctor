@@ -11,8 +11,11 @@ import type {
   QuestionBankSettings,
   QuestionBankState,
   QuestionDraft,
+  QuestionType,
 } from "./types";
 import {
+  createOptionsByType,
+  createQuestionId,
   createQuestionDraft,
   getLastUpdatedLabel,
   toQuestionDraft,
@@ -34,26 +37,31 @@ export function CourseDetailQuestionBank({
   const [activeQuestionId, setActiveQuestionId] = useState<string | null>(
     mappedQuestions[0]?.id ?? null,
   );
+  const [expandedQuestionId, setExpandedQuestionId] = useState<string | null>(
+    mappedQuestions[0]?.id ?? null,
+  );
 
   useEffect(() => {
     setDraftQuestions(mappedQuestions);
     setActiveQuestionId(mappedQuestions[0]?.id ?? null);
+    setExpandedQuestionId(mappedQuestions[0]?.id ?? null);
     setView(mappedQuestions.length > 0 ? "builder" : "empty");
   }, [mappedQuestions]);
 
-  const activeQuestion =
-    draftQuestions.find((question) => question.id === activeQuestionId) ??
-    draftQuestions[0] ??
-    null;
-
-  const activeQuestionIndex = activeQuestion
-    ? draftQuestions.findIndex((item) => item.id === activeQuestion.id)
-    : -1;
-
   const addNewQuestion = () => {
     setDraftQuestions((prev) => {
-      const nextQuestion = createQuestionDraft(`question-${prev.length + 1}`);
+      const nextQuestion = createQuestionDraft(createQuestionId("question"));
       setActiveQuestionId(nextQuestion.id);
+      setExpandedQuestionId(nextQuestion.id);
+      return [...prev, nextQuestion];
+    });
+  };
+
+  const handleSaveAndContinue = () => {
+    setDraftQuestions((prev) => {
+      const nextQuestion = createQuestionDraft(createQuestionId("question"));
+      setActiveQuestionId(nextQuestion.id);
+      setExpandedQuestionId(nextQuestion.id);
       return [...prev, nextQuestion];
     });
   };
@@ -61,14 +69,31 @@ export function CourseDetailQuestionBank({
   const handleContinueFromSetup = () => {
     if (draftQuestions.length === 0) {
       const starter = createQuestionDraft(
-        "question-1",
+        createQuestionId("question"),
         "A 45-year-old male with no history of cardiovascular disease presents with chest discomfort...",
       );
       setDraftQuestions([starter]);
       setActiveQuestionId(starter.id);
+      setExpandedQuestionId(starter.id);
     }
 
     setView("builder");
+  };
+
+  const handleChangeQuestionType = (questionId: string, type: QuestionType) => {
+    setDraftQuestions((prev) =>
+      prev.map((question) => {
+        if (question.id !== questionId || question.type === type) {
+          return question;
+        }
+
+        return {
+          ...question,
+          type,
+          options: createOptionsByType(type, question.id),
+        };
+      }),
+    );
   };
 
   const updateQuestion = (questionId: string, update: Partial<QuestionDraft>) => {
@@ -140,6 +165,55 @@ export function CourseDetailQuestionBank({
     );
   };
 
+  const duplicateQuestion = (questionId: string) => {
+    setDraftQuestions((prev) => {
+      const sourceIndex = prev.findIndex((question) => question.id === questionId);
+      if (sourceIndex === -1) return prev;
+
+      const sourceQuestion = prev[sourceIndex];
+      const duplicatedId = createQuestionId("question");
+      const duplicated: QuestionDraft = {
+        ...sourceQuestion,
+        id: duplicatedId,
+        options: sourceQuestion.options.map((option, index) => ({
+          ...option,
+          id: `${duplicatedId}-option-${index + 1}`,
+        })),
+      };
+
+      const updated = [...prev];
+      updated.splice(sourceIndex + 1, 0, duplicated);
+      setActiveQuestionId(duplicatedId);
+      setExpandedQuestionId(duplicatedId);
+      return updated;
+    });
+  };
+
+  const deleteQuestion = (questionId: string) => {
+    setDraftQuestions((prev) => {
+      if (prev.length <= 1) {
+        const replacement = createQuestionDraft(createQuestionId("question"));
+        setActiveQuestionId(replacement.id);
+        setExpandedQuestionId(replacement.id);
+        return [replacement];
+      }
+
+      const sourceIndex = prev.findIndex((question) => question.id === questionId);
+      if (sourceIndex === -1) return prev;
+
+      const updated = prev.filter((question) => question.id !== questionId);
+      const fallbackIndex = Math.max(0, sourceIndex - 1);
+      const fallback = updated[fallbackIndex] ?? updated[0];
+      setActiveQuestionId(fallback.id);
+      setExpandedQuestionId(fallback.id);
+      return updated;
+    });
+  };
+
+  const toggleQuestionExpansion = (questionId: string) => {
+    setExpandedQuestionId((prev) => (prev === questionId ? null : questionId));
+  };
+
   const handleSettingChange = (
     key: keyof QuestionBankSettings,
     value: string | boolean,
@@ -172,10 +246,18 @@ export function CourseDetailQuestionBank({
       {view === "builder" ? (
         <CourseDetailQuestionBankBuilderState
           questions={draftQuestions}
-          activeQuestion={activeQuestion}
-          activeQuestionIndex={activeQuestionIndex}
-          onSelectQuestion={setActiveQuestionId}
+          activeQuestionId={activeQuestionId}
+          expandedQuestionId={expandedQuestionId}
+          onSelectQuestion={(questionId) => {
+            setActiveQuestionId(questionId);
+            setExpandedQuestionId(questionId);
+          }}
+          onToggleExpand={toggleQuestionExpansion}
           onAddQuestion={addNewQuestion}
+          onSaveAndContinue={handleSaveAndContinue}
+          onDuplicateQuestion={duplicateQuestion}
+          onDeleteQuestion={deleteQuestion}
+          onChangeQuestionType={handleChangeQuestionType}
           onUpdateQuestion={updateQuestion}
           onUpdateOption={updateOption}
           onRemoveOption={removeOption}

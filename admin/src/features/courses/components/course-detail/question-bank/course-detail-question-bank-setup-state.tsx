@@ -145,6 +145,55 @@ export function CourseDetailQuestionBankSetupState({
                   onCheckedChange={(checked) => onSettingChange("passMark", checked)}
                 />
               </div>
+
+              {settings.passMark ? (
+                <div className="space-y-5 rounded-xl border border-[#ECECEC] bg-[#FAFAFACC] px-4 py-4">
+                  <div className="grid grid-cols-2 gap-5">
+                    <div className="space-y-2">
+                      <p className="text-[13px] font-semibold text-[#313131]">Value</p>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          value={settings.passMarkValue}
+                          onChange={(event) =>
+                            onSettingChange("passMarkValue", event.target.value)
+                          }
+                          className="h-10 w-full rounded-xl border border-[#ECECEC] bg-white px-3 pr-8 text-[14px] text-[#313131] outline-none focus:border-[#007AFF]"
+                        />
+                        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[14px] text-[#313131]">
+                          {settings.passMarkUnit === "%" ? "%" : "Pts"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <p className="text-[13px] font-semibold text-[#313131]">Unit</p>
+                      <div className="flex h-10 items-center gap-6 rounded-xl border border-[#ECECEC] bg-white px-3">
+                        <label className="inline-flex items-center gap-2 text-[14px] text-[#313131]">
+                          <input
+                            type="radio"
+                            name="pass-mark-unit"
+                            checked={settings.passMarkUnit === "%"}
+                            onChange={() => onSettingChange("passMarkUnit", "%")}
+                            className="h-4 w-4 accent-[#007AFF]"
+                          />
+                          %
+                        </label>
+                        <label className="inline-flex items-center gap-2 text-[14px] text-[#313131]">
+                          <input
+                            type="radio"
+                            name="pass-mark-unit"
+                            checked={settings.passMarkUnit === "Points"}
+                            onChange={() => onSettingChange("passMarkUnit", "Points")}
+                            className="h-4 w-4 accent-[#007AFF]"
+                          />
+                          Points
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>

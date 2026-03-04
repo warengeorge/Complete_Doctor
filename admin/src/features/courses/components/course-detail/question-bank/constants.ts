@@ -11,4 +11,6 @@ export const emptySettings: QuestionBankSettings = {
   shuffleQuestions: false,
   skipQuestions: false,
   passMark: false,
+  passMarkValue: "",
+  passMarkUnit: "%",
 };
