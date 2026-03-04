@@ -8,6 +8,7 @@ export {
   CourseInfoCard,
   CourseStatsCard,
   CourseDetailEvents,
+  CourseDetailResources,
   CourseDetailQuestionBank,
 } from "./course-detail";
 export { CoursesListPagination } from "./courses-list-pagination";

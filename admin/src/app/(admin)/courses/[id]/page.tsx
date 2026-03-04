@@ -17,6 +17,7 @@ import {
   CourseDetailOverview,
   CourseDetailStudents,
   CourseDetailEvents,
+  CourseDetailResources,
   CourseDetailQuestionBank,
 } from "@/features/courses/components";
 
@@ -98,12 +99,14 @@ export default function Course() {
         {activeTab === "Events & Schedule" && (
           <CourseDetailEvents events={courseEventsData} />
         )}
+        {activeTab === "Resources" && <CourseDetailResources />}
         {activeTab === "Question Bank" && (
           <CourseDetailQuestionBank questions={courseQuestionsData} />
         )}
         {activeTab !== "Overview" &&
           activeTab !== "Students" &&
           activeTab !== "Events & Schedule" &&
+          activeTab !== "Resources" &&
           activeTab !== "Question Bank" && (
             <p className="text-center text-[#6B6B6B] py-20">
               {activeTab} content goes here
