@@ -36,6 +36,7 @@ export function createQuestionDraft(
     type,
     prompt,
     options: createOptionsByType(type, prompt || id),
+    media: null,
   };
 }
 

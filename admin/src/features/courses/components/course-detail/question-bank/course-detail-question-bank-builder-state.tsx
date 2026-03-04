@@ -35,6 +35,7 @@ type CourseDetailQuestionBankBuilderStateProps = {
   onUpdateOption: (questionId: string, optionId: string, value: string) => void;
   onRemoveOption: (questionId: string, optionId: string) => void;
   onAddOption: (questionId: string) => void;
+  onChangeMedia: (questionId: string, file: File | null) => void;
 };
 
 export function CourseDetailQuestionBankBuilderState({
@@ -52,7 +53,11 @@ export function CourseDetailQuestionBankBuilderState({
   onUpdateOption,
   onRemoveOption,
   onAddOption,
+  onChangeMedia,
 }: CourseDetailQuestionBankBuilderStateProps) {
+  const expandedQuestion =
+    questions.find((question) => question.id === expandedQuestionId) ?? null;
+
   return (
     <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
       <aside className="min-h-[72vh] rounded-lg border border-[#ECECEC] bg-white">
@@ -150,180 +155,214 @@ export function CourseDetailQuestionBankBuilderState({
           </button>
         </div>
 
-        <div className="space-y-3 p-4 sm:p-5">
-          {questions.map((question, index) => {
-            const isExpanded = expandedQuestionId === question.id;
+        <div className="p-4 sm:p-5">
+          <div className="overflow-hidden rounded-xl border border-[#ECECEC]">
+            {questions.map((question, index) => {
+              const isExpanded = expandedQuestionId === question.id;
+              const isLast = index === questions.length - 1;
 
-            return (
-              <div key={question.id} className="rounded-xl border border-[#ECECEC]">
-                <div
-                  className={`flex flex-wrap items-center justify-between gap-3 border-b border-[#ECECEC] px-4 py-3 ${
-                    isExpanded ? "bg-[#007AFF05]" : "bg-[#FAFAFACC]"
-                  }`}
-                >
-                  <div className="flex flex-wrap items-center gap-3">
-                    <GripVertical className="h-4 w-4 text-[#84848A]" />
-                    <h3 className="text-[15px] font-semibold text-[#151515]">
-                      Question {index + 1}
-                    </h3>
+              return (
+                <div key={question.id}>
+                  <div
+                    className={`flex flex-wrap items-center justify-between gap-3 px-4 py-3 ${
+                      isExpanded ? "bg-[#007AFF05]" : "bg-[#FAFAFACC]"
+                    } ${!isLast || isExpanded ? "border-b border-[#ECECEC]" : ""}`}
+                  >
+                    <div className="flex flex-wrap items-center gap-3">
+                      <GripVertical className="h-4 w-4 text-[#84848A]" />
+                      <h3 className="text-[15px] font-semibold text-[#151515]">
+                        Question {index + 1}
+                      </h3>
 
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          type="button"
-                          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#ECECEC] bg-white px-3 text-[11px] text-[#313131]"
-                        >
-                          <CopyCheck className="h-4 w-4" />
-                          <span className="font-medium">{question.type}</span>
-                          <ChevronDown className="h-4 w-4" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-[160px]">
-                        <DropdownMenuItem
-                          onSelect={() => onChangeQuestionType(question.id, "Multiple choice")}
-                          className="text-[14px]"
-                        >
-                          <CopyCheck className="h-4 w-4" />
-                          Multiple choice
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onSelect={() => onChangeQuestionType(question.id, "Yes/No")}
-                          className="text-[14px]"
-                        >
-                          <CircleHelp className="h-4 w-4" />
-                          Yes/No
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => onToggleExpand(question.id)}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#ECECEC] bg-white text-[#313131]"
-                      aria-label={isExpanded ? "Collapse question" : "Expand question"}
-                    >
-                      {isExpanded ? (
-                        <ChevronUp className="h-4 w-4" />
-                      ) : (
-                        <ChevronDown className="h-4 w-4" />
-                      )}
-                    </button>
-
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          type="button"
-                          className="rounded-md p-2 text-[#313131] hover:bg-[#E3E4E7]"
-                          aria-label="Question menu"
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-[165px] border-[#007AFF]">
-                        <DropdownMenuItem
-                          onSelect={() => onDuplicateQuestion(question.id)}
-                          className="text-[14px]"
-                        >
-                          <Copy className="h-4 w-4" />
-                          Duplicate
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onSelect={() => onDeleteQuestion(question.id)}
-                          className="text-[14px] text-[#FF1515] focus:text-[#FF1515]"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          Delete question
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-
-                {isExpanded ? (
-                  <div className="space-y-6 p-4 sm:p-5">
-                    <div className="space-y-2">
-                      <label
-                        htmlFor={`question-prompt-${question.id}`}
-                        className="block text-[14px] font-semibold text-[#313131]"
-                      >
-                        Question
-                      </label>
-                      <input
-                        id={`question-prompt-${question.id}`}
-                        value={question.prompt}
-                        onChange={(event) =>
-                          onUpdateQuestion(question.id, {
-                            prompt: event.target.value,
-                          })
-                        }
-                        className="h-12 w-full rounded-xl border border-[#ECECEC] bg-[#FAFAFACC] px-4 text-[14px] text-[#313131] outline-none focus:border-[#007AFF]"
-                      />
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            type="button"
+                            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#ECECEC] bg-white px-3 text-[11px] text-[#313131]"
+                          >
+                            <CopyCheck className="h-4 w-4" />
+                            <span className="font-medium">{question.type}</span>
+                            <ChevronDown className="h-4 w-4" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-[160px]">
+                          <DropdownMenuItem
+                            onSelect={() => onChangeQuestionType(question.id, "Multiple choice")}
+                            className="text-[14px]"
+                          >
+                            <CopyCheck className="h-4 w-4" />
+                            Multiple choice
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onSelect={() => onChangeQuestionType(question.id, "Yes/No")}
+                            className="text-[14px]"
+                          >
+                            <CircleHelp className="h-4 w-4" />
+                            Yes/No
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
 
-                    <div className="space-y-2">
-                      <p className="text-[14px] font-semibold text-[#2C2C2F]">
-                        Media <span className="font-normal text-[#66666A]">(optional)</span>
-                      </p>
+                    <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-[#ECECEC] bg-[#FAFAFACC] text-[14px] text-[#2F2F33] transition-colors hover:bg-[#F1F1F3]"
+                        onClick={() => onToggleExpand(question.id)}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#ECECEC] bg-white text-[#313131]"
+                        aria-label={isExpanded ? "Collapse question" : "Expand question"}
                       >
-                        <Upload className="h-4 w-4" />
-                        Upload an image or video
+                        {isExpanded ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
                       </button>
+
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            type="button"
+                            className="rounded-md p-2 text-[#313131] hover:bg-[#E3E4E7]"
+                            aria-label="Question menu"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-[165px] border-[#007AFF]">
+                          <DropdownMenuItem
+                            onSelect={() => onDuplicateQuestion(question.id)}
+                            className="text-[14px]"
+                          >
+                            <Copy className="h-4 w-4" />
+                            Duplicate
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onSelect={() => onDeleteQuestion(question.id)}
+                            className="text-[14px] text-[#FF1515] focus:text-[#FF1515]"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Delete question
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
+                  </div>
 
-                    <div className="space-y-3">
-                      <h4 className="text-[14px] font-semibold text-[#2C2C2F]">Options</h4>
+                  {isExpanded ? (
+                    <div className="space-y-6 p-4 sm:p-5">
+                      <div className="space-y-2">
+                        <label
+                          htmlFor={`question-prompt-${question.id}`}
+                          className="block text-[14px] font-semibold text-[#313131]"
+                        >
+                          Question
+                        </label>
+                        <input
+                          id={`question-prompt-${question.id}`}
+                          value={question.prompt}
+                          onChange={(event) =>
+                            onUpdateQuestion(question.id, {
+                              prompt: event.target.value,
+                            })
+                          }
+                          className="h-12 w-full rounded-xl border border-[#ECECEC] bg-[#FAFAFACC] px-4 text-[14px] text-[#313131] outline-none focus:border-[#007AFF]"
+                        />
+                      </div>
 
-                      {question.options.map((option) => (
-                        <div
-                          key={option.id}
-                          className="flex items-center gap-3 rounded-xl border border-[#ECECEC] bg-[#FAFAFACC] px-3 py-2"
+                      <div className="space-y-2">
+                        <p className="text-[14px] font-semibold text-[#2C2C2F]">
+                          Media <span className="font-normal text-[#66666A]">(optional)</span>
+                        </p>
+                        <label
+                          htmlFor={`media-upload-${question.id}`}
+                          className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-[#ECECEC] bg-[#FAFAFACC] text-[14px] text-[#2F2F33] transition-colors hover:bg-[#F1F1F3]"
                         >
-                          <GripVertical className="h-4 w-4 shrink-0 text-[#84848A]" />
-                          <span className="w-4 text-[18px] font-semibold text-[#0056D6]">
-                            {option.label}
-                          </span>
-                      <input
-                        value={option.text}
-                        onChange={(event) =>
-                          onUpdateOption(question.id, option.id, event.target.value)
-                        }
-                            placeholder="Type answer here"
-                            className="h-10 flex-1 bg-transparent text-[14px] text-[#313131] outline-none placeholder:text-[#A0A0A5]"
-                          />
-                      {question.type === "Multiple choice" ? (
-                        <button
-                          type="button"
-                          onClick={() => onRemoveOption(question.id, option.id)}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#E3E3E7] text-[20px] text-[#2D2D30] transition-colors hover:bg-[#D7D7DB]"
-                          aria-label="Remove option"
-                        >
-                          ×
-                        </button>
-                      ) : null}
+                          <Upload className="h-4 w-4" />
+                          Upload an image or video
+                        </label>
+                        <input
+                          id={`media-upload-${question.id}`}
+                          type="file"
+                          accept="image/*,video/*"
+                          className="hidden"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0] ?? null;
+                            onChangeMedia(question.id, file);
+                            event.currentTarget.value = "";
+                          }}
+                        />
+                        {question.media ? (
+                          <div className="flex items-center justify-between rounded-xl border border-[#ECECEC] bg-white px-3 py-2">
+                            <p className="truncate text-[12px] text-[#313131]">
+                              {question.media.name}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => onChangeMedia(question.id, null)}
+                              className="text-[12px] font-semibold text-[#FF1515]"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ) : null}
+                      </div>
+
+                      <div className="space-y-3">
+                        <h4 className="text-[14px] font-semibold text-[#2C2C2F]">Options</h4>
+
+                        {question.options.map((option) => (
+                          <div
+                            key={option.id}
+                            className="flex items-center gap-3 rounded-xl border border-[#ECECEC] bg-[#FAFAFACC] px-3 py-2"
+                          >
+                            <GripVertical className="h-4 w-4 shrink-0 text-[#84848A]" />
+                            <span className="w-4 text-[18px] font-semibold text-[#0056D6]">
+                              {option.label}
+                            </span>
+                            <input
+                              value={option.text}
+                              onChange={(event) =>
+                                onUpdateOption(question.id, option.id, event.target.value)
+                              }
+                              placeholder="Type answer here"
+                              className="h-10 flex-1 bg-transparent text-[14px] text-[#313131] outline-none placeholder:text-[#A0A0A5]"
+                            />
+                            {question.type === "Multiple choice" ? (
+                              <button
+                                type="button"
+                                onClick={() => onRemoveOption(question.id, option.id)}
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#E3E3E7] text-[20px] text-[#2D2D30] transition-colors hover:bg-[#D7D7DB]"
+                                aria-label="Remove option"
+                              >
+                                ×
+                              </button>
+                            ) : null}
+                          </div>
+                        ))}
+
+                        {question.type === "Multiple choice" ? (
+                          <button
+                            type="button"
+                            onClick={() => onAddOption(question.id)}
+                            className="flex h-12 w-full items-center gap-3 rounded-xl border border-[#ECECEC] bg-[#FAFAFACC] px-4 text-[13px] font-semibold text-[#313131] transition-colors hover:bg-[#F0F0F3]"
+                          >
+                            <Plus className="h-4 w-4" />
+                            Add another option
+                          </button>
+                        ) : null}
+                      </div>
                     </div>
-                  ))}
-
-                  {question.type === "Multiple choice" ? (
-                    <button
-                      type="button"
-                      onClick={() => onAddOption(question.id)}
-                      className="flex h-12 w-full items-center gap-3 rounded-xl border border-[#ECECEC] bg-[#FAFAFACC] px-4 text-[13px] font-semibold text-[#313131] transition-colors hover:bg-[#F0F0F3]"
-                    >
-                      <Plus className="h-4 w-4" />
-                      Add another option
-                    </button>
                   ) : null}
                 </div>
+              );
+            })}
+
+            {expandedQuestion ? null : (
+              <div className="border-t border-[#ECECEC] px-4 py-14 text-center text-[14px] text-[#6A6A6E]">
+                Select a question to edit.
               </div>
-            ) : null}
-              </div>
-            );
-          })}
+            )}
+          </div>
 
           <div className="mt-5 flex flex-wrap justify-end gap-3">
             <button

@@ -10,11 +10,19 @@ export type QuestionOption = {
   text: string;
 };
 
+export type QuestionMedia = {
+  file: File;
+  name: string;
+  mimeType: string;
+  size: number;
+};
+
 export type QuestionDraft = {
   id: string;
   type: QuestionType;
   prompt: string;
   options: QuestionOption[];
+  media: QuestionMedia | null;
 };
 
 export type QuestionBankSettings = {
