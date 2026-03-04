@@ -165,6 +165,33 @@ export function CourseDetailQuestionBank({
     );
   };
 
+  const updateQuestionMedia = (questionId: string, file: File | null) => {
+    setDraftQuestions((prev) =>
+      prev.map((question) => {
+        if (question.id !== questionId) {
+          return question;
+        }
+
+        if (!file) {
+          return {
+            ...question,
+            media: null,
+          };
+        }
+
+        return {
+          ...question,
+          media: {
+            file,
+            name: file.name,
+            mimeType: file.type,
+            size: file.size,
+          },
+        };
+      }),
+    );
+  };
+
   const duplicateQuestion = (questionId: string) => {
     setDraftQuestions((prev) => {
       const sourceIndex = prev.findIndex((question) => question.id === questionId);
@@ -179,6 +206,7 @@ export function CourseDetailQuestionBank({
           ...option,
           id: `${duplicatedId}-option-${index + 1}`,
         })),
+        media: sourceQuestion.media ? { ...sourceQuestion.media } : null,
       };
 
       const updated = [...prev];
@@ -262,6 +290,7 @@ export function CourseDetailQuestionBank({
           onUpdateOption={updateOption}
           onRemoveOption={removeOption}
           onAddOption={addOption}
+          onChangeMedia={updateQuestionMedia}
         />
       ) : null}
     </div>
