@@ -13,7 +13,7 @@ export function CourseDetailNav({ course }: CourseDetailNavProps) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-2 text-sm text-[#6B6B6B]">
-        <Link href="/" className="hover:underline">
+        <Link href="/dashboard" className="hover:underline">
           Home
         </Link>
         <ArrowLeft className="h-3 w-3" />

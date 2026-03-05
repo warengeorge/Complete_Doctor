@@ -1,3 +1,5 @@
-export default function Setting() {
-  return <>Settings</>;
+import { SettingsView } from "@/features/settings";
+
+export default function SettingsPage() {
+  return <SettingsView />;
 }
