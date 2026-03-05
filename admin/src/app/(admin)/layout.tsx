@@ -1,10 +1,6 @@
 import { AppHeader } from "@/components/layout/header";
 import { AppSidebar } from "@/components/layout/sidebar/app-sidebar";
-import {
-  SidebarProvider,
-  SidebarInset,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 
 export default function AdminLayout({
   children,
@@ -13,7 +9,7 @@ export default function AdminLayout({
 }) {
   return (
     <SidebarProvider>
-      <div className="flex flex-col min-h-screen w-full">
+      <div className="flex min-h-screen w-full flex-col">
         {/* Header - Full Width at top */}
         <AppHeader />
 
@@ -21,8 +17,10 @@ export default function AdminLayout({
         <div className="flex flex-1">
           <AppSidebar />
 
-          <SidebarInset className="flex-1">
-            <main className="flex-1 p-6">{children}</main>
+          <SidebarInset className="min-w-0 flex-1">
+            <div className="mx-auto flex w-full flex-1 justify-center px-4 py-4 sm:px-6 sm:py-6 bg-[#FAFAFA]">
+              <div className="w-full">{children}</div>
+            </div>
           </SidebarInset>
         </div>
       </div>
