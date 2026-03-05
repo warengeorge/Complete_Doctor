@@ -1,11 +1,12 @@
-'use client';
+"use client";
 
-import React from 'react';
-import useModalStore from '@/lib/store/useModal';
-import Menu from './components/Menu';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-import Bottom from './components/Bottom';
+import React from "react";
+import useModalStore from "@/lib/store/ui/modal.store";
+import Menu from "../components/layout/Menu";
+
+import Footer from "../components/layout/Footer";
+import Bottom from "../components/layout/Bottom";
+import Navbar from "@/components/layout/Navbar";
 
 export default function ClientLayout({
   children,
