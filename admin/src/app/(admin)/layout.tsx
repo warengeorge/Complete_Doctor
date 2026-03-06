@@ -1,12 +1,21 @@
+import { redirect } from "next/navigation";
+
 import { AppHeader } from "@/components/layout/header";
 import { AppSidebar } from "@/components/layout/sidebar/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { getServerAuthToken } from "@/lib/auth-cookie";
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const token = await getServerAuthToken();
+
+  if (!token) {
+    redirect("/");
+  }
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full flex-col">
@@ -18,7 +27,7 @@ export default function AdminLayout({
           <AppSidebar />
 
           <SidebarInset className="min-w-0 flex-1">
-            <div className="mx-auto flex w-full flex-1 justify-center px-4 py-4 sm:px-6 sm:py-6 bg-[#FAFAFA]">
+            <div className="mx-auto flex w-full flex-1 justify-center bg-[#FAFAFA] px-4 py-4 sm:px-6 sm:py-6">
               <div className="w-full">{children}</div>
             </div>
           </SidebarInset>
