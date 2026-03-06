@@ -5,9 +5,34 @@ import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { Button } from "../ui/button";
 import Image from "next/image";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { useAuthUser } from "@/features/auth";
+
+function getDisplayName(user: ReturnType<typeof useAuthUser>["user"]) {
+  const profile = user?.profile;
+  const fullName = [profile?.firstName, profile?.lastName]
+    .filter(Boolean)
+    .join(" ");
+
+  return profile?.displayName || fullName || user?.email || "Admin";
+}
+
+function getInitials(name: string) {
+  const initials = name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+
+  return initials || "AD";
+}
 
 export function AppHeader() {
   const { isMobile } = useSidebar();
+  const { user, hasHydrated } = useAuthUser();
+  const displayName = getDisplayName(user);
+  const initials = getInitials(hasHydrated ? displayName : "Admin");
+
   return (
     <header className="sticky top-0 z-50 flex h-18.75 w-full items-center justify-between border-b bg-white px-4 sm:px-6">
       {/* Left */}
@@ -53,10 +78,10 @@ export function AppHeader() {
         {/* User */}
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#EAEAEA] bg-opacity-80 text-sm font-medium">
-            JF
+            {initials}
           </div>
           <span className="hidden text-sm font-semibold text-[#646464] sm:inline">
-            Joanne Featherington
+            {hasHydrated ? displayName : "Admin"}
           </span>
           <Button
             variant="ghost"

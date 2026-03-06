@@ -1,12 +1,53 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { StatsCards } from "./components/stats-cards";
 import { QuickActions } from "./components/quick-actions";
 import { UpcomingEvents } from "./components/upcoming-events";
 import { events } from "./data/events";
-import { EnrollmentChart } from "./components/enrollment-chart";
-import { EnrollmentCategory } from "./components/enrollment-category";
-import { TopCoursesChart } from "./components/top-courses-chart";
+
+function ChartPlaceholder({ className }: { className: string }) {
+  return <div className={className} />;
+}
+
+const EnrollmentChart = dynamic(
+  () =>
+    import("./components/enrollment-chart").then(
+      (module) => module.EnrollmentChart,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <ChartPlaceholder className="h-78 rounded-xl border bg-muted/30 sm:h-86" />
+    ),
+  },
+);
+
+const EnrollmentCategory = dynamic(
+  () =>
+    import("./components/enrollment-category").then(
+      (module) => module.EnrollmentCategory,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <ChartPlaceholder className="h-96 rounded-xl border bg-muted/30 sm:h-80" />
+    ),
+  },
+);
+
+const TopCoursesChart = dynamic(
+  () =>
+    import("./components/top-courses-chart").then(
+      (module) => module.TopCoursesChart,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <ChartPlaceholder className="h-88 rounded-xl border bg-muted/30 sm:h-96" />
+    ),
+  },
+);
 
 export function DashboardView() {
   return (
