@@ -1,7 +1,8 @@
 import { cookies } from "next/headers";
 import type { NextRequest, NextResponse } from "next/server";
 
-export const ADMIN_AUTH_TOKEN_COOKIE_NAME = "complete_doctor_admin_access_token";
+export const ADMIN_AUTH_TOKEN_COOKIE_NAME =
+  "complete_doctor_admin_access_token";
 
 const DEFAULT_AUTH_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 
@@ -35,7 +36,8 @@ export function getTokenCookieMaxAge(token: string) {
       return DEFAULT_AUTH_COOKIE_MAX_AGE;
     }
 
-    const secondsUntilExpiry = decodedPayload.exp - Math.floor(Date.now() / 1000);
+    const secondsUntilExpiry =
+      decodedPayload.exp - Math.floor(Date.now() / 1000);
 
     return Math.max(secondsUntilExpiry, 0);
   } catch {
@@ -46,7 +48,7 @@ export function getTokenCookieMaxAge(token: string) {
 export function setAuthTokenCookie(
   response: NextResponse,
   token: string,
-  maxAge = DEFAULT_AUTH_COOKIE_MAX_AGE
+  maxAge = DEFAULT_AUTH_COOKIE_MAX_AGE,
 ) {
   response.cookies.set({
     name: ADMIN_AUTH_TOKEN_COOKIE_NAME,

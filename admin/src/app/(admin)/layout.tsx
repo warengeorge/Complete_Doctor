@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/layout/header";
 import { AppSidebar } from "@/components/layout/sidebar/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { AuthGuard } from "@/features/auth";
 import { getServerAuthToken } from "@/lib/auth-cookie";
 
 export default async function AdminLayout({
@@ -18,6 +19,7 @@ export default async function AdminLayout({
 
   return (
     <SidebarProvider>
+      <AuthGuard hasServerToken={true} mode="protected" />
       <div className="flex min-h-screen w-full flex-col">
         {/* Header - Full Width at top */}
         <AppHeader />
