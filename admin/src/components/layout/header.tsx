@@ -29,9 +29,10 @@ function getInitials(name: string) {
 
 export function AppHeader() {
   const { isMobile } = useSidebar();
-  const { user, hasHydrated } = useAuthUser();
+  const { user } = useAuthUser();
   const displayName = getDisplayName(user);
-  const initials = getInitials(hasHydrated ? displayName : "Admin");
+  const resolvedName = user ? displayName : "Admin";
+  const initials = getInitials(resolvedName);
 
   return (
     <header className="sticky top-0 z-50 flex h-18.75 w-full items-center justify-between border-b bg-white px-4 sm:px-6">
@@ -81,7 +82,7 @@ export function AppHeader() {
             {initials}
           </div>
           <span className="hidden text-sm font-semibold text-[#646464] sm:inline">
-            {hasHydrated ? displayName : "Admin"}
+            {resolvedName}
           </span>
           <Button
             variant="ghost"

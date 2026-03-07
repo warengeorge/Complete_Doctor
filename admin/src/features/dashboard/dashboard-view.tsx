@@ -5,6 +5,25 @@ import { StatsCards } from "./components/stats-cards";
 import { QuickActions } from "./components/quick-actions";
 import { UpcomingEvents } from "./components/upcoming-events";
 import { events } from "./data/events";
+import { useAuthUser } from "../auth";
+
+function getGreeting() {
+  const hour = new Date().getHours();
+
+  if (hour >= 5 && hour < 12) {
+    return "Good morning";
+  }
+
+  if (hour >= 12 && hour < 17) {
+    return "Good afternoon";
+  }
+
+  if (hour >= 17 && hour < 21) {
+    return "Good evening";
+  }
+
+  return "Hello";
+}
 
 function ChartPlaceholder({ className }: { className: string }) {
   return <div className={className} />;
@@ -49,14 +68,27 @@ const TopCoursesChart = dynamic(
   },
 );
 
+function getDisplayName(user: ReturnType<typeof useAuthUser>["user"]) {
+  const profile = user?.profile;
+  const fullName = [profile?.firstName, profile?.lastName]
+    .filter(Boolean)
+    .join(" ");
+
+  return profile?.displayName || fullName || user?.email || "Admin";
+}
+
 export function DashboardView() {
+  const { user } = useAuthUser();
+  const displayName = getDisplayName(user);
+  const greeting = getGreeting();
+
   return (
     <div className="container w-full space-y-6">
       {/* Greeting */}
       <div className="flex items-start justify-between">
         <div>
           <h1 className="font-semibold text-[#121212]">
-            Good morning, Joanne! ☁️
+            {greeting}, {displayName} ☁️
           </h1>
           <p className="text-[13px] text-[#606060]">
             Welcome to your learning dashboard
