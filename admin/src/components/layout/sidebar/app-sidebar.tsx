@@ -10,11 +10,7 @@ import {
   SidebarFooter,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import {
-  LayoutDashboard,
-  Settings,
- 
-} from "lucide-react";
+import { LayoutDashboard, Layers, Settings } from "lucide-react";
 import { CoursesIcon } from "@/components/icons/courses-icon";
 import { StudentsIcon } from "@/components/icons/students-icon";
 
@@ -31,6 +27,11 @@ const data = {
       title: "Courses",
       url: "/courses",
       icon: CoursesIcon,
+    },
+    {
+      title: "Categories",
+      url: "/categories",
+      icon: Layers,
     },
     {
       title: "Students",
