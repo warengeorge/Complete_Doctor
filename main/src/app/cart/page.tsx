@@ -197,7 +197,7 @@ export default function CartPage() {
                                 </div>
                               </div>
 
-                              {/* Remove Button */}
+                              {/* Remove Button */} 
                               <button
                                 onClick={() => removeFromCart(item.id)}
                                 className='w-auto md:w-20 h-auto md:h-10 py-0.5 px-1.5 md:px-0 md:py-0 text-[9px] md:text-sm text-red-500 hover:text-red-700 font-semibold border border-[#ECECEC] rounded:none md:rounded-lg cursor-pointer'
