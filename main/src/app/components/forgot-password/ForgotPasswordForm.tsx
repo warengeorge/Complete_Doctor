@@ -1,55 +1,54 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { useAuthStore } from "../../../../store/authStore"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Key } from '../icons/icons'
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useAuthStore } from "../../../../store/authStore";
+import { Key } from "../icons/icons";
 
 export default function ForgotPasswordForm() {
-  const router = useRouter()
-  const { setResetEmail } = useAuthStore()
-  const [email, setEmail] = useState("")
-  const [error, setError] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const router = useRouter();
+  const {
+    requestPasswordReset,
+    isLoading,
+    error: authError,
+    clearError,
+  } = useAuthStore();
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
+    e.preventDefault();
+    setError("");
+    clearError();
+    setIsSubmitting(true);
 
     if (!email) {
-      setError("Please enter your email address")
-      return
+      setError("Please enter your email address");
+      return;
     }
 
     if (!/\S+@\S+\.\S+/.test(email)) {
-      setError("Please enter a valid email address")
-      return
+      setError("Please enter a valid email address");
+      return;
     }
-
-    setIsSubmitting(true)
 
     try {
-      // when backend ready, this would call an API to send a reset email
-      // simulate a successful request
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // Store the email in the auth store for the next step
-      setResetEmail(email)
-
-      // navigate to reset password page
-      router.push("/verify-forgot-password")
-    // } catch (err) {
-    //   setError("An error occurred. Please try again.")
+      await requestPasswordReset(email);
+      router.push("/verify-forgot-password");
+    } catch (err) {
+      console.warn("Failed to request reset", err);
+      // Store error is set, but local error can be used too if desired
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <div className="w-[540px] max-w-md h-[650px] flex flex-col gap-10 justify-center px-5">
@@ -64,17 +63,26 @@ export default function ForgotPasswordForm() {
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-        {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            {error}
+          </div>
+        )}
 
         <div className="space-y-4">
-          <div className='flex flex-col justify-between gap-2'>
-            <Label htmlFor="email" className='text-sm text-[#737373] dark:text-[#fafafa]'>Email</Label>
+          <div className="flex flex-col justify-between gap-2">
+            <Label
+              htmlFor="email"
+              className="text-sm text-[#737373] dark:text-[#fafafa]"
+            >
+              Email
+            </Label>
             <Input
               id="email"
               type="email"
               placeholder="Enter Email Address"
               value={email}
-              className='h-[50px] placeholder:text-[#D1D5DB] rounded-[5px] bg-[rgba(250,250,250,0.8)]'
+              className="h-[50px] placeholder:text-[#D1D5DB] rounded-[5px] bg-[rgba(250,250,250,0.8)]"
               onChange={(e) => setEmail(e.target.value)}
               data-testid="forgot-password-email"
             />
@@ -97,5 +105,5 @@ export default function ForgotPasswordForm() {
         </div>
       </form>
     </div>
-  )
+  );
 }

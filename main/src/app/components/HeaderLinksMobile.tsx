@@ -1,55 +1,100 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import useModalStore from "@/lib/store/useModal"
-import { FaAngleDown } from "react-icons/fa6"
-import { cn } from "@/lib/utils"
+import useModalStore from "@/lib/store/useModal";
+import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@radix-ui/react-dropdown-menu";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import type React from "react";
+import { useEffect, useState } from "react";
+import { FaAngleDown } from "react-icons/fa6";
+import { useAuthStore } from "../../../store/authStore";
 
 interface HeaderProps {
-  className?: string
+  className?: string;
 }
 
 const HeaderLinksMobile = ({ className }: HeaderProps) => {
-  const pathname = usePathname()
-  const [isCoursesOpen, setIsCoursesOpen] = useState(false)
-  const [isResourcesOpen, setIsResourcesOpen] = useState(false)
-  const [selectedCourse, setSelectedCourse] = useState<string | null>(null)
-  const { closeMenu } = useModalStore()
+  const pathname = usePathname();
+  const router = useRouter();
+  const [isCoursesOpen, setIsCoursesOpen] = useState(false);
+  const [isResourcesOpen, setIsResourcesOpen] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
+  const { closeMenu } = useModalStore();
+  const { user, isAuthenticated } = useAuthStore();
 
-  const mainCourses = ["MRCGP AKT Courses", "MRCGP SCA", "MSRA", "UKMLA PLAB 1", "UKMLA PLAB 2", "FY2 Standalone"]
+  // Wait for client-side hydration so Zustand persist state is loaded
+  const [hasMounted, setHasMounted] = useState(false);
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  const logout = useAuthStore((state) => state.logout);
+
+  const isLoggedIn = hasMounted && isAuthenticated && !!user;
+
+  const mainCourses = [
+    "MRCGP AKT Courses",
+    "MRCGP SCA",
+    "MSRA",
+    "UKMLA PLAB 1",
+    "UKMLA PLAB 2",
+    "FY2 Standalone",
+  ];
 
   const subCourses = {
     "MRCGP AKT Courses": [
       { id: 234, name: "MRCPsych Paper A Live Course" },
       { id: 235, name: "MRCPsych Paper B Live Course" },
     ],
-  }
+  };
 
   const resourcesLinks = [
-    { name: "Neurology Points - Free", href: "/resources/neurology-points-free" },
-    { name: "Neurology Points - Premium", href: "/resources/neurology-points-premium" },
-    { name: "Neurology Points - Final", href: "/resources/neurology-points-final" },
-  ]
+    {
+      name: "Neurology Points - Free",
+      href: "/resources/neurology-points-free",
+    },
+    {
+      name: "Neurology Points - Premium",
+      href: "/resources/neurology-points-premium",
+    },
+    {
+      name: "Neurology Points - Final",
+      href: "/resources/neurology-points-final",
+    },
+  ];
 
   const handleMenu = () => {
-    closeMenu()
-  }
+    closeMenu();
+  };
 
   const handleCoursesClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    setIsCoursesOpen(!isCoursesOpen)
-  }
+    e.preventDefault();
+    setIsCoursesOpen(!isCoursesOpen);
+  };
 
   const handleResourcesClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    setIsResourcesOpen(!isResourcesOpen)
-  }
+    e.preventDefault();
+    setIsResourcesOpen(!isResourcesOpen);
+  };
+
+  const handleLogout = () => {
+    closeMenu();
+    logout();
+    router.push("/");
+  };
 
   return (
-    <div className={cn("w-full h-full flex sm:hidden justify-center", className)}>
+    <div
+      className={cn("w-full h-full flex sm:hidden justify-center", className)}
+    >
       <ul className="w-full flex flex-col list-none gap-2.5">
         <li
           className="text-base pl-5 flex items-center font-medium w-full h-10 border-b-[.4px] border-[#ECECEC]"
@@ -69,13 +114,18 @@ const HeaderLinksMobile = ({ className }: HeaderProps) => {
             <span
               className={cn(
                 "transition-colors",
-                pathname.startsWith("/courses") ? "text-[#151515] font-semibold" : "text-gray-500",
+                pathname.startsWith("/courses")
+                  ? "text-[#151515] font-semibold"
+                  : "text-gray-500",
               )}
             >
               Courses
             </span>
             <FaAngleDown
-              className={cn("transition-transform duration-200", isCoursesOpen ? "rotate-180" : "rotate-0")}
+              className={cn(
+                "transition-transform duration-200",
+                isCoursesOpen ? "rotate-180" : "rotate-0",
+              )}
             />
           </div>
           {/* Dropdown menu */}
@@ -93,21 +143,27 @@ const HeaderLinksMobile = ({ className }: HeaderProps) => {
                       {course}
                     </button>
                     {/* Submenu */}
-                    {selectedCourse === course && subCourses[course as keyof typeof subCourses] && (
-                      <div className="w-full bg-gray-50 border-t border-gray-100 border">
-                        <ul className="py-1">
-                          {subCourses[course as keyof typeof subCourses].map((subCourse) => (
-                            <li key={subCourse.id}>
-                              <Link href={`/courses/${subCourse.id}`} onClick={handleMenu}>
-                                <button className="w-full text-left px-12 py-2 hover:bg-blue-100 text-gray-600 text-sm">
-                                  {subCourse.name}
-                                </button>
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
+                    {selectedCourse === course &&
+                      subCourses[course as keyof typeof subCourses] && (
+                        <div className="w-full bg-gray-50 border-t border-gray-100 border">
+                          <ul className="py-1">
+                            {subCourses[course as keyof typeof subCourses].map(
+                              (subCourse) => (
+                                <li key={subCourse.id}>
+                                  <Link
+                                    href={`/courses/${subCourse.id}`}
+                                    onClick={handleMenu}
+                                  >
+                                    <button className="w-full text-left px-12 py-2 hover:bg-blue-100 text-gray-600 text-sm">
+                                      {subCourse.name}
+                                    </button>
+                                  </Link>
+                                </li>
+                              ),
+                            )}
+                          </ul>
+                        </div>
+                      )}
                   </li>
                 ))}
               </ul>
@@ -115,7 +171,10 @@ const HeaderLinksMobile = ({ className }: HeaderProps) => {
           )}
         </li>
 
-        <HeaderLink href="/webinars-events" active={pathname === "/webinars-events"}>
+        <HeaderLink
+          href="/webinars-events"
+          active={pathname === "/webinars-events"}
+        >
           <li
             className="text-base pl-5 flex items-center font-medium w-full h-10 border-b-[.4px] border-[#ECECEC]"
             onClick={handleMenu}
@@ -133,13 +192,18 @@ const HeaderLinksMobile = ({ className }: HeaderProps) => {
             <span
               className={cn(
                 "transition-colors",
-                pathname.startsWith("/resources") ? "text-[#151515] font-semibold" : "text-gray-500",
+                pathname.startsWith("/resources")
+                  ? "text-[#151515] font-semibold"
+                  : "text-gray-500",
               )}
             >
               Resources
             </span>
             <FaAngleDown
-              className={cn("transition-transform duration-200", isResourcesOpen ? "rotate-180" : "rotate-0")}
+              className={cn(
+                "transition-transform duration-200",
+                isResourcesOpen ? "rotate-180" : "rotate-0",
+              )}
             />
           </div>
           {/* Resources dropdown menu */}
@@ -178,34 +242,96 @@ const HeaderLinksMobile = ({ className }: HeaderProps) => {
           </HeaderLink>
         </li>
 
-        <li
-          className="text-base pl-5 flex items-center font-medium w-full h-10 border-b-[.4px] border-[#ECECEC]"
-          onClick={handleMenu}
-        >
-          <HeaderLink href="/login" active={pathname === "/login"}>
-            Sign in
-          </HeaderLink>
-        </li>
+        {isLoggedIn ? (
+          <li className="text-base pl-5 flex items-center font-medium w-full h-10 border-b-[.4px] border-[#ECECEC] gap-2">
+            <div className="relative border border-red-500">
+              <div className="w-7 h-7 rounded-full bg-[#E8E8E8] flex items-center justify-center text-[10px] font-semibold text-[#333]">
+                {(() => {
+                  const fName = user.firstName || (user as any).firstname || "";
+                  const lName = user.lastName || (user as any).lastname || "";
+                  return (
+                    `${fName.charAt(0)}${lName.charAt(0)}`.toUpperCase() || "?"
+                  );
+                })()}
+              </div>
+              <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white" />
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <span className="text-sm text-[#151515] font-medium">
+                  {(() => {
+                    const fName =
+                      user.firstName || (user as any).firstname || "";
+                    const lName = user.lastName || (user as any).lastname || "";
+                    return `${fName} ${lName}`.trim() || user.email;
+                  })()}
+                </span>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="center" className="w-[200px]">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col items-start gap-1">
+                    <span className="text-sm text-[#151515] font-semibold">
+                      {(() => {
+                        const fName =
+                          user.firstName || (user as any).firstname || "";
+                        const lName =
+                          user.lastName || (user as any).lastname || "";
+                        return `${fName} ${lName}`.trim() || user.email;
+                      })()}
+                    </span>
+                    <span className="text-xs text-[#898989]">{user.email}</span>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="dark:text-[#fafafa] hover:dark:bg-[#111827]">
+                  My Courses
+                </DropdownMenuItem>
+                <DropdownMenuItem className="dark:text-[#fafafa] hover:dark:bg-[#111827]">
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="dark:text-[#fafafa] hover:dark:bg-[#111827]"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </li>
+        ) : (
+          <li
+            className="text-base pl-5 flex items-center font-medium w-full h-10 border-b-[.4px] border-[#ECECEC]"
+            onClick={handleMenu}
+          >
+            <HeaderLink href="/login" active={pathname === "/login"}>
+              Sign in
+            </HeaderLink>
+          </li>
+        )}
       </ul>
     </div>
-  )
-}
+  );
+};
 
-export default HeaderLinksMobile
+export default HeaderLinksMobile;
 
 interface HeaderLinkProps {
-  href: string
-  active?: boolean
-  children: React.ReactNode
+  href: string;
+  active?: boolean;
+  children: React.ReactNode;
 }
 
 function HeaderLink({ href, active, children }: HeaderLinkProps) {
   return (
     <Link
       href={href}
-      className={cn("transition-colors hover:text-gray-900", active ? "text-[#151515] font-semibold" : "text-gray-500")}
+      className={cn(
+        "transition-colors hover:text-gray-900",
+        active ? "text-[#151515] font-semibold" : "text-gray-500",
+      )}
     >
       {children}
     </Link>
-  )
+  );
 }
