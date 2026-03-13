@@ -30,7 +30,7 @@ const HeaderLinksMobile = ({ className }: HeaderProps) => {
   const { closeMenu } = useModalStore();
   const { user, isAuthenticated } = useAuthStore();
 
-  // Wait for client-side hydration so Zustand persist state is loaded
+  // Wait for client-side hydration so Zustand persist state is loaded.
   const [hasMounted, setHasMounted] = useState(false);
   useEffect(() => {
     setHasMounted(true);
