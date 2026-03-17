@@ -3,6 +3,8 @@ import type { NextRequest, NextResponse } from "next/server";
 
 export const ADMIN_AUTH_TOKEN_COOKIE_NAME =
   "complete_doctor_admin_access_token";
+export const ADMIN_AUTH_REFRESH_TOKEN_COOKIE_NAME =
+  "complete_doctor_admin_refresh_token";
 
 const DEFAULT_AUTH_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 
@@ -14,9 +16,20 @@ export function getAuthTokenFromRequest(request: NextRequest) {
   return request.cookies.get(ADMIN_AUTH_TOKEN_COOKIE_NAME)?.value ?? null;
 }
 
+export function getRefreshTokenFromRequest(request: NextRequest) {
+  return (
+    request.cookies.get(ADMIN_AUTH_REFRESH_TOKEN_COOKIE_NAME)?.value ?? null
+  );
+}
+
 export async function getServerAuthToken() {
   const cookieStore = await cookies();
   return cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE_NAME)?.value ?? null;
+}
+
+export async function getServerRefreshToken() {
+  const cookieStore = await cookies();
+  return cookieStore.get(ADMIN_AUTH_REFRESH_TOKEN_COOKIE_NAME)?.value ?? null;
 }
 
 export function getTokenCookieMaxAge(token: string) {
@@ -61,6 +74,22 @@ export function setAuthTokenCookie(
   });
 }
 
+export function setRefreshTokenCookie(
+  response: NextResponse,
+  token: string,
+  maxAge = DEFAULT_AUTH_COOKIE_MAX_AGE,
+) {
+  response.cookies.set({
+    name: ADMIN_AUTH_REFRESH_TOKEN_COOKIE_NAME,
+    value: token,
+    httpOnly: true,
+    secure: isProduction(),
+    sameSite: "lax",
+    path: "/",
+    maxAge,
+  });
+}
+
 export function clearAuthTokenCookie(response: NextResponse) {
   response.cookies.set({
     name: ADMIN_AUTH_TOKEN_COOKIE_NAME,
@@ -72,4 +101,22 @@ export function clearAuthTokenCookie(response: NextResponse) {
     maxAge: 0,
     expires: new Date(0),
   });
+}
+
+export function clearRefreshTokenCookie(response: NextResponse) {
+  response.cookies.set({
+    name: ADMIN_AUTH_REFRESH_TOKEN_COOKIE_NAME,
+    value: "",
+    httpOnly: true,
+    secure: isProduction(),
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+    expires: new Date(0),
+  });
+}
+
+export function clearAuthCookies(response: NextResponse) {
+  clearAuthTokenCookie(response);
+  clearRefreshTokenCookie(response);
 }
