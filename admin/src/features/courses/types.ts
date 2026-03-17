@@ -1,6 +1,7 @@
 export type CourseStep = {
   id: number;
   label: string;
+  description?: string;
 };
 
 export type CourseStatus = "Ongoing" | "Upcoming" | "Ended";
@@ -53,19 +54,41 @@ export type CourseScheduleEntry = {
 };
 
 export type CourseCreateForm = {
-  courseName: string;
+  title: string;
+  slug: string;
   category: string;
-  price: string;
-  description: string;
-  learningOutcomes: string[];
-  modules: CourseModule[];
-  lectureNotes: CourseContentAsset | null;
-  lectureVideos: CourseContentAsset | null;
-  studyMaterials: CourseContentAsset | null;
-  schedules: CourseScheduleEntry[];
+  instructor: string;
+  shortDescription: string;
   tagInput: string;
   tags: string[];
-  coverImage: CourseCoverImage | null;
+  depth: "FULL" | "MODULES_ONLY" | "FLAT";
+  enrolmentType: "COHORT" | "OPEN" | "SELF_PACED";
+  repeatAccess:
+    | "COURSE_DURATION"
+    | "UNLIMITED"
+    | "ONCE"
+    | "EXPIRES_AFTER_30_DAYS";
+  durationWeeks: string;
+  sessionFrequency: string;
+  requiresAccount: boolean;
+  isActive: boolean;
+  description: string;
+  about: string;
+  highlights: string[];
+  objectives: string[];
+  audience: string[];
+  prerequisites: string[];
+  price: string;
+  currency: "GBP" | "USD" | "EUR" | "NGN";
+  priceNote: string;
+  earlyBirdEnabled: boolean;
+  earlyBirdPrice: string;
+  earlyBirdUntil: string;
+  syllabusLink: string;
+  certificateEnabled: boolean;
+  certificateRequireAll: boolean;
+  certificatePassMark: string;
+  certificateModuleIds: string;
 };
 
 export type CourseEvent = {

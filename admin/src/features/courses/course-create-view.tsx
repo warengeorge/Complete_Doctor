@@ -1,113 +1,117 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 
-import { courseSteps, descriptionMaxLength } from "./constants";
+import { Button } from "@/components/ui/button";
+
+import {
+  courseCategories,
+  courseInstructors,
+  courseSteps,
+  shortDescriptionMaxLength,
+} from "./constants";
+import { CourseCompletionForm } from "./components/course-completion-form";
 import { CourseContentForm } from "./components/course-content-form";
-import { CourseContentSidebar } from "./components/course-content-sidebar";
 import { CourseOverviewForm } from "./components/course-overview-form";
-import { CourseScheduleForm } from "./components/course-schedule-form";
-import { CourseScheduleSidebar } from "./components/course-schedule-sidebar";
-import { CourseSidebarPanel } from "./components/course-sidebar-panel";
-import { CreateCourseHeader } from "./components/create-course-header";
+import { CoursePricingForm } from "./components/course-pricing-form";
+import { CourseReviewPanel } from "./components/course-review-panel";
+import { CourseStructureForm } from "./components/course-structure-form";
 import { CreateCourseStepper } from "./components/create-course-stepper";
-import type {
-  CourseContentAsset,
-  CourseCreateForm,
-  CourseModule,
-  CourseScheduleEntry,
-} from "./types";
+import type { CourseCreateForm } from "./types";
+import { CreateCourseHeader } from "./components/create-course-header";
 
-type EditableField = "courseName" | "category" | "price" | "description" | "tagInput";
-
-function createModule(id: string): CourseModule {
-  return {
-    id,
-    title: "",
-    description: "",
-    subModules: [""],
-  };
-}
-
-function createSchedule(id: string): CourseScheduleEntry {
-  return {
-    id,
-    moduleId: "",
-    startDate: "",
-    endDate: "",
-    startTime: "",
-    endTime: "",
-    location: "",
-  };
-}
+type BasicEditableField =
+  | "category"
+  | "instructor"
+  | "shortDescription"
+  | "tagInput";
+type ArrayField = "highlights" | "objectives" | "audience" | "prerequisites";
 
 const initialForm: CourseCreateForm = {
-  courseName: "",
+  title: "",
+  slug: "",
   category: "",
-  price: "",
-  description: "",
-  learningOutcomes: [""],
-  modules: [createModule("module-1")],
-  lectureNotes: null,
-  lectureVideos: null,
-  studyMaterials: null,
-  schedules: [createSchedule("schedule-1")],
+  instructor: "",
+  shortDescription: "",
   tagInput: "",
   tags: [],
-  coverImage: null,
+  depth: "FULL",
+  enrolmentType: "COHORT",
+  repeatAccess: "COURSE_DURATION",
+  durationWeeks: "",
+  sessionFrequency: "",
+  requiresAccount: true,
+  isActive: true,
+  description: "",
+  about: "",
+  highlights: [""],
+  objectives: [""],
+  audience: [""],
+  prerequisites: [""],
+  price: "",
+  currency: "GBP",
+  priceNote: "",
+  earlyBirdEnabled: false,
+  earlyBirdPrice: "",
+  earlyBirdUntil: "",
+  syllabusLink: "",
+  certificateEnabled: false,
+  certificateRequireAll: false,
+  certificatePassMark: "",
+  certificateModuleIds: "",
 };
 
 export function CourseCreateView() {
   const [activeStep, setActiveStep] = useState(1);
   const [form, setForm] = useState<CourseCreateForm>(initialForm);
-  const moduleCounterRef = useRef(1);
-  const scheduleCounterRef = useRef(1);
-  const coverImageUrlRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (coverImageUrlRef.current) {
-        URL.revokeObjectURL(coverImageUrlRef.current);
-      }
-    };
-  }, []);
+  const [slugManual, setSlugManual] = useState(false);
 
   const canPublish = useMemo(
-    () => Boolean(form.courseName.trim() && form.category.trim()),
-    [form.category, form.courseName],
+    () => Boolean(form.title.trim() && form.category.trim()),
+    [form.category, form.title],
   );
 
-  const updateField = (name: EditableField, value: string) => {
+  const updateBasicField = (name: BasicEditableField, value: string) => {
     setForm((prev) => {
-      if (name === "description") {
-        return { ...prev, description: value.slice(0, descriptionMaxLength) };
+      if (name === "shortDescription") {
+        return {
+          ...prev,
+          shortDescription: value.slice(0, shortDescriptionMaxLength),
+        };
       }
       return { ...prev, [name]: value };
     });
   };
 
-  const handleLearningOutcomeChange = (index: number, value: string) => {
-    setForm((prev) => {
-      const updated = [...prev.learningOutcomes];
-      updated[index] = value;
-      return { ...prev, learningOutcomes: updated };
-    });
+  const updateField = <K extends keyof CourseCreateForm>(
+    name: K,
+    value: CourseCreateForm[K],
+  ) => {
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAddLearningOutcome = () => {
+  const handleTitleChange = (value: string) => {
     setForm((prev) => ({
       ...prev,
-      learningOutcomes: [...prev.learningOutcomes, ""],
+      title: value,
+      slug: slugManual ? prev.slug : slugify(value),
     }));
   };
 
-  const handleRemoveLearningOutcome = (index: number) => {
+  const handleSlugChange = (value: string) => {
+    setSlugManual(true);
+    setForm((prev) => ({ ...prev, slug: slugify(value) }));
+  };
+
+  const handleArrayChange = (
+    field: ArrayField,
+    index: number,
+    value: string,
+  ) => {
     setForm((prev) => {
-      if (prev.learningOutcomes.length <= 1) return prev;
-      return {
-        ...prev,
-        learningOutcomes: prev.learningOutcomes.filter((_, i) => i !== index),
-      };
+      const updated = [...prev[field]];
+      updated[index] = value;
+      return { ...prev, [field]: updated };
     });
   };
 
@@ -132,156 +136,15 @@ export function CourseCreateView() {
     }));
   };
 
-  const handleCoverImageSelect = (file: File | null) => {
-    if (coverImageUrlRef.current) {
-      URL.revokeObjectURL(coverImageUrlRef.current);
-      coverImageUrlRef.current = null;
-    }
-
-    if (!file) {
-      setForm((prev) => ({
-        ...prev,
-        coverImage: null,
-      }));
-      return;
-    }
-
-    const previewUrl = URL.createObjectURL(file);
-    coverImageUrlRef.current = previewUrl;
-
-    setForm((prev) => ({
-      ...prev,
-      coverImage: {
-        name: file.name,
-        sizeKb: Math.max(1, Math.round(file.size / 1024)),
-        previewUrl,
-      },
-    }));
+  const handleAddArrayItem = (field: ArrayField) => {
+    setForm((prev) => ({ ...prev, [field]: [...prev[field], ""] }));
   };
 
-  const handleAddModule = () => {
-    moduleCounterRef.current += 1;
-    setForm((prev) => ({
-      ...prev,
-      modules: [...prev.modules, createModule(`module-${moduleCounterRef.current}`)],
-    }));
-  };
-
-  const handleRemoveModule = (moduleId: string) => {
+  const handleRemoveArrayItem = (field: ArrayField, index: number) => {
     setForm((prev) => {
-      if (prev.modules.length <= 1) return prev;
-      return {
-        ...prev,
-        modules: prev.modules.filter((module) => module.id !== moduleId),
-      };
+      if (prev[field].length <= 1) return prev;
+      return { ...prev, [field]: prev[field].filter((_, i) => i !== index) };
     });
-  };
-
-  const handleModuleFieldChange = (
-    moduleId: string,
-    field: "title" | "description",
-    value: string,
-  ) => {
-    setForm((prev) => ({
-      ...prev,
-      modules: prev.modules.map((module) =>
-        module.id === moduleId ? { ...module, [field]: value } : module,
-      ),
-    }));
-  };
-
-  const handleSubModuleChange = (
-    moduleId: string,
-    subModuleIndex: number,
-    value: string,
-  ) => {
-    setForm((prev) => ({
-      ...prev,
-      modules: prev.modules.map((module) => {
-        if (module.id !== moduleId) return module;
-        const updatedSubModules = [...module.subModules];
-        updatedSubModules[subModuleIndex] = value;
-        return { ...module, subModules: updatedSubModules };
-      }),
-    }));
-  };
-
-  const handleAddSubModule = (moduleId: string) => {
-    setForm((prev) => ({
-      ...prev,
-      modules: prev.modules.map((module) =>
-        module.id === moduleId
-          ? { ...module, subModules: [...module.subModules, ""] }
-          : module,
-      ),
-    }));
-  };
-
-  const handleRemoveSubModule = (moduleId: string, subModuleIndex: number) => {
-    setForm((prev) => ({
-      ...prev,
-      modules: prev.modules.map((module) => {
-        if (module.id !== moduleId) return module;
-        if (module.subModules.length <= 1) return module;
-        return {
-          ...module,
-          subModules: module.subModules.filter((_, index) => index !== subModuleIndex),
-        };
-      }),
-    }));
-  };
-
-  const handleAssetSelect = (
-    key: "lectureNotes" | "lectureVideos" | "studyMaterials",
-    file: File | null,
-  ) => {
-    const asset: CourseContentAsset | null = file
-      ? { name: file.name, sizeKb: Math.max(1, Math.round(file.size / 1024)) }
-      : null;
-
-    setForm((prev) => ({
-      ...prev,
-      [key]: asset,
-    }));
-  };
-
-  const handleAddSchedule = () => {
-    scheduleCounterRef.current += 1;
-    setForm((prev) => ({
-      ...prev,
-      schedules: [
-        ...prev.schedules,
-        createSchedule(`schedule-${scheduleCounterRef.current}`),
-      ],
-    }));
-  };
-
-  const handleRemoveSchedule = (scheduleId: string) => {
-    setForm((prev) => {
-      if (prev.schedules.length <= 1) return prev;
-      return {
-        ...prev,
-        schedules: prev.schedules.filter((schedule) => schedule.id !== scheduleId),
-      };
-    });
-  };
-
-  const handleScheduleFieldChange = (
-    scheduleId: string,
-    field: keyof Omit<CourseScheduleEntry, "id">,
-    value: string,
-  ) => {
-    setForm((prev) => ({
-      ...prev,
-      schedules: prev.schedules.map((schedule) =>
-        schedule.id === scheduleId ? { ...schedule, [field]: value } : schedule,
-      ),
-    }));
-  };
-
-  const handleSaveSchedule = (scheduleId: string) => {
-    const selected = form.schedules.find((schedule) => schedule.id === scheduleId);
-    console.log("Save schedule", selected);
   };
 
   const handleSaveDraft = () => {
@@ -295,99 +158,105 @@ export function CourseCreateView() {
     console.log("Publish course", form);
   };
 
-  const handleNext = () => setActiveStep((prev) => Math.min(prev + 1, 3));
+  const totalSteps = courseSteps.length;
+
+  const handleNext = () =>
+    setActiveStep((prev) => Math.min(prev + 1, totalSteps));
   const handlePrevious = () => setActiveStep((prev) => Math.max(prev - 1, 1));
 
   return (
-    <section className="w-full space-y-6 ">
+    <section className="min-h-screen bg-[#F8F8FA]">
       <CreateCourseHeader
         onSaveDraft={handleSaveDraft}
         onPublish={handlePublish}
+        canPublish={canPublish}
       />
-      <CreateCourseStepper steps={courseSteps} activeStep={activeStep} />
+      <div className="mx-auto flex min-h-screen max-w-6xl flex-col gap-6 px-6 py-6">
+        <header className="rounded-xl border border-[#E5E5E8] bg-white px-6 py-4">
+          <CreateCourseStepper steps={courseSteps} activeStep={activeStep} />
+        </header>
 
-      <div className="grid gap-4 xl:grid-cols-[2fr_1fr]">
-        {activeStep === 1 ? (
-          <>
-            <div className="min-w-0">
-              <CourseOverviewForm
-                form={form}
-                onChange={updateField}
-                onLearningOutcomeChange={handleLearningOutcomeChange}
-                onAddLearningOutcome={handleAddLearningOutcome}
-                onRemoveLearningOutcome={handleRemoveLearningOutcome}
-              />
-            </div>
+        <div className="flex-1">
+          {activeStep === 1 ? (
+            <CourseOverviewForm
+              form={form}
+              categories={courseCategories}
+              instructors={courseInstructors}
+              onTitleChange={handleTitleChange}
+              onSlugChange={handleSlugChange}
+              onFieldChange={updateBasicField}
+              onAddTag={handleAddTag}
+              onRemoveTag={handleRemoveTag}
+            />
+          ) : activeStep === 2 ? (
+            <CourseStructureForm form={form} onFieldChange={updateField} />
+          ) : activeStep === 3 ? (
+            <CourseContentForm
+              form={form}
+              onFieldChange={updateField}
+              onArrayChange={handleArrayChange}
+              onArrayAdd={handleAddArrayItem}
+              onArrayRemove={handleRemoveArrayItem}
+            />
+          ) : activeStep === 4 ? (
+            <CoursePricingForm form={form} onFieldChange={updateField} />
+          ) : activeStep === 5 ? (
+            <CourseCompletionForm form={form} onFieldChange={updateField} />
+          ) : (
+            <CourseReviewPanel form={form} />
+          )}
+        </div>
 
-            <div className="min-w-0">
-              <CourseSidebarPanel
-                coverImage={form.coverImage}
-                tagInput={form.tagInput}
-                tags={form.tags}
-                onTagInputChange={(value) => updateField("tagInput", value)}
-                onAddTag={handleAddTag}
-                onRemoveTag={handleRemoveTag}
-                onCoverImageSelect={handleCoverImageSelect}
-                onNext={handleNext}
-              />
-            </div>
-          </>
-        ) : activeStep === 2 ? (
-          <>
-            <div className="min-w-0">
-              <CourseContentForm
-                modules={form.modules}
-                onAddModule={handleAddModule}
-                onAddAnotherModule={handleAddModule}
-                onRemoveModule={handleRemoveModule}
-                onModuleFieldChange={handleModuleFieldChange}
-                onSubModuleChange={handleSubModuleChange}
-                onAddSubModule={handleAddSubModule}
-                onRemoveSubModule={handleRemoveSubModule}
-              />
-            </div>
-            <div className="min-w-0">
-              <CourseContentSidebar
-                lectureNotes={form.lectureNotes}
-                lectureVideos={form.lectureVideos}
-                studyMaterials={form.studyMaterials}
-                onLectureNotesSelect={(file) =>
-                  handleAssetSelect("lectureNotes", file)
-                }
-                onLectureVideosSelect={(file) =>
-                  handleAssetSelect("lectureVideos", file)
-                }
-                onStudyMaterialsSelect={(file) =>
-                  handleAssetSelect("studyMaterials", file)
-                }
-                onPrevious={handlePrevious}
-                onNext={handleNext}
-              />
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="min-w-0">
-              <CourseScheduleForm
-                modules={form.modules}
-                schedules={form.schedules}
-                onAddSchedule={handleAddSchedule}
-                onAddAnotherSchedule={handleAddSchedule}
-                onRemoveSchedule={handleRemoveSchedule}
-                onScheduleFieldChange={handleScheduleFieldChange}
-                onSaveSchedule={handleSaveSchedule}
-              />
-            </div>
-            <div className="min-w-0">
-              <CourseScheduleSidebar
-                schedules={form.schedules}
-                onPrevious={handlePrevious}
-                onFinish={handlePublish}
-              />
-            </div>
-          </>
-        )}
+        <div className="sticky bottom-0 border-t border-[#E5E5E8] bg-white px-6 py-4">
+          <div className="flex items-center justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={activeStep === 1}
+              className="h-10 border-[#E0E0E2] bg-[#F3F3F5] px-6 text-sm font-medium text-[#313131] hover:bg-[#ECECEF]"
+            >
+              Back
+            </Button>
+            {activeStep < totalSteps ? (
+              <Button
+                type="button"
+                onClick={handleNext}
+                className="h-10 bg-[#007AFF] px-6 text-sm font-medium text-white hover:bg-[#006DE0]"
+              >
+                Continue
+              </Button>
+            ) : (
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleSaveDraft}
+                  className="h-10 min-w-34 border-[#E0E0E2] bg-[#F3F3F5] px-6 text-sm font-medium text-[#313131] hover:bg-[#ECECEF]"
+                >
+                  Save as draft
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handlePublish}
+                  disabled={!canPublish}
+                  className="h-10 min-w-34 bg-[#007AFF] px-6 text-sm font-medium text-white hover:bg-[#006DE0]"
+                >
+                  Publish course
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </section>
   );
+}
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 }
