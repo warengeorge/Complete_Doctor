@@ -1,11 +1,4 @@
-import type { NextResponse } from "next/server";
-
 import { getApiErrorDetails } from "@/lib/api-client";
-import {
-  getTokenCookieMaxAge,
-  setAuthTokenCookie,
-  setRefreshTokenCookie,
-} from "@/lib/auth-cookie";
 import { createApiClient } from "@/lib/server-api-client";
 import type { BackendRefreshResponse } from "@/features/auth/types";
 
@@ -34,19 +27,6 @@ export async function requestRefreshTokens(refreshToken: string) {
     accessToken,
     refreshToken: nextRefreshToken,
   };
-}
-
-export function applyAuthCookies(
-  response: NextResponse,
-  accessToken: string,
-  refreshToken: string,
-) {
-  setAuthTokenCookie(response, accessToken, getTokenCookieMaxAge(accessToken));
-  setRefreshTokenCookie(
-    response,
-    refreshToken,
-    getTokenCookieMaxAge(refreshToken),
-  );
 }
 
 export function getRefreshFailureMessage(error: unknown) {

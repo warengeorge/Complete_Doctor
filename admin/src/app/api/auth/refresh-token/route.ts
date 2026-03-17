@@ -8,9 +8,9 @@ import {
 import {
   getRefreshFailureMessage,
   requestRefreshTokens,
-  applyAuthCookies,
 } from "@/lib/server-auth";
 import type { BFFRefreshResponse } from "@/features/auth/types";
+import { applyTokensToCookies } from "@/lib/token-manager";
 
 export async function POST(request: NextRequest) {
   // Try to get refresh token from cookies first, then from request body
@@ -41,7 +41,10 @@ export async function POST(request: NextRequest) {
       { status: 200 },
     );
 
-    applyAuthCookies(response, tokens.accessToken, tokens.refreshToken);
+    applyTokensToCookies(response, {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    });
 
     return response;
   } catch (error) {

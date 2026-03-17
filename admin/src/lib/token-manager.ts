@@ -70,6 +70,19 @@ export function applyTokensToCookies(
   }
 }
 
+export function applyAuthCookies(
+  response: NextResponse,
+  accessToken: string,
+  refreshToken: string,
+) {
+  setAuthTokenCookie(response, accessToken, getTokenCookieMaxAge(accessToken));
+  setRefreshTokenCookie(
+    response,
+    refreshToken,
+    getTokenCookieMaxAge(refreshToken),
+  );
+}
+
 export function validateTokenPair(
   tokens: Partial<TokenPair>,
 ): tokens is TokenPair {

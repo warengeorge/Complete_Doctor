@@ -8,11 +8,11 @@ import {
 } from "@/lib/auth-cookie";
 import { createApiClient } from "@/lib/server-api-client";
 import {
-  applyAuthCookies,
   getRefreshFailureMessage,
   requestRefreshTokens,
 } from "@/lib/server-auth";
 import type { BackendMeResponse, BFFMeResponse } from "@/features/auth/types";
+import { applyTokensToCookies } from "@/lib/token-manager";
 
 const BACKEND_AUTH_ME_PATH = process.env.BACKEND_AUTH_ME_PATH ?? "/auth/get-me";
 
@@ -84,11 +84,10 @@ export async function GET(request: NextRequest) {
     );
 
     if (refreshedTokens) {
-      applyAuthCookies(
-        response,
-        refreshedTokens.accessToken,
-        refreshedTokens.refreshToken,
-      );
+      applyTokensToCookies(response, {
+        accessToken: refreshedTokens.accessToken,
+        refreshToken: refreshedTokens.refreshToken,
+      });
     }
 
     return response;
@@ -122,11 +121,10 @@ export async function GET(request: NextRequest) {
           { status: 200 },
         );
 
-        applyAuthCookies(
-          response,
-          refreshedTokens.accessToken,
-          refreshedTokens.refreshToken,
-        );
+        applyTokensToCookies(response, {
+          accessToken: refreshedTokens.accessToken,
+          refreshToken: refreshedTokens.refreshToken,
+        });
 
         return response;
       } catch (refreshError) {
