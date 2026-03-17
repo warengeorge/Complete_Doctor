@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useAuthStore } from "../store";
 import { logoutRequest } from "./auth-api";
+import { AUTH_ME_QUERY_KEY } from "./auth-query-keys";
 
 export function useLogoutMutation() {
   const queryClient = useQueryClient();
@@ -11,7 +12,7 @@ export function useLogoutMutation() {
     mutationFn: logoutRequest,
     onSuccess: () => {
       clearAuth();
-      queryClient.removeQueries({ queryKey: ["auth-user"] });
+      queryClient.removeQueries({ queryKey: AUTH_ME_QUERY_KEY });
     },
   });
 }

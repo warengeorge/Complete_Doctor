@@ -16,12 +16,13 @@ export function AdminLoginForm() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const loginMutation = useLoginMutation();
+
   const {
     register,
     handleSubmit,
     clearErrors,
     setError,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<LoginSchema>({
     defaultValues: {
       email: "",
@@ -93,6 +94,7 @@ export function AdminLoginForm() {
             placeholder="Enter your email address"
             className="h-12 rounded-[5px] border-[#DADADD] bg-[#FAFAFA] placeholder:text-xs placeholder:text-[#B5B5B5]"
             autoComplete="email"
+            disabled={isSubmitting}
             {...register("email")}
           />
           {errors.email?.message ? (
@@ -114,6 +116,7 @@ export function AdminLoginForm() {
               placeholder="Enter your password"
               className="h-12 rounded-[5px] border-[#DADADD] bg-[#FAFAFA] pr-10 placeholder:text-xs placeholder:text-[#B5B5B5]"
               autoComplete="current-password"
+              disabled={isSubmitting}
               {...register("password")}
             />
             <button
@@ -144,10 +147,12 @@ export function AdminLoginForm() {
 
         <Button
           type="submit"
-          disabled={loginMutation.isPending}
+          disabled={isSubmitting || loginMutation.isPending}
           className="h-12 w-full rounded-[5px] bg-[#007AFF] text-base font-medium text-white hover:bg-[#006DE0] disabled:bg-[#66AFFF]"
         >
-          {loginMutation.isPending ? "Signing in..." : "Sign In"}
+          {isSubmitting || loginMutation.isPending
+            ? "Signing in..."
+            : "Sign In"}
         </Button>
       </form>
     </div>

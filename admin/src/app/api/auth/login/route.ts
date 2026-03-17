@@ -1,9 +1,16 @@
 import { NextResponse } from "next/server";
 
 import { getApiErrorDetails } from "@/lib/api-client";
-import { getTokenCookieMaxAge, setAuthTokenCookie } from "@/lib/auth-cookie";
 import { createApiClient } from "@/lib/server-api-client";
-import type { BackendLoginResponse, LoginInput } from "@/features/auth/types";
+import {
+  extractTokensFromResponse,
+  applyTokensToCookies,
+} from "@/lib/token-manager";
+import type {
+  BackendLoginResponse,
+  BFFLoginResponse,
+  LoginInput,
+} from "@/features/auth/types";
 
 const BACKEND_LOGIN_PATH = process.env.BACKEND_LOGIN_PATH ?? "/auth/login";
 
@@ -30,40 +37,61 @@ export async function POST(request: Request) {
       },
     );
 
-    const token = data.data?.data?.token;
-    const user = data.data?.data?.user ?? null;
-
-    if (!token) {
+    // Extract user data from nested backend response
+    const user = data.data?.data?.user;
+    if (!user) {
       return NextResponse.json(
         {
           success: false,
-          message: "Login succeeded but no token was returned by the backend.",
+          message: "Login failed: No user data returned by backend.",
         },
         { status: 502 },
       );
     }
 
-    const response = NextResponse.json({
-      success: data.success ?? true,
-      message: data.message ?? "Login successful.",
-      data: {
-        user,
-      },
-    });
+    // Extract tokens from backend response
+    const { accessToken, refreshToken } = extractTokensFromResponse(
+      data.data?.data,
+    );
+    if (!accessToken) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Login failed: No access token returned by backend.",
+        },
+        { status: 502 },
+      );
+    }
 
-    setAuthTokenCookie(response, token, getTokenCookieMaxAge(token));
+    // Build response
+    const response = NextResponse.json<BFFLoginResponse>(
+      {
+        success: true,
+        message: data.message ?? "Login successful.",
+        data: {
+          user,
+        },
+      },
+      { status: 200 },
+    );
+
+    // Apply tokens to cookies
+    applyTokensToCookies(response, {
+      accessToken,
+      refreshToken: refreshToken ?? "",
+    });
 
     return response;
   } catch (error) {
-    const { status, message, data } = getApiErrorDetails(error);
+    const { status, message, data: errorData } = getApiErrorDetails(error);
 
     return NextResponse.json(
       {
         success: false,
         message,
-        data,
+        data: errorData,
       },
-      { status },
+      { status: Math.max(status, 500) },
     );
   }
 }

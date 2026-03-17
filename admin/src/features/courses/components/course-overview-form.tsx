@@ -5,22 +5,20 @@ import { Plus, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-import { courseCategories, descriptionMaxLength } from "../constants";
+import { shortDescriptionMaxLength } from "../constants";
 import type { CourseCreateForm } from "../types";
 
-type OverviewEditableField =
-  | "courseName"
-  | "category"
-  | "price"
-  | "description"
-  | "tagInput";
+type BasicEditableField = "category" | "instructor" | "shortDescription" | "tagInput";
 
 type CourseOverviewFormProps = {
   form: CourseCreateForm;
-  onChange: (name: OverviewEditableField, value: string) => void;
-  onLearningOutcomeChange: (index: number, value: string) => void;
-  onAddLearningOutcome: () => void;
-  onRemoveLearningOutcome: (index: number) => void;
+  categories: string[];
+  instructors: string[];
+  onTitleChange: (value: string) => void;
+  onSlugChange: (value: string) => void;
+  onFieldChange: (name: BasicEditableField, value: string) => void;
+  onAddTag: () => void;
+  onRemoveTag: (tag: string) => void;
 };
 
 const inputClassName =
@@ -28,30 +26,50 @@ const inputClassName =
 
 export function CourseOverviewForm({
   form,
-  onChange,
-  onLearningOutcomeChange,
-  onAddLearningOutcome,
-  onRemoveLearningOutcome,
+  categories,
+  instructors,
+  onTitleChange,
+  onSlugChange,
+  onFieldChange,
+  onAddTag,
+  onRemoveTag,
 }: CourseOverviewFormProps) {
   return (
     <section className="overflow-hidden rounded-xl border border-[#E5E5E8] bg-white">
       <header className="border-b border-[#E5E5E8] px-5 py-4">
-        <h2 className="text-[16px] font-semibold text-[#151515]">
-          Course Overview
-        </h2>
+        <h2 className="text-[16px] font-semibold text-[#151515]">Basics</h2>
       </header>
 
       <div className="space-y-6 px-5 py-5">
         <div className="space-y-2">
           <label className="text-[14px] font-semibold text-[#313131]">
-            Course name
+            Course title
           </label>
           <Input
-            value={form.courseName}
-            onChange={(event) => onChange("courseName", event.target.value)}
-            placeholder="Add a course name/title"
+            value={form.title}
+            onChange={(event) => onTitleChange(event.target.value)}
+            placeholder="e.g. MRCPsych Paper A live course"
             className={inputClassName}
           />
+          <p className="text-[12px] text-[#7A7A7D]">Required</p>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-[14px] font-semibold text-[#313131]">
+            URL slug
+          </label>
+          <Input
+            value={form.slug}
+            onChange={(event) => onSlugChange(event.target.value)}
+            placeholder="auto-generated from title"
+            className={inputClassName}
+          />
+          {form.slug ? (
+            <p className="text-[12px] text-[#7A7A7D]">
+              completedoctor.com/courses/
+              <span className="font-semibold text-[#007AFF]">{form.slug}</span>
+            </p>
+          ) : null}
         </div>
 
         <div className="grid gap-5 md:grid-cols-2">
@@ -61,7 +79,7 @@ export function CourseOverviewForm({
             </label>
             <select
               value={form.category}
-              onChange={(event) => onChange("category", event.target.value)}
+              onChange={(event) => onFieldChange("category", event.target.value)}
               className={cn(
                 inputClassName,
                 "w-full px-3 outline-none",
@@ -69,7 +87,7 @@ export function CourseOverviewForm({
               )}
             >
               <option value="">Select course category</option>
-              {courseCategories.map((category) => (
+              {categories.map((category) => (
                 <option key={category} value={category}>
                   {category}
                 </option>
@@ -79,72 +97,83 @@ export function CourseOverviewForm({
 
           <div className="space-y-2">
             <label className="text-[14px] font-semibold text-[#313131]">
-              Pricing (optional)
+              Lead instructor
             </label>
-            <Input
-              value={form.price}
-              onChange={(event) => onChange("price", event.target.value)}
-              placeholder="Add a price"
-              className={inputClassName}
-            />
+            <select
+              value={form.instructor}
+              onChange={(event) => onFieldChange("instructor", event.target.value)}
+              className={cn(
+                inputClassName,
+                "w-full px-3 outline-none",
+                !form.instructor && "text-[#B1B1B3]",
+              )}
+            >
+              <option value="">Select instructor</option>
+              {instructors.map((instructor) => (
+                <option key={instructor} value={instructor}>
+                  {instructor}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
         <div className="space-y-2">
           <label className="text-[14px] font-semibold text-[#313131]">
-            Full Course Description
+            Short description
           </label>
           <textarea
-            value={form.description}
-            onChange={(event) => onChange("description", event.target.value)}
-            placeholder="Describe the course"
-            maxLength={descriptionMaxLength}
-            className={cn(
-              "min-h-40 w-full rounded-xl border border-[#E6E6E8] bg-[#FAFAFACC] px-4 py-3 text-sm text-[#2D2F33] outline-none placeholder:text-[#B1B1B3] focus-visible:ring-2 focus-visible:ring-[#007AFF]",
-            )}
+            value={form.shortDescription}
+            onChange={(event) => onFieldChange("shortDescription", event.target.value)}
+            placeholder="A concise summary shown on course cards."
+            maxLength={shortDescriptionMaxLength}
+            className="min-h-24 w-full rounded-xl border border-[#E6E6E8] bg-[#FAFAFACC] px-4 py-3 text-sm text-[#2D2F33] outline-none placeholder:text-[#B1B1B3] focus-visible:ring-2 focus-visible:ring-[#007AFF]"
           />
-          <p className="text-right text-[12px] text-[#ECECEC]">
-            Maximum character limit: {descriptionMaxLength}
+          <p className="text-right text-[12px] text-[#7A7A7D]">
+            {form.shortDescription.length} / {shortDescriptionMaxLength}
           </p>
         </div>
 
         <div className="space-y-3">
-          <label className="text-[14px] font-semibold text-[#313131]">
-            What students will learn
-          </label>
-          <div className="space-y-3">
-            {form.learningOutcomes.map((value, index) => (
-              <div key={`${index}-${value.length}`} className="flex items-center gap-2">
-                <Input
-                  value={value}
-                  onChange={(event) =>
-                    onLearningOutcomeChange(index, event.target.value)
-                  }
-                  placeholder="Default text"
-                  className={inputClassName}
-                />
-                {form.learningOutcomes.length > 1 ? (
-                  <button
-                    type="button"
-                    onClick={() => onRemoveLearningOutcome(index)}
-                    aria-label={`Remove learning outcome ${index + 1}`}
-                    className="rounded-full bg-[#EFEFF1] p-1.5 text-[#5D5D5D] hover:bg-[#E3E3E6]"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                ) : null}
-              </div>
+          <label className="text-[14px] font-semibold text-[#313131]">Tags</label>
+          <div className="flex flex-wrap gap-2">
+            {form.tags.map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center gap-1 rounded-lg border border-[#E6E6E8] bg-[#F3F3F5] px-3 py-1 text-[12px] font-medium text-[#3A3A3D]"
+              >
+                {tag}
+                <button
+                  type="button"
+                  onClick={() => onRemoveTag(tag)}
+                  className="text-[#9A9A9D] hover:text-[#B42318]"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </span>
             ))}
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex flex-col gap-3 md:flex-row">
+            <Input
+              value={form.tagInput}
+              onChange={(event) => onFieldChange("tagInput", event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  onAddTag();
+                }
+              }}
+              placeholder="e.g. MRCPsych, Paper A, Live course"
+              className={cn(inputClassName, "flex-1")}
+            />
             <button
               type="button"
-              onClick={onAddLearningOutcome}
-              className="inline-flex items-center gap-2 text-[14px] font-semibold text-[#2F2F31]"
+              onClick={onAddTag}
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-[#D5D5D9] bg-[#F3F3F5] px-4 text-[14px] font-semibold text-[#2F2F31] hover:bg-[#ECECEF]"
             >
               <Plus className="h-4 w-4" />
-              Add another
+              Add tag
             </button>
           </div>
         </div>

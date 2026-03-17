@@ -5,11 +5,13 @@ import { Button } from "@/components/ui/button";
 type CreateCourseHeaderProps = {
   onSaveDraft: () => void;
   onPublish: () => void;
+  canPublish: boolean;
 };
 
 export function CreateCourseHeader({
   onSaveDraft,
   onPublish,
+  canPublish,
 }: CreateCourseHeaderProps) {
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -34,6 +36,7 @@ export function CreateCourseHeader({
         <Button
           type="button"
           onClick={onPublish}
+          disabled={!canPublish}
           className="h-10 min-w-34 bg-[#007AFF] px-6 text-sm font-medium text-white hover:bg-[#006DE0]"
         >
           Publish course

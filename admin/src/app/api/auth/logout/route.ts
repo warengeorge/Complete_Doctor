@@ -1,14 +1,23 @@
 import { NextResponse } from "next/server";
 
-import { clearAuthTokenCookie } from "@/lib/auth-cookie";
+import { clearAuthCookies } from "@/lib/auth-cookie";
+import type { BFFRefreshResponse } from "@/features/auth/types";
 
-export async function POST() {
-  const response = NextResponse.json({
-    success: true,
-    message: "Logged out successfully.",
-  });
+/**
+ * Logout endpoint - clears auth cookies on client
+ * Note: Backend logout call is optional and handled by the client if needed
+ */
 
-  clearAuthTokenCookie(response);
+export async function POST(): Promise<NextResponse<BFFRefreshResponse>> {
+  const response = NextResponse.json<BFFRefreshResponse>(
+    {
+      success: true,
+      message: "Logged out successfully.",
+    },
+    { status: 200 },
+  );
+
+  clearAuthCookies(response);
 
   return response;
 }

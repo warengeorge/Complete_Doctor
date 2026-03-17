@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "../store";
 import type { LoginInput } from "../types";
 import { loginRequest } from "./auth-api";
+import { AUTH_ME_QUERY_KEY } from "./auth-query-keys";
 
 export function useLoginMutation() {
   const queryClient = useQueryClient();
@@ -11,8 +12,13 @@ export function useLoginMutation() {
   return useMutation({
     mutationFn: (input: LoginInput) => loginRequest(input),
     onSuccess: (response) => {
-      setAuthUser(response.data.user);
-      queryClient.setQueryData(["auth-user"], response.data.user);
+      const user = response.data.user;
+      setAuthUser(user);
+      queryClient.setQueryData(AUTH_ME_QUERY_KEY, {
+        success: true,
+        message: "Success",
+        data: { user },
+      });
     },
   });
 }
