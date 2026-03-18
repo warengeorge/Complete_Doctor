@@ -81,6 +81,22 @@ const templates: Omit<CourseListItem, "id">[] = [
     createdAt: "20 Mar 2025",
     image: "/images/event-image2.svg",
   },
+  {
+    title: "PLAB 2 Clinical Skills Sprint",
+    category: "PLAB",
+    status: "Draft",
+    enrolledStudents: 0,
+    createdAt: "20 Mar 2025",
+    image: "/images/event-image1.svg",
+  },
+  {
+    title: "Clinical Skills Foundations",
+    category: "Clinical Skills",
+    status: "Draft",
+    enrolledStudents: 0,
+    createdAt: "20 Mar 2025",
+    image: "/images/event-image2.svg",
+  },
 ];
 
 export const coursesListData: CourseListItem[] = Array.from(
