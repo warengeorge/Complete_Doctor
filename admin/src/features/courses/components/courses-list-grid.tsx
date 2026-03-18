@@ -24,7 +24,11 @@ export function CoursesListGrid({
       {rows.map((course) => (
         <Link
           key={course.id}
-          href={`/courses/${course.id}`}
+          href={
+            course.status === "Draft"
+              ? `/courses/create/${course.id}`
+              : `/courses/${course.id}`
+          }
           className="block hover:shadow-md transition-shadow"
         >
           <div className="relative rounded-xl border border-[#E5E5E8] bg-white shadow-sm overflow-hidden hover:border-[#007AFF]"

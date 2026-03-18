@@ -66,7 +66,11 @@ export function CoursesListTable({
 
                 <td className="px-3 py-3">
                   <Link
-                    href={`/courses/${course.id}`}
+                    href={
+                      course.status === "Draft"
+                        ? `/courses/create/${course.id}`
+                        : `/courses/${course.id}`
+                    }
                     className="flex items-center gap-3 hover:opacity-75 transition-opacity"
                   >
                     <div className="relative h-12 w-16 overflow-hidden rounded-md">
@@ -123,6 +127,8 @@ export function getStatusTextClass(status: CourseListItem["status"]) {
       return "text-[#007AFF]";
     case "Ended":
       return "text-[#DC0000]";
+    case "Draft":
+      return "text-[#9A6A00]";
     default:
       return "text-[#404043]";
   }
@@ -136,6 +142,8 @@ export function getStatusBgClass(status: CourseListItem["status"]) {
       return "bg-[#007AFF]/10";
     case "Ended":
       return "bg-[#DC0000]/10";
+    case "Draft":
+      return "bg-[#FFC107]/15";
     default:
       return "bg-[#404043]/10";
   }

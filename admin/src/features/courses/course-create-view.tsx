@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
@@ -10,6 +10,8 @@ import {
   courseSteps,
   shortDescriptionMaxLength,
 } from "./constants";
+import { coursesListData } from "./data/courses-list";
+import { courseDraftsData } from "./data/course-drafts";
 import { CourseCompletionForm } from "./components/course-completion-form";
 import { CourseContentForm } from "./components/course-content-form";
 import { CourseOverviewForm } from "./components/course-overview-form";
@@ -61,10 +63,20 @@ const initialForm: CourseCreateForm = {
   certificateModuleIds: "",
 };
 
-export function CourseCreateView() {
+type CourseCreateViewProps = {
+  draftId?: string;
+};
+
+export function CourseCreateView({ draftId }: CourseCreateViewProps) {
+  const draftSeed = useMemo(() => buildDraftSeed(draftId), [draftId]);
   const [activeStep, setActiveStep] = useState(1);
-  const [form, setForm] = useState<CourseCreateForm>(initialForm);
-  const [slugManual, setSlugManual] = useState(false);
+  const [form, setForm] = useState<CourseCreateForm>(draftSeed.form);
+  const [slugManual, setSlugManual] = useState(draftSeed.slugManual);
+
+  useEffect(() => {
+    setForm(draftSeed.form);
+    setSlugManual(draftSeed.slugManual);
+  }, [draftSeed]);
 
   const canPublish = useMemo(
     () => Boolean(form.title.trim() && form.category.trim()),
@@ -259,4 +271,45 @@ function slugify(value: string) {
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
+}
+
+function buildDraftSeed(draftId?: string) {
+  if (!draftId) {
+    return { form: initialForm, slugManual: false };
+  }
+
+  const draftEntry = courseDraftsData.find((draft) => draft.id === draftId);
+  const listEntry = coursesListData.find((course) => course.id === draftId);
+
+  const fallback: Partial<CourseCreateForm> = {};
+
+  if (listEntry) {
+    fallback.title = listEntry.title;
+    fallback.category = listEntry.category;
+    fallback.slug = slugify(listEntry.title);
+  }
+
+  if (draftEntry?.form) {
+    Object.assign(fallback, draftEntry.form);
+  }
+
+  const merged: CourseCreateForm = {
+    ...initialForm,
+    ...fallback,
+  };
+
+  return {
+    form: {
+      ...merged,
+      highlights: ensureAtLeastOne(merged.highlights),
+      objectives: ensureAtLeastOne(merged.objectives),
+      audience: ensureAtLeastOne(merged.audience),
+      prerequisites: ensureAtLeastOne(merged.prerequisites),
+    },
+    slugManual: Boolean(draftEntry?.form.slug),
+  };
+}
+
+function ensureAtLeastOne(items: string[]) {
+  return items.length === 0 ? [""] : items;
 }
