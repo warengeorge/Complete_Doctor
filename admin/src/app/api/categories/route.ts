@@ -47,3 +47,34 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export async function GET(request: NextRequest) {
+  const token = getAuthTokenFromRequest(request);
+  const apiClient = createApiClient(token ?? undefined);
+
+  try {
+    const { searchParams } = request.nextUrl;
+    const page = searchParams.get("page") ?? "1";
+    const pageSize = searchParams.get("pageSize") ?? "10";
+
+    const response = await apiClient.get(BACKEND_CATEGORIES_PATH, {
+      params: {
+        page,
+        pageSize,
+      },
+    });
+
+    return NextResponse.json(response.data, { status: response.status });
+  } catch (error) {
+    const { status, message, data } = getApiErrorDetails(error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        message,
+        data,
+      },
+      { status: Math.max(status, 500) },
+    );
+  }
+}
