@@ -14,6 +14,19 @@ export type CreateCategoryResponse = {
   data?: unknown;
 };
 
+export type UpdateCategoryInput = {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+};
+
+export type UpdateCategoryResponse = {
+  success: boolean;
+  message: string;
+  data?: unknown;
+};
+
 export type CategoriesListParams = {
   page?: number;
   pageSize?: number;
@@ -94,6 +107,29 @@ export async function createCategoryRequest(
     return data;
   } catch (error) {
     throw new Error(getApiErrorMessage(error, "Unable to create category."));
+  }
+}
+
+export async function updateCategoryRequest(
+  input: UpdateCategoryInput,
+): Promise<UpdateCategoryResponse> {
+  try {
+    const { data } = await bffClient.patch<UpdateCategoryResponse>(
+      `/categories/${input.id}`,
+      {
+        name: input.name.trim(),
+        slug: input.slug.trim(),
+        description: input.description?.trim() || undefined,
+      },
+    );
+
+    if (!data.success) {
+      throw new Error(data.message || "Unable to update category.");
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error, "Unable to update category."));
   }
 }
 

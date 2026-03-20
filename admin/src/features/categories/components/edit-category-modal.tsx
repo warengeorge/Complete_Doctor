@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 import type { CategoryListItem } from "../types";
+import { useUpdateCategoryMutation } from "../services/useUpdateCategoryMutation";
 
 export type EditCategoryPayload = {
   id: string;
@@ -36,7 +39,14 @@ const fieldClassName =
 const descriptionClassName =
   "block w-full min-h-[120px] rounded-xl border border-[#E7E7EA] bg-[#FCFCFD] px-4 py-3 text-sm text-[#2D2F33] placeholder:text-[#B1B1B3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF]";
 
-const emptyForm = {
+type EditCategoryFormValues = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+};
+
+const emptyForm: EditCategoryFormValues = {
   id: "",
   name: "",
   slug: "",
@@ -49,45 +59,72 @@ export function EditCategoryModal({
   category,
   onSubmit,
 }: EditCategoryModalProps) {
-  const [form, setForm] = useState(emptyForm);
+  const updateCategoryMutation = useUpdateCategoryMutation();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    clearErrors,
+    setError,
+    watch,
+    formState: { errors, isSubmitting, touchedFields, isSubmitted },
+  } = useForm<EditCategoryFormValues>({
+    defaultValues: emptyForm,
+  });
 
   useEffect(() => {
     if (open && category) {
-      setForm({
+      reset({
         id: category.id,
         name: category.name,
         slug: category.slug,
         description: category.description ?? "",
       });
+      clearErrors();
       return;
     }
     if (!open) {
-      setForm(emptyForm);
+      reset(emptyForm);
+      clearErrors();
     }
-  }, [open, category]);
+  }, [open, category, reset, clearErrors]);
 
-  const updateField = (name: keyof typeof form, value: string) => {
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
+  const nameValue = watch("name");
+  const slugValue = watch("slug");
+  const isValid = Boolean(nameValue?.trim() && slugValue?.trim());
+  const isBusy = isSubmitting || updateCategoryMutation.isPending;
 
-  const isValid = Boolean(form.name.trim() && form.slug.trim());
+  const showSlugError =
+    Boolean(errors.slug?.message) && (touchedFields.slug || isSubmitted);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!isValid) return;
-    onSubmit?.({
-      id: form.id,
-      name: form.name.trim(),
-      slug: form.slug.trim(),
-      description: form.description.trim(),
-    });
-    onOpenChange(false);
-  };
+  const onFormSubmit = handleSubmit(async (values) => {
+    clearErrors();
+
+    const payload: EditCategoryPayload = {
+      id: values.id,
+      name: values.name.trim(),
+      slug: values.slug.trim(),
+      description: values.description.trim(),
+    };
+
+    try {
+      await updateCategoryMutation.mutateAsync(payload);
+      onSubmit?.(payload);
+      toast.success("Category updated successfully.");
+      onOpenChange(false);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unable to update category.";
+      setError("root", { message });
+      toast.error(message);
+    }
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl rounded-2xl border-[#ECECEF]">
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        <form className="space-y-6" onSubmit={onFormSubmit}>
+          <input type="hidden" {...register("id")} />
           <DialogHeader className="flex-col items-start gap-1">
             <DialogTitle className="text-[28px]">Edit category</DialogTitle>
             <DialogDescription>
@@ -101,12 +138,16 @@ export function EditCategoryModal({
                 Category name
               </label>
               <Input
-                value={form.name}
-                onChange={(event) => updateField("name", event.target.value)}
                 placeholder="e.g. MSRA"
                 className={fieldClassName}
-                required
+                disabled={isBusy}
+                {...register("name", {
+                  required: "Category name is required.",
+                })}
               />
+              {errors.name?.message ? (
+                <p className="text-xs text-[#B42318]">{errors.name.message}</p>
+              ) : null}
             </div>
 
             <div className="space-y-2">
@@ -114,15 +155,27 @@ export function EditCategoryModal({
                 Slug
               </label>
               <Input
-                value={form.slug}
-                onChange={(event) => updateField("slug", event.target.value)}
                 placeholder="e.g. msra"
                 className={cn(fieldClassName, "lowercase")}
-                required
+                disabled={isBusy}
+                {...register("slug", {
+                  required: "Slug is required.",
+                  minLength: {
+                    value: 3,
+                    message: "Slug must be at least 3 characters.",
+                  },
+                  pattern: {
+                    value: /^[a-z0-9-]+$/,
+                    message: "Use lowercase letters, numbers, and hyphens only.",
+                  },
+                })}
               />
               <p className="text-xs text-[#7A7A7A]">
                 Used in URLs. Use lowercase letters, numbers, and hyphens.
               </p>
+              {showSlugError ? (
+                <p className="text-xs text-[#B42318]">{errors.slug?.message}</p>
+              ) : null}
             </div>
 
             <div className="space-y-2">
@@ -130,15 +183,17 @@ export function EditCategoryModal({
                 Description (optional)
               </label>
               <textarea
-                value={form.description}
-                onChange={(event) =>
-                  updateField("description", event.target.value)
-                }
                 placeholder="Add a short description"
                 className={descriptionClassName}
+                disabled={isBusy}
+                {...register("description")}
               />
             </div>
           </div>
+
+          {errors.root?.message ? (
+            <p className="text-sm text-[#B42318]">{errors.root.message}</p>
+          ) : null}
 
           <DialogFooter className="pt-2">
             <Button
@@ -146,15 +201,16 @@ export function EditCategoryModal({
               variant="outline"
               onClick={() => onOpenChange(false)}
               className="h-11 min-w-32 border-[#E1E1E4] bg-[#F3F3F5] px-6 font-semibold text-[#272727] hover:bg-[#ECECEF]"
+              disabled={isBusy}
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={!isValid}
+              disabled={!isValid || isBusy}
               className="h-11 min-w-44 bg-[#007AFF] px-6 font-semibold text-white hover:bg-[#006DE0] disabled:opacity-60"
             >
-              Save changes
+              {isBusy ? "Saving..." : "Save changes"}
             </Button>
           </DialogFooter>
         </form>
