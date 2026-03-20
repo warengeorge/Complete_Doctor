@@ -12,7 +12,9 @@ type BasicEditableField = "category" | "instructor" | "shortDescription" | "tagI
 
 type CourseOverviewFormProps = {
   form: CourseCreateForm;
-  categories: string[];
+  categories: Array<{ id: string; name: string }>;
+  categoriesLoading?: boolean;
+  categoriesError?: string | null;
   instructors: string[];
   onTitleChange: (value: string) => void;
   onSlugChange: (value: string) => void;
@@ -27,6 +29,8 @@ const inputClassName =
 export function CourseOverviewForm({
   form,
   categories,
+  categoriesLoading,
+  categoriesError,
   instructors,
   onTitleChange,
   onSlugChange,
@@ -85,14 +89,24 @@ export function CourseOverviewForm({
                 "w-full px-3 outline-none",
                 !form.category && "text-[#B1B1B3]",
               )}
+              disabled={categoriesLoading}
             >
-              <option value="">Select course category</option>
+              <option value="">
+                {categoriesLoading
+                  ? "Loading categories..."
+                  : categoriesError
+                    ? "Unable to load categories"
+                    : "Select course category"}
+              </option>
               {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
+                <option key={category.id} value={category.name}>
+                  {category.name}
                 </option>
               ))}
             </select>
+            {categoriesError ? (
+              <p className="text-xs text-[#B42318]">{categoriesError}</p>
+            ) : null}
           </div>
 
           <div className="space-y-2">

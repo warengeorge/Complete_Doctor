@@ -4,12 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
-import {
-  courseCategories,
-  courseInstructors,
-  courseSteps,
-  shortDescriptionMaxLength,
-} from "./constants";
+import { courseInstructors, courseSteps, shortDescriptionMaxLength } from "./constants";
 import { coursesListData } from "./data/courses-list";
 import { courseDraftsData } from "./data/course-drafts";
 import { CourseCompletionForm } from "./components/course-completion-form";
@@ -21,6 +16,7 @@ import { CourseStructureForm } from "./components/course-structure-form";
 import { CreateCourseStepper } from "./components/create-course-stepper";
 import type { CourseCreateForm } from "./types";
 import { CreateCourseHeader } from "./components/create-course-header";
+import { useCategoriesQuery } from "../categories/services/useCategoriesQuery";
 
 type BasicEditableField =
   | "category"
@@ -72,6 +68,16 @@ export function CourseCreateView({ draftId }: CourseCreateViewProps) {
   const [activeStep, setActiveStep] = useState(1);
   const [form, setForm] = useState<CourseCreateForm>(draftSeed.form);
   const [slugManual, setSlugManual] = useState(draftSeed.slugManual);
+  const categoriesQuery = useCategoriesQuery({ page: 1, pageSize: 100 });
+
+  const categoryOptions = useMemo(
+    () =>
+      (categoriesQuery.data?.items ?? []).map((category) => ({
+        id: category.id,
+        name: category.name,
+      })),
+    [categoriesQuery.data?.items],
+  );
 
   useEffect(() => {
     setForm(draftSeed.form);
@@ -192,7 +198,15 @@ export function CourseCreateView({ draftId }: CourseCreateViewProps) {
           {activeStep === 1 ? (
             <CourseOverviewForm
               form={form}
-              categories={courseCategories}
+              categories={categoryOptions}
+              categoriesLoading={categoriesQuery.isLoading}
+              categoriesError={
+                categoriesQuery.isError
+                  ? categoriesQuery.error instanceof Error
+                    ? categoriesQuery.error.message
+                    : "Unable to load categories."
+                  : null
+              }
               instructors={courseInstructors}
               onTitleChange={handleTitleChange}
               onSlugChange={handleSlugChange}
