@@ -1,5 +1,3 @@
-import axios from "axios";
-
 import { bffClient, getApiErrorMessage } from "@/lib/api-client";
 
 export type CreateCategoryInput = {
@@ -15,17 +13,10 @@ export type CreateCategoryResponse = {
   data?: unknown;
 };
 
-const multipartClient = axios.create({
-  baseURL: "/api",
-  withCredentials: true,
-  headers: {
-    Accept: "application/json",
-  },
-});
-
 export async function createCategoryRequest(
   input: CreateCategoryInput,
 ): Promise<CreateCategoryResponse> {
+  console.log({ input });
   try {
     if (input.icon) {
       const body = new FormData();
@@ -36,11 +27,17 @@ export async function createCategoryRequest(
       }
       body.append("icon", input.icon);
 
-      const { data } = await multipartClient.post<CreateCategoryResponse>(
+      const { data } = await bffClient.post<CreateCategoryResponse>(
         "/categories",
         body,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        },
       );
 
+      console.log({ data });
       if (!data.success) {
         throw new Error(data.message || "Unable to create category.");
       }
