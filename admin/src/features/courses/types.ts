@@ -4,7 +4,7 @@ export type CourseStep = {
   description?: string;
 };
 
-export type CourseStatus = "Ongoing" | "Upcoming" | "Ended" | "Draft";
+export type CourseStatus = "Draft" | "Published" | "Archived";
 
 export type CourseListItem = {
   id: string;

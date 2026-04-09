@@ -121,14 +121,12 @@ export function CoursesListTable({
 
 export function getStatusTextClass(status: CourseListItem["status"]) {
   switch (status) {
-    case "Ongoing":
-      return "text-[#008409]";
-    case "Upcoming":
-      return "text-[#007AFF]";
-    case "Ended":
-      return "text-[#DC0000]";
     case "Draft":
       return "text-[#9A6A00]";
+    case "Published":
+      return "text-[#008409]";
+    case "Archived":
+      return "text-[#6B6B6E]";
     default:
       return "text-[#404043]";
   }
@@ -136,14 +134,12 @@ export function getStatusTextClass(status: CourseListItem["status"]) {
 
 export function getStatusBgClass(status: CourseListItem["status"]) {
   switch (status) {
-    case "Ongoing":
-      return "bg-[#008409]/10";
-    case "Upcoming":
-      return "bg-[#007AFF]/10";
-    case "Ended":
-      return "bg-[#DC0000]/10";
     case "Draft":
       return "bg-[#FFC107]/15";
+    case "Published":
+      return "bg-[#008409]/10";
+    case "Archived":
+      return "bg-[#6B6B6E]/10";
     default:
       return "bg-[#404043]/10";
   }

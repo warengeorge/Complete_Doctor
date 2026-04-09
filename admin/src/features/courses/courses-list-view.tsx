@@ -25,11 +25,7 @@ export function CoursesListView() {
 
     return coursesListData.filter((course) => {
       const matchesTab =
-        activeTab === "All"
-          ? true
-          : activeTab === "Drafts"
-            ? course.status === "Draft"
-            : course.status === activeTab;
+        activeTab === "All" ? true : course.status === activeTab;
 
       const matchesSearch =
         normalized.length === 0
