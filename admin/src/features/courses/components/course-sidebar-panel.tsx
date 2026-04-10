@@ -16,7 +16,7 @@ type CourseSidebarPanelProps = {
   onAddTag: () => void;
   onRemoveTag: (tag: string) => void;
   onCoverImageSelect: (file: File | null) => void;
-  onNext: () => void;
+  onNext?: () => void;
 };
 
 const inputClassName =
@@ -170,17 +170,19 @@ export function CourseSidebarPanel({
         </div>
       </section>
 
-      <div className="flex justify-end">
-        <Button
-          type="button"
-          onClick={onNext}
-          className={cn(
-            "h-11 min-w-34 bg-[#007AFF] px-7 text-[14px] font-semibold text-white hover:bg-[#006DE0]",
-          )}
-        >
-          Next
-        </Button>
-      </div>
+      {onNext ? (
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            onClick={onNext}
+            className={cn(
+              "h-11 min-w-34 bg-[#007AFF] px-7 text-[14px] font-semibold text-white hover:bg-[#006DE0]",
+            )}
+          >
+            Next
+          </Button>
+        </div>
+      ) : null}
     </aside>
   );
 }

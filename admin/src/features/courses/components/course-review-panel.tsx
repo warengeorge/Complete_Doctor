@@ -22,6 +22,12 @@ export function CourseReviewPanel({ form }: CourseReviewPanelProps) {
             { label: "Instructor", value: form.instructor },
           ]}
         />
+        {form.coverImage ? (
+          <ReviewRow
+            label="Cover image"
+            value={`${form.coverImage.name} (${form.coverImage.sizeKb}KB)`}
+          />
+        ) : null}
         {form.shortDescription ? (
           <ReviewRow label="Short description" value={form.shortDescription} />
         ) : null}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
@@ -12,6 +12,7 @@ import { CourseContentForm } from "./components/course-content-form";
 import { CourseOverviewForm } from "./components/course-overview-form";
 import { CoursePricingForm } from "./components/course-pricing-form";
 import { CourseReviewPanel } from "./components/course-review-panel";
+import { CourseSidebarPanel } from "./components/course-sidebar-panel";
 import { CourseStructureForm } from "./components/course-structure-form";
 import { CreateCourseStepper } from "./components/create-course-stepper";
 import type { CourseCreateForm } from "./types";
@@ -33,6 +34,7 @@ const initialForm: CourseCreateForm = {
   shortDescription: "",
   tagInput: "",
   tags: [],
+  coverImage: null,
   depth: "FULL",
   enrolmentType: "COHORT",
   repeatAccess: "COURSE_DURATION",
@@ -68,6 +70,7 @@ export function CourseCreateView({ draftId }: CourseCreateViewProps) {
   const [activeStep, setActiveStep] = useState(1);
   const [form, setForm] = useState<CourseCreateForm>(draftSeed.form);
   const [slugManual, setSlugManual] = useState(draftSeed.slugManual);
+  const coverImageUrlRef = useRef<string | null>(null);
   const categoriesQuery = useCategoriesQuery({ page: 1, pageSize: 100 });
 
   const categoryOptions = useMemo(
@@ -80,9 +83,21 @@ export function CourseCreateView({ draftId }: CourseCreateViewProps) {
   );
 
   useEffect(() => {
+    if (coverImageUrlRef.current?.startsWith("blob:")) {
+      URL.revokeObjectURL(coverImageUrlRef.current);
+      coverImageUrlRef.current = null;
+    }
     setForm(draftSeed.form);
     setSlugManual(draftSeed.slugManual);
   }, [draftSeed]);
+
+  useEffect(() => {
+    return () => {
+      if (coverImageUrlRef.current?.startsWith("blob:")) {
+        URL.revokeObjectURL(coverImageUrlRef.current);
+      }
+    };
+  }, []);
 
   const canPublish = useMemo(
     () => Boolean(form.title.trim() && form.category.trim()),
@@ -165,6 +180,26 @@ export function CourseCreateView({ draftId }: CourseCreateViewProps) {
     });
   };
 
+  const handleCoverImageSelect = (file: File | null) => {
+    if (coverImageUrlRef.current?.startsWith("blob:")) {
+      URL.revokeObjectURL(coverImageUrlRef.current);
+      coverImageUrlRef.current = null;
+    }
+
+    if (!file) {
+      updateField("coverImage", null);
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    coverImageUrlRef.current = previewUrl;
+    updateField("coverImage", {
+      name: file.name,
+      sizeKb: Math.max(1, Math.round(file.size / 1024)),
+      previewUrl,
+    });
+  };
+
   const handleSaveDraft = () => {
     // Placeholder for API integration.
     console.log("Save draft", form);
@@ -196,24 +231,33 @@ export function CourseCreateView({ draftId }: CourseCreateViewProps) {
 
         <div className="flex-1">
           {activeStep === 1 ? (
-            <CourseOverviewForm
-              form={form}
-              categories={categoryOptions}
-              categoriesLoading={categoriesQuery.isLoading}
-              categoriesError={
-                categoriesQuery.isError
-                  ? categoriesQuery.error instanceof Error
-                    ? categoriesQuery.error.message
-                    : "Unable to load categories."
-                  : null
-              }
-              instructors={courseInstructors}
-              onTitleChange={handleTitleChange}
-              onSlugChange={handleSlugChange}
-              onFieldChange={updateBasicField}
-              onAddTag={handleAddTag}
-              onRemoveTag={handleRemoveTag}
-            />
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+              <CourseOverviewForm
+                form={form}
+                categories={categoryOptions}
+                categoriesLoading={categoriesQuery.isLoading}
+                categoriesError={
+                  categoriesQuery.isError
+                    ? categoriesQuery.error instanceof Error
+                      ? categoriesQuery.error.message
+                      : "Unable to load categories."
+                    : null
+                }
+                instructors={courseInstructors}
+                onTitleChange={handleTitleChange}
+                onSlugChange={handleSlugChange}
+                onFieldChange={updateBasicField}
+              />
+              <CourseSidebarPanel
+                coverImage={form.coverImage}
+                tagInput={form.tagInput}
+                tags={form.tags}
+                onTagInputChange={(value) => updateBasicField("tagInput", value)}
+                onAddTag={handleAddTag}
+                onRemoveTag={handleRemoveTag}
+                onCoverImageSelect={handleCoverImageSelect}
+              />
+            </div>
           ) : activeStep === 2 ? (
             <CourseStructureForm form={form} onFieldChange={updateField} />
           ) : activeStep === 3 ? (

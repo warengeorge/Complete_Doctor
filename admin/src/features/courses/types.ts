@@ -61,6 +61,7 @@ export type CourseCreateForm = {
   shortDescription: string;
   tagInput: string;
   tags: string[];
+  coverImage: CourseCoverImage | null;
   depth: "FULL" | "MODULES_ONLY" | "FLAT";
   enrolmentType: "COHORT" | "OPEN" | "SELF_PACED";
   repeatAccess:
