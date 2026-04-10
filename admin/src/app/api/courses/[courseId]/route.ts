@@ -6,22 +6,18 @@ import { createApiClient } from "@/lib/server-api-client";
 
 const BACKEND_COURSES_PATH = process.env.BACKEND_COURSES_PATH ?? "/courses";
 
-export async function GET(request: NextRequest) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ courseId: string }> },
+) {
   const token = getAuthTokenFromRequest(request);
   const apiClient = createApiClient(token ?? undefined);
 
   try {
-    const { searchParams } = request.nextUrl;
-    const page = searchParams.get("page") ?? "1";
-    const pageSize = searchParams.get("pageSize") ?? "10";
-
-    const params = {
-      page,
-      pageSize,
-      ...Object.fromEntries(searchParams.entries()),
-    };
-
-    const response = await apiClient.get(BACKEND_COURSES_PATH, { params });
+    const { courseId } = await params;
+    const response = await apiClient.get(
+      `${BACKEND_COURSES_PATH}/${courseId}`,
+    );
 
     return NextResponse.json(response.data, { status: response.status });
   } catch (error) {

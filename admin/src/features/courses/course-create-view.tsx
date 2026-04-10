@@ -4,7 +4,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
-import { courseInstructors, courseSteps, shortDescriptionMaxLength } from "./constants";
+import {
+  courseInstructors,
+  courseSteps,
+  shortDescriptionMaxLength,
+} from "./constants";
 import { coursesListData } from "./data/courses-list";
 import { courseDraftsData } from "./data/course-drafts";
 import { CourseCompletionForm } from "./components/course-completion-form";
@@ -18,6 +22,8 @@ import { CreateCourseStepper } from "./components/create-course-stepper";
 import type { CourseCreateForm } from "./types";
 import { CreateCourseHeader } from "./components/create-course-header";
 import { useCategoriesQuery } from "../categories/services/useCategoriesQuery";
+import { type CourseDetail } from "./services/courses-api";
+import { useCourseByIdQuery } from "./services/useCourseByIdQuery";
 
 type BasicEditableField =
   | "category"
@@ -65,13 +71,26 @@ type CourseCreateViewProps = {
   draftId?: string;
 };
 
+const ALLOWED_DEPTH = ["FULL", "MODULES_ONLY", "FLAT"] as const;
+const ALLOWED_ENROLMENT = ["COHORT", "OPEN", "SELF_PACED"] as const;
+const ALLOWED_REPEAT_ACCESS = [
+  "COURSE_DURATION",
+  "UNLIMITED",
+  "ONCE",
+  "EXPIRES_AFTER_30_DAYS",
+] as const;
+const ALLOWED_CURRENCY = ["GBP", "USD", "EUR", "NGN"] as const;
+
 export function CourseCreateView({ draftId }: CourseCreateViewProps) {
   const draftSeed = useMemo(() => buildDraftSeed(draftId), [draftId]);
+
   const [activeStep, setActiveStep] = useState(1);
   const [form, setForm] = useState<CourseCreateForm>(draftSeed.form);
   const [slugManual, setSlugManual] = useState(draftSeed.slugManual);
+  const [hasHydratedDraft, setHasHydratedDraft] = useState(false);
   const coverImageUrlRef = useRef<string | null>(null);
   const categoriesQuery = useCategoriesQuery({ page: 1, pageSize: 100 });
+  const courseDetailQuery = useCourseByIdQuery(draftId);
 
   const categoryOptions = useMemo(
     () =>
@@ -89,6 +108,7 @@ export function CourseCreateView({ draftId }: CourseCreateViewProps) {
     }
     setForm(draftSeed.form);
     setSlugManual(draftSeed.slugManual);
+    setHasHydratedDraft(false);
   }, [draftSeed]);
 
   useEffect(() => {
@@ -98,6 +118,34 @@ export function CourseCreateView({ draftId }: CourseCreateViewProps) {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (!draftId || !courseDetailQuery.data || hasHydratedDraft) return;
+
+    const mapped = mapCourseDetailToForm(
+      courseDetailQuery.data,
+      categoryOptions,
+    );
+
+    coverImageUrlRef.current = null;
+    setForm(normalizeDraftForm(mapped));
+    setSlugManual(Boolean(mapped.slug));
+    setHasHydratedDraft(true);
+  }, [courseDetailQuery.data, categoryOptions, draftId, hasHydratedDraft]);
+
+  useEffect(() => {
+    if (!draftId || !courseDetailQuery.data) return;
+    if (form.category || categoryOptions.length === 0) return;
+
+    const resolvedCategory = resolveCategoryName(
+      courseDetailQuery.data,
+      categoryOptions,
+    );
+
+    if (resolvedCategory) {
+      setForm((prev) => ({ ...prev, category: resolvedCategory }));
+    }
+  }, [categoryOptions, courseDetailQuery.data, draftId, form.category]);
 
   const canPublish = useMemo(
     () => Boolean(form.title.trim() && form.category.trim()),
@@ -252,7 +300,9 @@ export function CourseCreateView({ draftId }: CourseCreateViewProps) {
                 coverImage={form.coverImage}
                 tagInput={form.tagInput}
                 tags={form.tags}
-                onTagInputChange={(value) => updateBasicField("tagInput", value)}
+                onTagInputChange={(value) =>
+                  updateBasicField("tagInput", value)
+                }
                 onAddTag={handleAddTag}
                 onRemoveTag={handleRemoveTag}
                 onCoverImageSelect={handleCoverImageSelect}
@@ -370,4 +420,185 @@ function buildDraftSeed(draftId?: string) {
 
 function ensureAtLeastOne(items: string[]) {
   return items.length === 0 ? [""] : items;
+}
+
+function normalizeDraftForm(overrides: Partial<CourseCreateForm>) {
+  const merged: CourseCreateForm = {
+    ...initialForm,
+    ...overrides,
+  };
+
+  return {
+    ...merged,
+    highlights: ensureAtLeastOne(merged.highlights),
+    objectives: ensureAtLeastOne(merged.objectives),
+    audience: ensureAtLeastOne(merged.audience),
+    prerequisites: ensureAtLeastOne(merged.prerequisites),
+  };
+}
+
+function mapCourseDetailToForm(
+  course: CourseDetail,
+  categories: Array<{ id: string; name: string }>,
+): Partial<CourseCreateForm> {
+  const earlyBirdPrice = normalizeScalar(course.earlyBirdPrice);
+  const earlyBirdUntil = course.earlyBirdAvailableUntil ?? "";
+  const certificateModuleIds = Array.isArray(course.completionRequiredModuleIds)
+    ? course.completionRequiredModuleIds.join(",")
+    : "";
+  const certificatePassMark = course.completionRequiredPassMark ?? "";
+
+  return {
+    title: course.title ?? "",
+    slug: course.slug ?? "",
+    category: resolveCategoryName(course, categories),
+    instructor: resolveInstructorName(course),
+    shortDescription: course.shortDescription ?? "",
+    tagInput: "",
+    tags: normalizeStringArray(course.tags),
+    coverImage: buildCoverImage(course.coverImageUrl ?? course.image ?? null),
+    depth: pickEnum(course.depth, ALLOWED_DEPTH, "FULL"),
+    enrolmentType: pickEnum(
+      course.enrollmentType ?? course.enrolmentType,
+      ALLOWED_ENROLMENT,
+      "COHORT",
+    ),
+    repeatAccess: pickEnum(
+      course.repeatAccess,
+      ALLOWED_REPEAT_ACCESS,
+      "COURSE_DURATION",
+    ),
+    durationWeeks:
+      course.durationWeeks !== null && course.durationWeeks !== undefined
+        ? String(course.durationWeeks)
+        : "",
+    sessionFrequency: course.sessionFrequency ?? "",
+    requiresAccount: course.requiresAccount ?? true,
+    isActive: course.isActive ?? true,
+    description: course.description ?? "",
+    about: course.aboutCourse ?? "",
+    highlights: normalizeStringArray(course.highlights),
+    objectives: normalizeStringArray(course.objectives),
+    audience: normalizeStringArray(course.targetAudience ?? course.audience),
+    prerequisites: normalizeStringArray(course.prerequisites),
+    price: normalizeScalar(course.basePrice),
+    currency: pickEnum(course.currency, ALLOWED_CURRENCY, "GBP"),
+    priceNote: course.priceNote ?? "",
+    earlyBirdEnabled: Boolean(earlyBirdPrice || earlyBirdUntil),
+    earlyBirdPrice,
+    earlyBirdUntil,
+    syllabusLink: course.syllabusLink ?? "",
+    certificateEnabled: Boolean(
+      course.completionRequireAllModules ||
+      certificatePassMark ||
+      certificateModuleIds,
+    ),
+    certificateRequireAll: Boolean(course.completionRequireAllModules),
+    certificatePassMark,
+    certificateModuleIds,
+  };
+}
+
+function resolveCategoryName(
+  course: CourseDetail,
+  categories: Array<{ id: string; name: string }>,
+) {
+  if (typeof course.category === "string" && course.category.trim()) {
+    return course.category;
+  }
+
+  if (
+    course.category &&
+    typeof course.category === "object" &&
+    course.category.name
+  ) {
+    return course.category.name;
+  }
+
+  if (course.categoryName) {
+    return course.categoryName;
+  }
+
+  const categoryIds = Array.isArray(course.categories)
+    ? course.categories
+        .map((category) => category?.categoryId)
+        .filter((id): id is string => Boolean(id))
+    : [];
+
+  for (const categoryId of categoryIds) {
+    const match = categories.find((category) => category.id === categoryId);
+    if (match) return match.name;
+  }
+
+  return "";
+}
+
+function resolveInstructorName(course: CourseDetail) {
+  const instructors = Array.isArray(course.instructors)
+    ? course.instructors
+    : [];
+
+  for (const instructor of instructors) {
+    if (typeof instructor === "string" && instructor.trim()) {
+      return instructor;
+    }
+    if (
+      instructor &&
+      typeof instructor === "object" &&
+      typeof instructor.name === "string" &&
+      instructor.name.trim()
+    ) {
+      return instructor.name;
+    }
+  }
+
+  return "";
+}
+
+function buildCoverImage(url: string | null) {
+  if (!url) return null;
+  const name = getFileNameFromUrl(url) ?? "Cover image";
+  return {
+    name,
+    sizeKb: 0,
+    previewUrl: url,
+  };
+}
+
+function getFileNameFromUrl(value: string) {
+  try {
+    const url = new URL(value);
+    const parts = url.pathname.split("/").filter(Boolean);
+    return parts[parts.length - 1] ?? null;
+  } catch {
+    const parts = value.split("/").filter(Boolean);
+    return parts[parts.length - 1] ?? null;
+  }
+}
+
+function normalizeStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => (typeof item === "string" ? item.trim() : ""))
+    .filter(Boolean);
+}
+
+function normalizeScalar(value: unknown) {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value.toString();
+  }
+  return "";
+}
+
+function pickEnum<T extends string>(
+  value: unknown,
+  allowed: readonly T[],
+  fallback: T,
+): T {
+  if (typeof value !== "string") return fallback;
+  const normalized = value.trim().toUpperCase();
+  const matched = allowed.find((option) => option === normalized);
+  return matched ?? fallback;
 }
