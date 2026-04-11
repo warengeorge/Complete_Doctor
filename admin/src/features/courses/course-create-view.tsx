@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 
@@ -22,8 +25,17 @@ import { CreateCourseStepper } from "./components/create-course-stepper";
 import type { CourseCreateForm } from "./types";
 import { CreateCourseHeader } from "./components/create-course-header";
 import { useCategoriesQuery } from "../categories/services/useCategoriesQuery";
-import { type CourseDetail } from "./services/courses-api";
+import {
+  createCourseRequest,
+  type CourseDetail,
+  updateCourseRequest,
+} from "./services/courses-api";
 import { useCourseByIdQuery } from "./services/useCourseByIdQuery";
+import {
+  COURSE_DETAIL_QUERY_KEY,
+  COURSES_LIST_QUERY_KEY,
+} from "./services/courses-query-keys";
+import { toast } from "sonner";
 
 type BasicEditableField =
   | "category"
@@ -83,11 +95,21 @@ const ALLOWED_CURRENCY = ["GBP", "USD", "EUR", "NGN"] as const;
 
 export function CourseCreateView({ draftId }: CourseCreateViewProps) {
   const draftSeed = useMemo(() => buildDraftSeed(draftId), [draftId]);
+  const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [activeStep, setActiveStep] = useState(1);
-  const [form, setForm] = useState<CourseCreateForm>(draftSeed.form);
+  const formMethods = useForm<CourseCreateForm>({
+    defaultValues: draftSeed.form,
+  });
+  const { setValue, getValues, reset, watch, formState } = formMethods;
+  const form = watch();
   const [slugManual, setSlugManual] = useState(draftSeed.slugManual);
   const [hasHydratedDraft, setHasHydratedDraft] = useState(false);
+  const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<"draft" | "publish" | null>(
+    null,
+  );
   const coverImageUrlRef = useRef<string | null>(null);
   const categoriesQuery = useCategoriesQuery({ page: 1, pageSize: 100 });
   const courseDetailQuery = useCourseByIdQuery(draftId);
@@ -106,10 +128,11 @@ export function CourseCreateView({ draftId }: CourseCreateViewProps) {
       URL.revokeObjectURL(coverImageUrlRef.current);
       coverImageUrlRef.current = null;
     }
-    setForm(draftSeed.form);
+    reset(draftSeed.form);
     setSlugManual(draftSeed.slugManual);
     setHasHydratedDraft(false);
-  }, [draftSeed]);
+    setCoverImageFile(null);
+  }, [draftSeed, reset]);
 
   useEffect(() => {
     return () => {
@@ -128,10 +151,10 @@ export function CourseCreateView({ draftId }: CourseCreateViewProps) {
     );
 
     coverImageUrlRef.current = null;
-    setForm(normalizeDraftForm(mapped));
+    reset(normalizeDraftForm(mapped));
     setSlugManual(Boolean(mapped.slug));
     setHasHydratedDraft(true);
-  }, [courseDetailQuery.data, categoryOptions, draftId, hasHydratedDraft]);
+  }, [courseDetailQuery.data, categoryOptions, draftId, hasHydratedDraft, reset]);
 
   useEffect(() => {
     if (!draftId || !courseDetailQuery.data) return;
@@ -143,9 +166,18 @@ export function CourseCreateView({ draftId }: CourseCreateViewProps) {
     );
 
     if (resolvedCategory) {
-      setForm((prev) => ({ ...prev, category: resolvedCategory }));
+      setValue("category", resolvedCategory, {
+        shouldDirty: true,
+        shouldValidate: false,
+      });
     }
-  }, [categoryOptions, courseDetailQuery.data, draftId, form.category]);
+  }, [
+    categoryOptions,
+    courseDetailQuery.data,
+    draftId,
+    form.category,
+    setValue,
+  ]);
 
   const canPublish = useMemo(
     () => Boolean(form.title.trim() && form.category.trim()),
@@ -153,35 +185,37 @@ export function CourseCreateView({ draftId }: CourseCreateViewProps) {
   );
 
   const updateBasicField = (name: BasicEditableField, value: string) => {
-    setForm((prev) => {
-      if (name === "shortDescription") {
-        return {
-          ...prev,
-          shortDescription: value.slice(0, shortDescriptionMaxLength),
-        };
-      }
-      return { ...prev, [name]: value };
+    if (name === "shortDescription") {
+      setValue(name, value.slice(0, shortDescriptionMaxLength), {
+        shouldDirty: true,
+        shouldValidate: false,
+      });
+      return;
+    }
+    setValue(name, value, { shouldDirty: true, shouldValidate: false });
+  };
+
+  const updateField = (name: keyof CourseCreateForm, value: unknown) => {
+    setValue(name, value as never, {
+      shouldDirty: true,
+      shouldValidate: false,
     });
   };
 
-  const updateField = <K extends keyof CourseCreateForm>(
-    name: K,
-    value: CourseCreateForm[K],
-  ) => {
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
   const handleTitleChange = (value: string) => {
-    setForm((prev) => ({
-      ...prev,
-      title: value,
-      slug: slugManual ? prev.slug : slugify(value),
-    }));
+    setValue("title", value, { shouldDirty: true, shouldValidate: false });
+    setValue("slug", slugManual ? getValues("slug") : slugify(value), {
+      shouldDirty: true,
+      shouldValidate: false,
+    });
   };
 
   const handleSlugChange = (value: string) => {
     setSlugManual(true);
-    setForm((prev) => ({ ...prev, slug: slugify(value) }));
+    setValue("slug", slugify(value), {
+      shouldDirty: true,
+      shouldValidate: false,
+    });
   };
 
   const handleArrayChange = (
@@ -189,42 +223,56 @@ export function CourseCreateView({ draftId }: CourseCreateViewProps) {
     index: number,
     value: string,
   ) => {
-    setForm((prev) => {
-      const updated = [...prev[field]];
-      updated[index] = value;
-      return { ...prev, [field]: updated };
+    const current = getValues(field);
+    const updated = [...current];
+    updated[index] = value;
+    setValue(field, updated as CourseCreateForm[typeof field], {
+      shouldDirty: true,
+      shouldValidate: false,
     });
   };
 
   const handleAddTag = () => {
-    const entries = form.tagInput
+    const entries = getValues("tagInput")
       .split(",")
       .map((item) => item.trim())
       .filter(Boolean);
 
     if (entries.length === 0) return;
 
-    setForm((prev) => {
-      const nextTags = Array.from(new Set([...prev.tags, ...entries]));
-      return { ...prev, tags: nextTags, tagInput: "" };
+    const nextTags = Array.from(
+      new Set([...(getValues("tags") ?? []), ...entries]),
+    );
+    setValue("tags", nextTags as CourseCreateForm["tags"], {
+      shouldDirty: true,
+      shouldValidate: false,
     });
+    setValue("tagInput", "", { shouldDirty: true, shouldValidate: false });
   };
 
   const handleRemoveTag = (tag: string) => {
-    setForm((prev) => ({
-      ...prev,
-      tags: prev.tags.filter((item) => item !== tag),
-    }));
+    const nextTags = (getValues("tags") ?? []).filter((item) => item !== tag);
+    setValue("tags", nextTags as CourseCreateForm["tags"], {
+      shouldDirty: true,
+      shouldValidate: false,
+    });
   };
 
   const handleAddArrayItem = (field: ArrayField) => {
-    setForm((prev) => ({ ...prev, [field]: [...prev[field], ""] }));
+    const current = getValues(field) ?? [];
+    setValue(field, [...current, ""] as CourseCreateForm[typeof field], {
+      shouldDirty: true,
+      shouldValidate: false,
+    });
   };
 
   const handleRemoveArrayItem = (field: ArrayField, index: number) => {
-    setForm((prev) => {
-      if (prev[field].length <= 1) return prev;
-      return { ...prev, [field]: prev[field].filter((_, i) => i !== index) };
+    const current = getValues(field) ?? [];
+    if (current.length <= 1) return;
+    const next = current.filter((_, i) => i !== index);
+    setValue(field, next as CourseCreateForm[typeof field], {
+      shouldDirty: true,
+      shouldValidate: false,
     });
   };
 
@@ -236,11 +284,13 @@ export function CourseCreateView({ draftId }: CourseCreateViewProps) {
 
     if (!file) {
       updateField("coverImage", null);
+      setCoverImageFile(null);
       return;
     }
 
     const previewUrl = URL.createObjectURL(file);
     coverImageUrlRef.current = previewUrl;
+    setCoverImageFile(file);
     updateField("coverImage", {
       name: file.name,
       sizeKb: Math.max(1, Math.round(file.size / 1024)),
@@ -248,21 +298,141 @@ export function CourseCreateView({ draftId }: CourseCreateViewProps) {
     });
   };
 
-  const handleSaveDraft = () => {
-    // Placeholder for API integration.
-    console.log("Save draft", form);
+  const handleSaveDraft = async () => {
+    const validationErrors = validateCourseForm(
+      form,
+      categoryOptions,
+      coverImageFile,
+    );
+    if (validationErrors.length > 0) {
+      toast.error(validationErrors.join(" • "));
+      return;
+    }
+
+    if (!coverImageFile && !form.coverImage?.previewUrl) {
+      toast.error("Cover image is required.");
+      return;
+    }
+
+    const categoryId = getCategoryId(form.category, categoryOptions);
+    if (form.category.trim() && !categoryId) {
+      toast.error("Please select a valid category.");
+      return;
+    }
+
+    setIsSubmitting("draft");
+    try {
+      if (draftId) {
+        await updateCourseRequest({
+          courseId: draftId,
+          form,
+          categoryId,
+          status: "DRAFT",
+          dirtyFields: formState.dirtyFields,
+        });
+        toast.success("Draft updated successfully.");
+        queryClient.invalidateQueries({ queryKey: COURSE_DETAIL_QUERY_KEY });
+        queryClient.invalidateQueries({ queryKey: COURSES_LIST_QUERY_KEY });
+        router.push("/courses");
+      } else {
+        await createCourseRequest({
+          form,
+          coverImageFile,
+          coverImageUrl: form.coverImage?.previewUrl ?? null,
+          categoryId,
+          status: "DRAFT",
+        });
+        toast.success("Draft saved successfully.");
+        queryClient.invalidateQueries({ queryKey: COURSES_LIST_QUERY_KEY });
+        router.push("/courses");
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unable to save draft.";
+      toast.error(message);
+    } finally {
+      setIsSubmitting(null);
+    }
   };
 
-  const handlePublish = () => {
-    if (!canPublish) return;
-    // Placeholder for API integration.
-    console.log("Publish course", form);
+  const handlePublish = async () => {
+    if (!canPublish) {
+      toast.error("Please fill in the required fields before publishing.");
+      return;
+    }
+
+    const validationErrors = validateCourseForm(
+      form,
+      categoryOptions,
+      coverImageFile,
+    );
+    if (validationErrors.length > 0) {
+      toast.error(validationErrors.join(" • "));
+      return;
+    }
+
+    if (!coverImageFile && !form.coverImage?.previewUrl) {
+      toast.error("Cover image is required.");
+      return;
+    }
+
+    const categoryId = getCategoryId(form.category, categoryOptions);
+    if (!categoryId) {
+      toast.error("Please select a valid category.");
+      return;
+    }
+
+    setIsSubmitting("publish");
+    try {
+      if (draftId) {
+        await updateCourseRequest({
+          courseId: draftId,
+          form,
+          categoryId,
+          status: "PUBLISHED",
+          dirtyFields: formState.dirtyFields,
+        });
+        toast.success("Course updated successfully.");
+        queryClient.invalidateQueries({ queryKey: COURSE_DETAIL_QUERY_KEY });
+        queryClient.invalidateQueries({ queryKey: COURSES_LIST_QUERY_KEY });
+        router.push("/courses");
+      } else {
+        await createCourseRequest({
+          form,
+          coverImageFile,
+          coverImageUrl: form.coverImage?.previewUrl ?? null,
+          categoryId,
+          status: "PUBLISHED",
+        });
+        toast.success("Course published successfully.");
+        queryClient.invalidateQueries({ queryKey: COURSES_LIST_QUERY_KEY });
+        router.push("/courses");
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unable to publish course.";
+      toast.error(message);
+    } finally {
+      setIsSubmitting(null);
+    }
   };
 
   const totalSteps = courseSteps.length;
 
   const handleNext = () =>
-    setActiveStep((prev) => Math.min(prev + 1, totalSteps));
+    setActiveStep((prev) => {
+      const errors = validateStepForm(
+        form,
+        prev,
+        categoryOptions,
+        coverImageFile,
+      );
+      if (errors.length > 0) {
+        toast.error(errors.join(" • "));
+        return prev;
+      }
+      return Math.min(prev + 1, totalSteps);
+    });
   const handlePrevious = () => setActiveStep((prev) => Math.max(prev - 1, 1));
 
   return (
@@ -271,6 +441,7 @@ export function CourseCreateView({ draftId }: CourseCreateViewProps) {
         onSaveDraft={handleSaveDraft}
         onPublish={handlePublish}
         canPublish={canPublish}
+        isSubmitting={isSubmitting}
       />
       <div className="mx-auto flex min-h-screen max-w-6xl flex-col gap-6 px-6 py-6">
         <header className="rounded-xl border border-[#E5E5E8] bg-white px-6 py-4">
@@ -342,6 +513,7 @@ export function CourseCreateView({ draftId }: CourseCreateViewProps) {
               <Button
                 type="button"
                 onClick={handleNext}
+                disabled={isSubmitting !== null}
                 className="h-10 bg-[#007AFF] px-6 text-sm font-medium text-white hover:bg-[#006DE0]"
               >
                 Continue
@@ -352,17 +524,20 @@ export function CourseCreateView({ draftId }: CourseCreateViewProps) {
                   type="button"
                   variant="outline"
                   onClick={handleSaveDraft}
+                  disabled={isSubmitting !== null}
                   className="h-10 min-w-34 border-[#E0E0E2] bg-[#F3F3F5] px-6 text-sm font-medium text-[#313131] hover:bg-[#ECECEF]"
                 >
-                  Save as draft
+                  {isSubmitting === "draft" ? "Saving..." : "Save as draft"}
                 </Button>
                 <Button
                   type="button"
                   onClick={handlePublish}
-                  disabled={!canPublish}
+                  disabled={!canPublish || isSubmitting !== null}
                   className="h-10 min-w-34 bg-[#007AFF] px-6 text-sm font-medium text-white hover:bg-[#006DE0]"
                 >
-                  Publish course
+                  {isSubmitting === "publish"
+                    ? "Publishing..."
+                    : "Publish course"}
                 </Button>
               </div>
             )}
@@ -379,6 +554,81 @@ function slugify(value: string) {
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
+}
+
+function getCategoryId(
+  name: string,
+  categories: Array<{ id: string; name: string }>,
+) {
+  const normalized = name.trim().toLowerCase();
+  const match = categories.find(
+    (category) => category.name.trim().toLowerCase() === normalized,
+  );
+  return match?.id ?? null;
+}
+
+function validateCourseForm(
+  form: CourseCreateForm,
+  categories: Array<{ id: string; name: string }>,
+  coverImageFile: File | null,
+) {
+  const steps = [1, 2, 3, 4];
+
+  for (const step of steps) {
+    const errors = validateStepForm(form, step, categories, coverImageFile);
+    if (errors.length > 0) {
+      return errors;
+    }
+  }
+
+  return [];
+}
+
+function validateStepForm(
+  form: CourseCreateForm,
+  step: number,
+  categories: Array<{ id: string; name: string }>,
+  coverImageFile: File | null,
+) {
+  const errors: string[] = [];
+
+  if (step === 1) {
+    if (!form.title.trim()) {
+      errors.push("Title is required");
+    }
+
+    if (!form.category.trim()) {
+      errors.push("Category is required");
+    } else if (!getCategoryId(form.category, categories)) {
+      errors.push("Please select a valid category");
+    }
+
+    if (!coverImageFile && !form.coverImage?.previewUrl) {
+      errors.push("Cover image is required");
+    }
+  }
+
+  if (step === 2) {
+    if (!form.durationWeeks.trim()) {
+      errors.push('"durationWeeks" must be a number');
+    } else if (!Number.isFinite(Number(form.durationWeeks))) {
+      errors.push('"durationWeeks" must be a number');
+    }
+  }
+
+  if (step === 3) {
+    if (!form.description.trim()) {
+      errors.push("Description cannot be empty");
+    }
+  }
+
+  if (step === 4) {
+    if (!form.price.trim() || !Number.isFinite(Number(form.price))) {
+      errors.push("Price must be a number");
+    }
+  }
+
+  return errors;
 }
 
 function buildDraftSeed(draftId?: string) {

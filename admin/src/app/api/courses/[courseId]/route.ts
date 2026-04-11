@@ -15,9 +15,7 @@ export async function GET(
 
   try {
     const { courseId } = await params;
-    const response = await apiClient.get(
-      `${BACKEND_COURSES_PATH}/${courseId}`,
-    );
+    const response = await apiClient.get(`${BACKEND_COURSES_PATH}/${courseId}`);
 
     return NextResponse.json(response.data, { status: response.status });
   } catch (error) {
@@ -30,6 +28,37 @@ export async function GET(
         data,
       },
       { status: Math.max(status, 500) },
+    );
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ courseId: string }> },
+) {
+  const token = getAuthTokenFromRequest(request);
+  const apiClient = createApiClient(token ?? undefined);
+
+  try {
+    const { courseId } = await params;
+    const body = await request.json().catch(() => ({}));
+
+    const response = await apiClient.patch(
+      `${BACKEND_COURSES_PATH}/${courseId}`,
+      body,
+    );
+
+    return NextResponse.json(response.data, { status: response.status });
+  } catch (error) {
+    const { status, message, data } = getApiErrorDetails(error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        message,
+        data,
+      },
+      { status },
     );
   }
 }
