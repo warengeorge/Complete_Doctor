@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 
-import { coursesListData } from "./data/courses-list";
 import { CoursesListHeader } from "./components/courses-list-header";
 import { CoursesListPagination } from "./components/courses-list-pagination";
 import {
@@ -11,6 +10,7 @@ import {
 } from "./components/courses-list-toolbar";
 import { CoursesListTable } from "./components/courses-list-table";
 import { CoursesListGrid } from "./components/courses-list-grid";
+import { useCoursesQuery } from "./services/useCoursesQuery";
 
 export function CoursesListView() {
   const [activeTab, setActiveTab] = useState<CoursesFilterTab>("All");
@@ -19,17 +19,20 @@ export function CoursesListView() {
   const [resultsPerPage, setResultsPerPage] = useState(10);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [viewType, setViewType] = useState<"table" | "grid">("table");
+  const coursesQuery = useCoursesQuery({
+    page: 1,
+    pageSize: 50,
+    fetchAll: true,
+  });
+
+  const courses = coursesQuery.data?.items ?? [];
 
   const filtered = useMemo(() => {
     const normalized = search.trim().toLowerCase();
 
-    return coursesListData.filter((course) => {
+    return courses.filter((course) => {
       const matchesTab =
-        activeTab === "All"
-          ? true
-          : activeTab === "Drafts"
-            ? course.status === "Draft"
-            : course.status === activeTab;
+        activeTab === "All" ? true : course.status === activeTab;
 
       const matchesSearch =
         normalized.length === 0
@@ -39,7 +42,7 @@ export function CoursesListView() {
 
       return matchesTab && matchesSearch;
     });
-  }, [activeTab, search]);
+  }, [activeTab, courses, search]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / resultsPerPage));
   const currentRows = useMemo(() => {
@@ -90,7 +93,20 @@ export function CoursesListView() {
         />
 
         <div className="mt-3">
-          {viewType === "table" ? (
+          {coursesQuery.isLoading ? (
+            <div className="flex min-h-[220px] items-center justify-center text-sm text-[#7A7A7A]">
+              Loading courses...
+            </div>
+          ) : coursesQuery.isError ? (
+            <div className="flex min-h-[220px] flex-col items-center justify-center gap-2 text-sm text-[#B42318]">
+              <span>Unable to load courses.</span>
+              <span className="text-xs text-[#7A7A7A]">
+                {coursesQuery.error instanceof Error
+                  ? coursesQuery.error.message
+                  : "Please try again."}
+              </span>
+            </div>
+          ) : viewType === "table" ? (
             <CoursesListTable
               rows={currentRows}
               selectedIds={selectedIds}

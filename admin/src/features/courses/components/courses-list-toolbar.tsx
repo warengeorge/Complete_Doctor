@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-type CoursesFilterTab = "All" | "Ongoing" | "Upcoming" | "Ended" | "Drafts";
+type CoursesFilterTab = "All" | "Draft" | "Published" | "Archived";
 
 type CoursesListToolbarProps = {
   activeTab: CoursesFilterTab;
@@ -17,7 +17,7 @@ type CoursesListToolbarProps = {
   onViewTypeChange: (view: "table" | "grid") => void;
 };
 
-const tabs: CoursesFilterTab[] = ["All", "Ongoing", "Upcoming", "Ended", "Drafts"];
+const tabs: CoursesFilterTab[] = ["All", "Draft", "Published", "Archived"];
 
 export function CoursesListToolbar({
   activeTab,

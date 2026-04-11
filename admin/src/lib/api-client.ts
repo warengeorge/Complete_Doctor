@@ -43,6 +43,31 @@ export function getApiErrorMessage(
     if (
       typeof responseData === "object" &&
       responseData !== null &&
+      "errors" in responseData &&
+      Array.isArray(responseData.errors)
+    ) {
+      const errors = (responseData.errors as unknown[])
+        .filter((item: unknown): item is string => typeof item === "string")
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+      if (errors.length > 0) {
+        return errors.join(" • ");
+      }
+    }
+
+    if (
+      typeof responseData === "object" &&
+      responseData !== null &&
+      "error" in responseData &&
+      typeof responseData.error === "string"
+    ) {
+      return responseData.error;
+    }
+
+    if (
+      typeof responseData === "object" &&
+      responseData !== null &&
       "message" in responseData &&
       typeof responseData.message === "string"
     ) {

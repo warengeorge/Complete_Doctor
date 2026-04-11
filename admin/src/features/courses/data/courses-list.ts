@@ -4,7 +4,7 @@ const templates: Omit<CourseListItem, "id">[] = [
   {
     title: "MRCGP AKT Full Prep Course",
     category: "MRCGP AKT",
-    status: "Ongoing",
+    status: "Published",
     enrolledStudents: 1500,
     createdAt: "20 Mar 2025",
     image: "/images/event-image1.svg",
@@ -12,7 +12,7 @@ const templates: Omit<CourseListItem, "id">[] = [
   {
     title: "MSRA Success Masterclass",
     category: "MSRA",
-    status: "Upcoming",
+    status: "Published",
     enrolledStudents: 60,
     createdAt: "20 Mar 2025",
     image: "/images/event-image2.svg",
@@ -20,7 +20,7 @@ const templates: Omit<CourseListItem, "id">[] = [
   {
     title: "UKMLA PLAB 1 Intensive Review",
     category: "UKMLA / PLAB 1",
-    status: "Ongoing",
+    status: "Published",
     enrolledStudents: 1000,
     createdAt: "20 Mar 2025",
     image: "/images/event-image1.svg",
@@ -28,7 +28,7 @@ const templates: Omit<CourseListItem, "id">[] = [
   {
     title: "UKMLA PLAB 2 Clinical Skills & Scenarios",
     category: "UKMLA / PLAB 2",
-    status: "Upcoming",
+    status: "Published",
     enrolledStudents: 300,
     createdAt: "20 Mar 2025",
     image: "/images/event-image2.svg",
@@ -36,7 +36,7 @@ const templates: Omit<CourseListItem, "id">[] = [
   {
     title: "SCA Workshop",
     category: "SCA",
-    status: "Ongoing",
+    status: "Published",
     enrolledStudents: 230,
     createdAt: "20 Mar 2025",
     image: "/images/event-image1.svg",
@@ -44,7 +44,7 @@ const templates: Omit<CourseListItem, "id">[] = [
   {
     title: "Medical Ethics & Communication Skills",
     category: "MRCGP AKT",
-    status: "Ended",
+    status: "Archived",
     enrolledStudents: 145,
     createdAt: "20 Mar 2025",
     image: "/images/event-image2.svg",
@@ -52,7 +52,7 @@ const templates: Omit<CourseListItem, "id">[] = [
   {
     title: "MRCGP AKT Full Prep Course",
     category: "MRCGP AKT",
-    status: "Upcoming",
+    status: "Published",
     enrolledStudents: 2450,
     createdAt: "20 Mar 2025",
     image: "/images/event-image1.svg",
@@ -60,7 +60,7 @@ const templates: Omit<CourseListItem, "id">[] = [
   {
     title: "Clinical Cases & Applied Knowledge Crash Course",
     category: "MRCGP / MSRA",
-    status: "Ended",
+    status: "Archived",
     enrolledStudents: 269,
     createdAt: "20 Mar 2025",
     image: "/images/event-image2.svg",
@@ -68,7 +68,7 @@ const templates: Omit<CourseListItem, "id">[] = [
   {
     title: "Past AKT & MSRA Questions Review",
     category: "MRCGP AKT",
-    status: "Ended",
+    status: "Archived",
     enrolledStudents: 1090,
     createdAt: "20 Mar 2025",
     image: "/images/event-image1.svg",
@@ -76,7 +76,7 @@ const templates: Omit<CourseListItem, "id">[] = [
   {
     title: "MRCGP AKT Full Prep Course",
     category: "MRCGP AKT",
-    status: "Ended",
+    status: "Archived",
     enrolledStudents: 1234,
     createdAt: "20 Mar 2025",
     image: "/images/event-image2.svg",
