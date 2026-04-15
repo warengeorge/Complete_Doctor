@@ -27,7 +27,7 @@ export async function GET(
         message,
         data,
       },
-      { status: Math.max(status, 500) },
+      { status },
     );
   }
 }
@@ -41,6 +41,59 @@ export async function PATCH(
 
   try {
     const { courseId } = await params;
+    const contentType = request.headers.get("content-type") ?? "";
+
+    if (contentType.includes("multipart/form-data")) {
+      try {
+        const formData = await request.formData();
+        const backendBaseUrl =
+          process.env.BACKEND_API_URL ||
+          "https://completedoc-backend.onrender.com/api/";
+        const normalizedBase = backendBaseUrl.endsWith("/")
+          ? backendBaseUrl.slice(0, -1)
+          : backendBaseUrl;
+        const normalizedPath = BACKEND_COURSES_PATH.startsWith("/")
+          ? BACKEND_COURSES_PATH
+          : `/${BACKEND_COURSES_PATH}`;
+        const url = `${normalizedBase}${normalizedPath}/${courseId}`;
+
+        const response = await fetch(url, {
+          method: "PATCH",
+          headers: {
+            Accept: "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const responseText = await response.text();
+          console.error(
+            `Backend error ${response.status}:`,
+            responseText.substring(0, 200),
+          );
+          return NextResponse.json(
+            {
+              success: false,
+              message: `Backend returned ${response.status}`,
+              data: null,
+            },
+            { status: response.status },
+          );
+        }
+
+        const payload = await response.json().catch((err) => {
+          console.error("Failed to parse response JSON:", err);
+          return null;
+        });
+
+        return NextResponse.json(payload ?? null, { status: response.status });
+      } catch (formError) {
+        console.error("Multipart form data error:", formError);
+        throw formError;
+      }
+    }
+
     const body = await request.json().catch(() => ({}));
 
     const response = await apiClient.patch(

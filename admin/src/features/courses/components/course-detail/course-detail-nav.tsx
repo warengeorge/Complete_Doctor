@@ -22,9 +22,12 @@ export function CourseDetailNav({ course }: CourseDetailNavProps) {
         </span>
       </div>
 
-      <button className="w-full rounded-lg bg-[#007AFF] px-4 py-2 text-[14px] font-semibold text-white hover:bg-[#006DE0] sm:w-auto">
+      <Link
+        href={`/courses/create/${course.id}`}
+        className="w-full rounded-lg bg-[#007AFF] px-4 py-2 text-[14px] font-semibold text-white text-center hover:bg-[#006DE0] sm:w-auto"
+      >
         Edit course info
-      </button>
+      </Link>
     </div>
   );
 }

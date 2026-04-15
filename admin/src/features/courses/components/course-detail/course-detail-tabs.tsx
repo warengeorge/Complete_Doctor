@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 const tabItems = [
   "Overview",
   "Students",
+  "Modules",
   "Events & Schedule",
   "Resources",
   "Question Bank",

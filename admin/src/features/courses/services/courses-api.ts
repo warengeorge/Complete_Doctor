@@ -122,6 +122,8 @@ export type UpdateCourseInput = {
   categoryId?: string | null;
   status?: "DRAFT" | "PUBLISHED";
   dirtyFields?: Partial<Record<keyof CourseCreateForm, unknown>>;
+  coverImageFile?: File | null;
+  coverImageUrl?: string | null;
 };
 
 export type UpdateCourseResponse =
@@ -225,20 +227,48 @@ export async function updateCourseRequest(
 ): Promise<UpdateCourseResponse> {
   try {
     const payload = buildUpdateCoursePayload(input);
-    const { data } = await bffClient.patch<UpdateCourseResponse>(
-      `/courses/${input.courseId}`,
-      payload,
-    );
+    if (Object.keys(payload).length > 0) {
+      const { data } = await bffClient.patch<UpdateCourseResponse>(
+        `/courses/${input.courseId}`,
+        payload,
+      );
 
-    if ("success" in data && data.success === false) {
-      throw new Error(data.message || "Unable to update course.");
+      if ("success" in data && data.success === false) {
+        throw new Error(data.message || "Unable to update course.");
+      }
+
+      if ("error" in data && data.error) {
+        throw new Error(data.error);
+      }
     }
 
-    if ("error" in data && data.error) {
-      throw new Error(data.error);
+    const coverFormData = await buildUpdateCoverImageFormData(input);
+    if (coverFormData) {
+      const { data } = await bffClient.patch<UpdateCourseResponse>(
+        `/courses/${input.courseId}`,
+        coverFormData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        },
+      );
+
+      if ("success" in data && data.success === false) {
+        throw new Error(data.message || "Unable to update course.");
+      }
+
+      if ("error" in data && data.error) {
+        throw new Error(data.error);
+      }
+
+      return data;
     }
 
-    return data;
+    return {
+      success: true,
+      message: "Course updated successfully",
+    };
   } catch (error) {
     throw new Error(getApiErrorMessage(error, "Unable to update course."));
   }
@@ -464,6 +494,21 @@ async function buildCreateCourseFormData(input: CreateCourseInput) {
 
 function normalizeStringArray(value: string[]) {
   return value.map((item) => item.trim()).filter(Boolean);
+}
+
+async function buildUpdateCoverImageFormData(input: UpdateCourseInput) {
+  if (!input.dirtyFields?.coverImage) return null;
+
+  const file =
+    input.coverImageFile ?? (await fetchCoverImageFile(input.coverImageUrl));
+
+  if (!file) {
+    throw new Error("Cover image is required.");
+  }
+
+  const body = new FormData();
+  body.append("coverImage", file);
+  return body;
 }
 
 function buildUpdateCoursePayload(input: UpdateCourseInput) {
