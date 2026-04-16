@@ -6,6 +6,6 @@ export { CourseDetailStudents } from "./course-detail-students";
 export { CourseInfoCard } from "./course-info-card";
 export { CourseStatsCard } from "./course-enrolled-stats";
 export { CourseDetailEvents } from "./course-detail-events";
-export { CourseDetailModules } from "./course-detail-modules";
+export { CourseDetailModules } from "./modules";
 export { CourseDetailResources } from "./course-detail-resources";
 export { CourseDetailQuestionBank } from "./question-bank";
