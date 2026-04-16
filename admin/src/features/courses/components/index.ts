@@ -4,6 +4,7 @@ export {
   CourseDetailTabs,
   CourseDetailOverview,
   CourseDetailStudents,
+  CourseDetailModules,
   CourseDetailNav,
   CourseInfoCard,
   CourseStatsCard,

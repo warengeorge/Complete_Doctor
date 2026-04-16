@@ -14,6 +14,7 @@ import {
   CourseDetailTabs,
   CourseDetailOverview,
   CourseDetailStudents,
+  CourseDetailModules,
   CourseDetailEvents,
   CourseDetailResources,
   CourseDetailQuestionBank,
@@ -84,20 +85,14 @@ export default function Course() {
       />
 
       <div>
-        {activeTab === "Overview" && (
-          <CourseDetailOverview {...overview} />
-        )}
+        {activeTab === "Overview" && <CourseDetailOverview {...overview} />}
         {activeTab === "Students" && (
           <CourseDetailStudents
             enrolledStudents={enrolledStudentsData}
             pendingStudents={pendingStudentsData}
           />
         )}
-        {activeTab === "Modules" && (
-          <p className="text-center text-[#6B6B6B] py-20">
-            Modules content goes here
-          </p>
-        )}
+        {activeTab === "Modules" && <CourseDetailModules />}
         {activeTab === "Events & Schedule" && (
           <CourseDetailEvents events={courseEventsData} />
         )}
