@@ -1,11 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { GripVertical, Pencil, Plus, Trash2 } from "lucide-react";
 import { courseModulesData } from "@/features/courses/data/course-modules";
 import {
   CourseDetailModuleViews,
-  moduleViews,
   type ModuleView,
 } from "../course-detail-module-views";
 import { lessons, submodules } from "./data";
@@ -28,11 +27,43 @@ import {
   TableCard,
   VisibilityApiSide,
 } from "./shared";
-import type { DeleteKind, LessonRow, ToastTone } from "./types";
-import { getDeleteConfig, lessonTone } from "./utils";
+import type { CourseDepth, DeleteKind, LessonRow, ToastTone } from "./types";
+import {
+  getAvailableModuleViews,
+  getDefaultViewForDepth,
+  getDeleteConfig,
+  lessonTone,
+  normalizeCourseDepth,
+} from "./utils";
 
-export function CourseDetailModules() {
-  const [activeView, setActiveView] = useState<ModuleView>("Module list");
+type CourseDetailModulesProps = {
+  depth?: string | null;
+  courseTitle?: string | null;
+};
+
+export function CourseDetailModules({
+  depth,
+  courseTitle,
+}: CourseDetailModulesProps) {
+  const courseDepth = useMemo<CourseDepth>(
+    () => normalizeCourseDepth(depth),
+    [depth],
+  );
+  const courseName = useMemo(() => {
+    const value = courseTitle?.trim();
+    return value && value.length > 0 ? value : "Course";
+  }, [courseTitle]);
+  const availableViews = useMemo(
+    () => getAvailableModuleViews(courseDepth),
+    [courseDepth],
+  );
+  const defaultView = useMemo(
+    () => getDefaultViewForDepth(courseDepth),
+    [courseDepth],
+  );
+  const hasModules = courseDepth !== "FLAT";
+  const hasSubmodules = courseDepth === "FULL";
+  const [activeView, setActiveView] = useState<ModuleView>(defaultView);
   const [searchModules, setSearchModules] = useState("");
   const [searchSubmodules, setSearchSubmodules] = useState("");
   const [searchLessons, setSearchLessons] = useState("");
@@ -40,7 +71,7 @@ export function CourseDetailModules() {
     "All",
   );
   const [deleteKind, setDeleteKind] = useState<DeleteKind>("lesson");
-  const [lastView, setLastView] = useState<ModuleView>("Module list");
+  const [lastView, setLastView] = useState<ModuleView>(defaultView);
   const [toast, setToast] = useState<{
     message: string;
     tone: ToastTone;
@@ -102,11 +133,19 @@ export function CourseDetailModules() {
     });
   }, [lessonFilter, searchLessons]);
 
-  function goTo(view: ModuleView) {
-    if (view !== "Delete confirm") {
-      setLastView(view);
+  function resolveView(view: ModuleView): ModuleView {
+    if (availableViews.includes(view)) {
+      return view;
     }
-    setActiveView(view);
+    return defaultView;
+  }
+
+  function goTo(view: ModuleView) {
+    const nextView = resolveView(view);
+    if (view !== "Delete confirm") {
+      setLastView(nextView);
+    }
+    setActiveView(nextView);
   }
 
   function openDelete(kind: DeleteKind) {
@@ -122,23 +161,32 @@ export function CourseDetailModules() {
 
   const deleteConfig = getDeleteConfig(deleteKind);
 
+  useEffect(() => {
+    if (!availableViews.includes(activeView)) {
+      setActiveView(defaultView);
+    }
+    if (!availableViews.includes(lastView)) {
+      setLastView(defaultView);
+    }
+  }, [activeView, availableViews, defaultView, lastView]);
+
   return (
     <div className="space-y-4">
       <CourseDetailModuleViews
         activeView={activeView}
-        onViewChange={setActiveView}
+        onViewChange={goTo}
         isModule
-        data={moduleViews}
+        data={availableViews}
       />
 
       {activeView === "Module list" && (
         <div className="space-y-4">
-          <Breadcrumb items={["Courses", "MRCPsych Paper A", "Modules"]} />
+          <Breadcrumb items={["Courses", courseName, "Modules"]} />
 
           <PageHeader
             title="Modules"
-            subtitle="Manage weekly modules for MRCPsych Paper A live course"
-            meta={["FULL depth", "COHORT", "6 weeks", "2 cohorts"]}
+            subtitle={`Manage weekly modules for ${courseName}`}
+            meta={[`${courseDepth} depth`, "COHORT", "6 weeks", "2 cohorts"]}
             actions={
               <>
                 <button
@@ -206,7 +254,9 @@ export function CourseDetailModules() {
                   <th className="px-3 py-2">Week</th>
                   <th className="px-3 py-2">Status</th>
                   <th className="px-3 py-2">Required</th>
-                  <th className="px-3 py-2">SubModules</th>
+                  {hasSubmodules ? (
+                    <th className="px-3 py-2">SubModules</th>
+                  ) : null}
                   <th className="px-3 py-2">Lessons</th>
                   <th className="px-3 py-2">Prerequisites</th>
                   <th className="px-3 py-2" />
@@ -237,7 +287,9 @@ export function CourseDetailModules() {
                         {module.required ? "Required" : "Optional"}
                       </Badge>
                     </td>
-                    <td className="px-3 py-2">{module.subModules}</td>
+                    {hasSubmodules ? (
+                      <td className="px-3 py-2">{module.subModules}</td>
+                    ) : null}
                     <td className="px-3 py-2">{module.lessons}</td>
                     <td className="px-3 py-2">
                       {module.prerequisites.length ? (
@@ -279,8 +331,8 @@ export function CourseDetailModules() {
       {activeView === "Create module" && (
         <FormLayout
           title="New module"
-          subtitle="MRCPsych Paper A live course"
-          breadcrumbs={["Courses", "MRCPsych Paper A", "Modules", "New"]}
+          subtitle={courseName}
+          breadcrumbs={["Courses", courseName, "Modules", "New"]}
           onCancel={() => goTo("Module list")}
           onSubmit={() => {
             notify("Module created");
@@ -297,12 +349,12 @@ export function CourseDetailModules() {
       {activeView === "Module detail" && (
         <div className="space-y-4">
           <Breadcrumb
-            items={["Courses", "MRCPsych Paper A", "Modules", "Week 1"]}
+            items={["Courses", courseName, "Modules", "Week 1"]}
           />
 
           <PageHeader
             title="Week 1 - Neuroscience foundations"
-            subtitle="mod-001 · MRCPsych Paper A · Week 1"
+            subtitle={`mod-001 · ${courseName} · Week 1`}
             actions={
               <>
                 <button
@@ -321,79 +373,121 @@ export function CourseDetailModules() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => goTo("SubModule list")}
+                  onClick={() => goTo(hasSubmodules ? "SubModule list" : "Lesson list")}
                   className="rounded-lg bg-[#007AFF] px-4 py-2 text-[13px] font-semibold text-white hover:bg-[#006DE0]"
                 >
-                  View submodules
+                  {hasSubmodules ? "View submodules" : "View lessons"}
                 </button>
               </>
             }
           />
 
           <div className="grid gap-4 xl:grid-cols-[1fr_320px]">
-            <Card title="SubModules">
+            <Card title={hasSubmodules ? "SubModules" : "Lessons"}>
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="text-left text-[11px] uppercase tracking-wide text-[#6B6B6B]">
                     <th className="border-b border-[#E5E5E8] px-2 py-2">
-                      SubModule
+                      {hasSubmodules ? "SubModule" : "Lesson"}
                     </th>
-                    <th className="border-b border-[#E5E5E8] px-2 py-2">
-                      Track
-                    </th>
+                    {hasSubmodules ? (
+                      <th className="border-b border-[#E5E5E8] px-2 py-2">Track</th>
+                    ) : (
+                      <th className="border-b border-[#E5E5E8] px-2 py-2">Type</th>
+                    )}
                     <th className="border-b border-[#E5E5E8] px-2 py-2">
                       Status
                     </th>
                     <th className="border-b border-[#E5E5E8] px-2 py-2">
-                      Lessons
+                      {hasSubmodules ? "Lessons" : "Duration"}
                     </th>
                     <th className="border-b border-[#E5E5E8] px-2 py-2" />
                   </tr>
                 </thead>
                 <tbody>
-                  {submodules.map((row) => (
-                    <tr
-                      key={row.id}
-                      onClick={() => goTo("Lesson list")}
-                      className="cursor-pointer border-b border-[#E5E5E8] text-[13px] hover:bg-[#F5F5F7]"
-                    >
-                      <td className="px-2 py-2">
-                        <p className="font-semibold">{row.title}</p>
-                        <p className="text-[11px] text-[#6B6B6B]">{row.id}</p>
-                      </td>
-                      <td className="px-2 py-2">
-                        <Chip
-                          tone={row.track === "Live track" ? "purple" : "teal"}
+                  {hasSubmodules
+                    ? submodules.map((row) => (
+                        <tr
+                          key={row.id}
+                          onClick={() => goTo("Lesson list")}
+                          className="cursor-pointer border-b border-[#E5E5E8] text-[13px] hover:bg-[#F5F5F7]"
                         >
-                          {row.track}
-                        </Chip>
-                      </td>
-                      <td className="px-2 py-2">
-                        <Badge tone="published">{row.status}</Badge>
-                      </td>
-                      <td className="px-2 py-2">{row.lessons}</td>
-                      <td className="px-2 py-2">
-                        <div className="flex justify-end gap-1">
-                          <IconButton
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              goTo("Edit submodule");
-                            }}
-                            label="Edit submodule"
-                            icon={<Pencil className="h-3.5 w-3.5" />}
-                          />
-                          <IconButton
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openDelete("submodule");
-                            }}
-                            label="Delete submodule"
-                            icon={<Trash2 className="h-3.5 w-3.5" />}
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                          <td className="px-2 py-2">
+                            <p className="font-semibold">{row.title}</p>
+                            <p className="text-[11px] text-[#6B6B6B]">{row.id}</p>
+                          </td>
+                          <td className="px-2 py-2">
+                            <Chip
+                              tone={row.track === "Live track" ? "purple" : "teal"}
+                            >
+                              {row.track}
+                            </Chip>
+                          </td>
+                          <td className="px-2 py-2">
+                            <Badge tone="published">{row.status}</Badge>
+                          </td>
+                          <td className="px-2 py-2">{row.lessons}</td>
+                          <td className="px-2 py-2">
+                            <div className="flex justify-end gap-1">
+                              <IconButton
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  goTo("Edit submodule");
+                                }}
+                                label="Edit submodule"
+                                icon={<Pencil className="h-3.5 w-3.5" />}
+                              />
+                              <IconButton
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openDelete("submodule");
+                                }}
+                                label="Delete submodule"
+                                icon={<Trash2 className="h-3.5 w-3.5" />}
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    : filteredLessons.map((row) => (
+                        <tr
+                          key={row.id}
+                          onClick={() => goTo("Lesson detail")}
+                          className="cursor-pointer border-b border-[#E5E5E8] text-[13px] hover:bg-[#F5F5F7]"
+                        >
+                          <td className="px-2 py-2">
+                            <p className="font-semibold">{row.title}</p>
+                            <p className="text-[11px] text-[#6B6B6B]">{row.id}</p>
+                          </td>
+                          <td className="px-2 py-2">
+                            <Chip tone={lessonTone(row.type)}>{row.type}</Chip>
+                          </td>
+                          <td className="px-2 py-2">
+                            <Badge tone="published">{row.status}</Badge>
+                          </td>
+                          <td className="px-2 py-2">{row.duration}</td>
+                          <td className="px-2 py-2">
+                            <div className="flex justify-end gap-1">
+                              <IconButton
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  goTo("Edit lesson");
+                                }}
+                                label="Edit lesson"
+                                icon={<Pencil className="h-3.5 w-3.5" />}
+                              />
+                              <IconButton
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openDelete("lesson");
+                                }}
+                                label="Delete lesson"
+                                icon={<Trash2 className="h-3.5 w-3.5" />}
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
                 </tbody>
               </table>
             </Card>
@@ -403,11 +497,11 @@ export function CourseDetailModules() {
                 <KeyValues
                   rows={[
                     ["ID", "mod-001"],
-                    ["Course", "MRCPsych Paper A"],
+                    ["Course", courseName],
                     ["Week", "1"],
                     ["Display order", "10"],
                     ["Duration", "240 mins"],
-                    ["SubModules", "2"],
+                    ...(hasSubmodules ? ([["SubModules", "2"]] as [string, string][]) : []),
                     ["Lessons", "5"],
                     ["Published", "Yes"],
                     ["Required", "Yes"],
@@ -447,7 +541,7 @@ export function CourseDetailModules() {
         />
       )}
 
-      {activeView === "SubModules" && (
+      {hasSubmodules && activeView === "SubModules" && (
         <InfoPanel
           title="SubModules"
           description="SubModules are grouped topics within a module and can represent live track or reading track content."
@@ -456,12 +550,12 @@ export function CourseDetailModules() {
         />
       )}
 
-      {activeView === "SubModule list" && (
+      {hasSubmodules && activeView === "SubModule list" && (
         <div className="space-y-4">
           <Breadcrumb items={["Modules", "Week 1", "SubModules"]} />
           <PageHeader
             title="SubModules"
-            subtitle="Week 1 - Neuroscience foundations · MRCPsych Paper A"
+            subtitle={`Week 1 - Neuroscience foundations · ${courseName}`}
             meta={["mod-001", "Week 1", "2 submodules", "5 lessons total"]}
             actions={
               <>
@@ -582,7 +676,7 @@ export function CourseDetailModules() {
         </div>
       )}
 
-      {activeView === "Create submodule" && (
+      {hasSubmodules && activeView === "Create submodule" && (
         <FormLayout
           title="New submodule"
           subtitle="Week 1 - Neuroscience foundations"
@@ -600,7 +694,7 @@ export function CourseDetailModules() {
         />
       )}
 
-      {activeView === "Edit submodule" && (
+      {hasSubmodules && activeView === "Edit submodule" && (
         <FormLayout
           title="Edit submodule"
           subtitle="Neuroanatomy & functional systems · sub-001"
@@ -625,7 +719,11 @@ export function CourseDetailModules() {
       {activeView === "Lessons" && (
         <InfoPanel
           title="Lessons"
-          description="Lessons are the final learning units inside each submodule."
+          description={
+            hasSubmodules
+              ? "Lessons are the final learning units inside each submodule."
+              : "Lessons are the final learning units inside this course."
+          }
           actionLabel="Open lesson list"
           onAction={() => goTo("Lesson list")}
         />
@@ -634,26 +732,55 @@ export function CourseDetailModules() {
       {activeView === "Lesson list" && (
         <div className="space-y-4">
           <Breadcrumb
-            items={[
-              "Modules",
-              "Week 1",
-              "SubModules",
-              "Neuroanatomy",
-              "Lessons",
-            ]}
+            items={
+              hasSubmodules
+                ? ["Modules", "Week 1", "SubModules", "Neuroanatomy", "Lessons"]
+                : hasModules
+                  ? ["Modules", "Week 1", "Lessons"]
+                  : ["Courses", courseName, "Lessons"]
+            }
           />
           <PageHeader
             title="Lessons"
-            subtitle="Neuroanatomy & functional systems · Week 1 · MRCPsych Paper A"
-            meta={["sub-001", "Live track", "3 lessons"]}
+            subtitle={
+              hasSubmodules
+                ? `Neuroanatomy & functional systems · Week 1 · ${courseName}`
+                : hasModules
+                  ? `Week 1 - Neuroscience foundations · ${courseName}`
+                  : courseName
+            }
+            meta={
+              hasSubmodules
+                ? ["sub-001", "Live track", "3 lessons"]
+                : hasModules
+                  ? ["mod-001", "3 lessons"]
+                  : ["3 lessons"]
+            }
             actions={
               <>
+                {hasSubmodules ? (
+                  <button
+                    type="button"
+                    onClick={() => goTo("SubModule list")}
+                    className="rounded-lg border border-[#E5E5E8] px-4 py-2 text-[13px] font-semibold text-[#6B6B6B] hover:bg-[#F5F5F7]"
+                  >
+                    SubModules
+                  </button>
+                ) : hasModules ? (
+                  <button
+                    type="button"
+                    onClick={() => goTo("Module detail")}
+                    className="rounded-lg border border-[#E5E5E8] px-4 py-2 text-[13px] font-semibold text-[#6B6B6B] hover:bg-[#F5F5F7]"
+                  >
+                    Module detail
+                  </button>
+                ) : null}
                 <button
                   type="button"
-                  onClick={() => goTo("SubModule list")}
+                  onClick={() => goTo("Curriculum tree")}
                   className="rounded-lg border border-[#E5E5E8] px-4 py-2 text-[13px] font-semibold text-[#6B6B6B] hover:bg-[#F5F5F7]"
                 >
-                  SubModules
+                  Curriculum tree
                 </button>
                 <button
                   type="button"
@@ -773,8 +900,20 @@ export function CourseDetailModules() {
       {activeView === "Create lesson" && (
         <FormLayout
           title="New lesson"
-          subtitle="Neuroanatomy & functional systems · sub-001"
-          breadcrumbs={["SubModules", "Lessons", "New"]}
+          subtitle={
+            hasSubmodules
+              ? "Neuroanatomy & functional systems · sub-001"
+              : hasModules
+                ? "Week 1 - Neuroscience foundations · mod-001"
+                : courseName
+          }
+          breadcrumbs={
+            hasSubmodules
+              ? ["SubModules", "Lessons", "New"]
+              : hasModules
+                ? ["Modules", "Lessons", "New"]
+                : ["Courses", "Lessons", "New"]
+          }
           onCancel={() => goTo("Lesson list")}
           onSubmit={() => {
             notify("Lesson created");
@@ -783,7 +922,15 @@ export function CourseDetailModules() {
           submitLabel="Create lesson"
           main={<LessonFormSection />}
           side={
-            <VisibilityApiSide endpoint="POST /api/courses/{id}/modules/{id}/submodules/{id}/lessons" />
+            <VisibilityApiSide
+              endpoint={
+                hasSubmodules
+                  ? "POST /api/courses/{id}/modules/{id}/submodules/{id}/lessons"
+                  : hasModules
+                    ? "POST /api/courses/{id}/modules/{id}/lessons"
+                    : "POST /api/courses/{id}/lessons"
+              }
+            />
           }
         />
       )}
@@ -791,12 +938,24 @@ export function CourseDetailModules() {
       {activeView === "Lesson detail" && (
         <div className="space-y-4">
           <Breadcrumb
-            items={["Modules", "Week 1", "SubModules", "Lessons", "les-002"]}
+            items={
+              hasSubmodules
+                ? ["Modules", "Week 1", "SubModules", "Lessons", "les-002"]
+                : hasModules
+                  ? ["Modules", "Week 1", "Lessons", "les-002"]
+                  : ["Courses", "Lessons", "les-002"]
+            }
           />
 
           <PageHeader
             title="Live session: cortical anatomy"
-            subtitle="les-002 · sub-001 · mod-001 · MRCPsych Paper A"
+            subtitle={
+              hasSubmodules
+                ? `les-002 · sub-001 · mod-001 · ${courseName}`
+                : hasModules
+                  ? `les-002 · mod-001 · ${courseName}`
+                  : `les-002 · ${courseName}`
+            }
             actions={
               <>
                 <button
@@ -851,8 +1010,8 @@ export function CourseDetailModules() {
                   ["Required", "Yes"],
                   ["Duration", "90 minutes"],
                   ["Scheduled", "28 Jul 2025, 19:00"],
-                  ["SubModule", "sub-001"],
-                  ["Module", "mod-001"],
+                  ...(hasSubmodules ? ([["SubModule", "sub-001"]] as [string, string][]) : []),
+                  ...(hasModules ? ([["Module", "mod-001"]] as [string, string][]) : []),
                 ]}
               />
             </Card>
@@ -884,66 +1043,134 @@ export function CourseDetailModules() {
 
       {activeView === "Curriculum tree" && (
         <div className="space-y-4">
-          <Breadcrumb
-            items={["Courses", "MRCPsych Paper A", "Curriculum tree"]}
-          />
+          <Breadcrumb items={["Courses", courseName, "Curriculum tree"]} />
 
           <PageHeader
             title="Curriculum tree"
-            subtitle="MRCPsych Paper A live course - full module/submodule/lesson structure"
-            meta={["FULL depth", "COHORT", "6 modules", "~29 lessons"]}
+            subtitle={
+              hasSubmodules
+                ? `${courseName} - full module/submodule/lesson structure`
+                : hasModules
+                  ? `${courseName} - module/lesson structure`
+                  : `${courseName} - lesson structure`
+            }
+            meta={
+              hasModules
+                ? [
+                    `${courseDepth} depth`,
+                    "COHORT",
+                    `${courseModulesData.length} modules`,
+                    `${stats.totalLessons} lessons`,
+                  ]
+                : [`${courseDepth} depth`, "COHORT", `${lessons.length} lessons`]
+            }
             actions={
               <>
-                <button
-                  type="button"
-                  onClick={() => goTo("Module list")}
-                  className="rounded-lg border border-[#E5E5E8] px-4 py-2 text-[13px] font-semibold text-[#6B6B6B] hover:bg-[#F5F5F7]"
-                >
-                  Module list
-                </button>
-                <button
-                  type="button"
-                  onClick={() => goTo("Create module")}
-                  className="rounded-lg bg-[#007AFF] px-4 py-2 text-[13px] font-semibold text-white hover:bg-[#006DE0]"
-                >
-                  New module
-                </button>
+                {hasModules ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => goTo("Module list")}
+                      className="rounded-lg border border-[#E5E5E8] px-4 py-2 text-[13px] font-semibold text-[#6B6B6B] hover:bg-[#F5F5F7]"
+                    >
+                      Module list
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => goTo("Create module")}
+                      className="rounded-lg bg-[#007AFF] px-4 py-2 text-[13px] font-semibold text-white hover:bg-[#006DE0]"
+                    >
+                      New module
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => goTo("Lesson list")}
+                      className="rounded-lg border border-[#E5E5E8] px-4 py-2 text-[13px] font-semibold text-[#6B6B6B] hover:bg-[#F5F5F7]"
+                    >
+                      Lesson list
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => goTo("Create lesson")}
+                      className="rounded-lg bg-[#007AFF] px-4 py-2 text-[13px] font-semibold text-white hover:bg-[#006DE0]"
+                    >
+                      New lesson
+                    </button>
+                  </>
+                )}
               </>
             }
           />
 
           <div className="space-y-2">
-            {courseModulesData.map((module, index) => (
-              <div
-                key={module.id}
-                className="rounded-lg border border-[#E5E5E8] bg-white px-4 py-3"
-              >
-                <div className="flex flex-wrap items-center gap-2">
-                  <GripVertical className="h-4 w-4 text-[#6B6B6B]" />
-                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#F5F5F7] text-[10px] font-semibold text-[#6B6B6B]">
-                    {index + 1}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[13px] font-semibold text-[#121212]">
-                      {module.title}
-                    </p>
-                    <p className="text-[11px] text-[#6B6B6B]">{module.id}</p>
-                  </div>
-                  <Badge tone="published">Published</Badge>
-                  <Badge tone="required">Required</Badge>
-                  <span className="text-[11px] text-[#6B6B6B]">
-                    {module.subModules} submodules · {module.lessons} lessons
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => goTo("Edit module")}
-                    className="rounded-md border border-[#007AFF] px-2 py-1 text-[11px] font-semibold text-[#007AFF] hover:bg-[#EAF3FF]"
+            {hasModules
+              ? courseModulesData.map((module, index) => (
+                  <div
+                    key={module.id}
+                    className="rounded-lg border border-[#E5E5E8] bg-white px-4 py-3"
                   >
-                    Edit
-                  </button>
-                </div>
-              </div>
-            ))}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <GripVertical className="h-4 w-4 text-[#6B6B6B]" />
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#F5F5F7] text-[10px] font-semibold text-[#6B6B6B]">
+                        {index + 1}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[13px] font-semibold text-[#121212]">
+                          {module.title}
+                        </p>
+                        <p className="text-[11px] text-[#6B6B6B]">{module.id}</p>
+                      </div>
+                      <Badge tone="published">Published</Badge>
+                      <Badge tone="required">Required</Badge>
+                      <span className="text-[11px] text-[#6B6B6B]">
+                        {hasSubmodules
+                          ? `${module.subModules} submodules · ${module.lessons} lessons`
+                          : `${module.lessons} lessons`}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => goTo("Edit module")}
+                        className="rounded-md border border-[#007AFF] px-2 py-1 text-[11px] font-semibold text-[#007AFF] hover:bg-[#EAF3FF]"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  </div>
+                ))
+              : lessons.map((lesson, index) => (
+                  <div
+                    key={lesson.id}
+                    className="rounded-lg border border-[#E5E5E8] bg-white px-4 py-3"
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      <GripVertical className="h-4 w-4 text-[#6B6B6B]" />
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#F5F5F7] text-[10px] font-semibold text-[#6B6B6B]">
+                        {index + 1}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[13px] font-semibold text-[#121212]">
+                          {lesson.title}
+                        </p>
+                        <p className="text-[11px] text-[#6B6B6B]">{lesson.id}</p>
+                      </div>
+                      <Chip tone={lessonTone(lesson.type)}>{lesson.type}</Chip>
+                      <Badge tone="published">{lesson.status}</Badge>
+                      <span className="text-[11px] text-[#6B6B6B]">
+                        {lesson.duration}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => goTo("Edit lesson")}
+                        className="rounded-md border border-[#007AFF] px-2 py-1 text-[11px] font-semibold text-[#007AFF] hover:bg-[#EAF3FF]"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  </div>
+                ))}
           </div>
         </div>
       )}
@@ -960,7 +1187,7 @@ export function CourseDetailModules() {
           <div className="mt-5 flex justify-end gap-2">
             <button
               type="button"
-              onClick={() => setActiveView(lastView)}
+              onClick={() => setActiveView(resolveView(lastView))}
               className="rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px] font-semibold text-[#6B6B6B]"
             >
               Cancel

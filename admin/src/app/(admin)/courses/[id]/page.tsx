@@ -92,7 +92,12 @@ export default function Course() {
             pendingStudents={pendingStudentsData}
           />
         )}
-        {activeTab === "Modules" && <CourseDetailModules />}
+        {activeTab === "Modules" && (
+          <CourseDetailModules
+            depth={courseQuery.data?.depth}
+            courseTitle={courseQuery.data?.title}
+          />
+        )}
         {activeTab === "Events & Schedule" && (
           <CourseDetailEvents events={courseEventsData} />
         )}

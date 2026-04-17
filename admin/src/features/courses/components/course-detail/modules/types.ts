@@ -2,6 +2,7 @@ import type { ModuleView } from "../course-detail-module-views";
 
 export type DeleteKind = "module" | "submodule" | "lesson";
 export type ToastTone = "ok" | "danger";
+export type CourseDepth = "FULL" | "MODULES_ONLY" | "FLAT";
 
 export type SubmoduleRow = {
   id: string;
