@@ -1,0 +1,1 @@
+export { CourseDetailModules } from "./modules";

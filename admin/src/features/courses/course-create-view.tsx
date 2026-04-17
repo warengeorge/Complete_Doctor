@@ -329,6 +329,8 @@ export function CourseCreateView({ draftId }: CourseCreateViewProps) {
           categoryId,
           status: "DRAFT",
           dirtyFields: formState.dirtyFields,
+          coverImageFile,
+          coverImageUrl: form.coverImage?.previewUrl ?? null,
         });
         toast.success("Draft updated successfully.");
         queryClient.invalidateQueries({ queryKey: COURSE_DETAIL_QUERY_KEY });
@@ -391,6 +393,8 @@ export function CourseCreateView({ draftId }: CourseCreateViewProps) {
           categoryId,
           status: "PUBLISHED",
           dirtyFields: formState.dirtyFields,
+          coverImageFile,
+          coverImageUrl: form.coverImage?.previewUrl ?? null,
         });
         toast.success("Course updated successfully.");
         queryClient.invalidateQueries({ queryKey: COURSE_DETAIL_QUERY_KEY });
