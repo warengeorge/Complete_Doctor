@@ -1,4 +1,5 @@
-import type { DeleteConfig, DeleteKind, LessonRow } from "./types";
+import { moduleViews, type ModuleView } from "../course-detail-module-views";
+import type { CourseDepth, DeleteConfig, DeleteKind, LessonRow } from "./types";
 
 export function getDeleteConfig(kind: DeleteKind): DeleteConfig {
   if (kind === "module") {
@@ -40,4 +41,43 @@ export function lessonTone(type: LessonRow["type"]) {
   if (type === "READING") return "teal" as const;
   if (type === "VIDEO") return "amber" as const;
   return "gray" as const;
+}
+
+export function normalizeCourseDepth(depth?: string | null): CourseDepth {
+  if (depth === "FLAT") return "FLAT";
+  if (depth === "MODULES_ONLY") return "MODULES_ONLY";
+  return "FULL";
+}
+
+export function getAvailableModuleViews(depth: CourseDepth): ModuleView[] {
+  if (depth === "FLAT") {
+    return [
+      "Lesson list",
+      "Create lesson",
+      "Lesson detail",
+      "Edit lesson",
+      "Curriculum tree",
+      "Delete confirm",
+    ];
+  }
+
+  if (depth === "MODULES_ONLY") {
+    return moduleViews.filter(
+      (view) =>
+        view !== "SubModules" &&
+        view !== "SubModule list" &&
+        view !== "Create submodule" &&
+        view !== "Edit submodule",
+    );
+  }
+
+  return [...moduleViews];
+}
+
+export function getDefaultViewForDepth(depth: CourseDepth): ModuleView {
+  if (depth === "FLAT") {
+    return "Lesson list";
+  }
+
+  return "Module list";
 }
