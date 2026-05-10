@@ -341,7 +341,11 @@ export function CourseDetailModules({
           submitLabel="Create module"
           main={<ModuleFormSection />}
           side={
-            <VisibilityApiSide endpoint="POST /api/courses/{courseId}/modules" />
+            <VisibilityApiSide
+              showApiPreview={false}
+              showCoverImageUpload
+              variant="module"
+            />
           }
         />
       )}
@@ -689,7 +693,11 @@ export function CourseDetailModules({
           submitLabel="Create submodule"
           main={<SubmoduleFormSection />}
           side={
-            <VisibilityApiSide endpoint="POST /api/courses/{id}/modules/{id}/submodules" />
+            <VisibilityApiSide
+              showApiPreview={false}
+              showCoverImageUpload
+              variant="submodule"
+            />
           }
         />
       )}
@@ -923,6 +931,7 @@ export function CourseDetailModules({
           main={<LessonFormSection />}
           side={
             <VisibilityApiSide
+              variant="lesson"
               endpoint={
                 hasSubmodules
                   ? "POST /api/courses/{id}/modules/{id}/submodules/{id}/lessons"
