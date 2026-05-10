@@ -9,7 +9,6 @@ export const moduleViews = [
   "SubModule list",
   "Create submodule",
   "Edit submodule",
-  "Lessons",
   "Lesson list",
   "Create lesson",
   "Lesson detail",

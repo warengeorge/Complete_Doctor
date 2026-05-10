@@ -175,15 +175,18 @@ export function IconButton({
 
 export function Card({
   title,
+  action,
   children,
 }: {
   title: string;
+  action?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
     <div className="overflow-hidden rounded-xl border border-[#E5E5E8] bg-white">
-      <div className="border-b border-[#E5E5E8] px-4 py-3">
+      <div className="flex items-center justify-between gap-2 border-b border-[#E5E5E8] px-4 py-3">
         <h3 className="text-[13px] font-semibold text-[#121212]">{title}</h3>
+        {action}
       </div>
       <div className="p-4">{children}</div>
     </div>
@@ -438,6 +441,144 @@ export function LessonFormSection() {
           </Field>
         </div>
       </Card>
+    </div>
+  );
+}
+
+export function EditLessonFormSection() {
+  return (
+    <div className="space-y-3">
+      <Card
+        title="Content"
+        action={
+          <span className="rounded bg-[#EEF3FF] px-2 py-1 text-[11px] font-semibold text-[#1D4ED8]">
+            LIVE type
+          </span>
+        }
+      >
+        <div className="space-y-4">
+          <Field label="Title">
+            <input
+              type="text"
+              defaultValue="Live session: cortical anatomy"
+              className="w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
+            />
+          </Field>
+
+          <Field label="Description">
+            <textarea
+              defaultValue="Interactive live session covering cortical anatomy and functional mapping."
+              className="min-h-[88px] w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
+            />
+          </Field>
+
+          <Field label="Meeting URL">
+            <input
+              type="url"
+              defaultValue="https://zoom.us/j/completedoctor-week1-live"
+              className="w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
+            />
+            <p className="mt-2 rounded-md bg-[#F5F5F7] px-3 py-2 text-[12px] text-[#6B6B6B]">
+              Zoom, Google Meet, or MS Teams URL. Shown to learners at session time.
+            </p>
+          </Field>
+
+          <div>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[#6B6B6B]">
+              Attachments
+            </p>
+            <div className="flex flex-wrap items-center gap-2 rounded-md border border-[#E5E5E8] bg-[#F5F5F7] px-3 py-2">
+              <span className="text-[16px] text-[#6B6B6B]">📄</span>
+              <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-[#121212]">
+                Week 1 live session slides.pdf
+              </span>
+              <span className="text-[12px] text-[#6B6B6B]">1.8 MB</span>
+              <button
+                type="button"
+                className="rounded-md border border-[#E5E5E8] px-2 py-1 text-[12px] font-medium text-[#D92D20] hover:bg-white"
+              >
+                Remove
+              </button>
+            </div>
+            <button
+              type="button"
+              className="mt-3 rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px] font-semibold text-[#6B6B6B] hover:bg-[#F5F5F7]"
+            >
+              + Upload attachment
+            </button>
+          </div>
+        </div>
+      </Card>
+
+      <Card title="Prerequisites">
+        <PrerequisiteManager
+          emptyLabel="No prerequisites set"
+          selectLabel="— Add prerequisite lesson —"
+          options={[
+            "les-001 · Pre-session quiz",
+            "les-002 · Live session: cortical anatomy",
+            "les-003 · Post-session slides",
+          ]}
+          initialTags={["les-001 · Pre-session quiz"]}
+        />
+      </Card>
+    </div>
+  );
+}
+
+export function EditLessonSide({ onDelete }: { onDelete: () => void }) {
+  return (
+    <div className="space-y-3">
+      <Card title="Scheduling">
+        <div className="space-y-3">
+          <Field label="Scheduled at">
+            <input
+              type="text"
+              defaultValue="07/28/2025 07:00 PM"
+              className="w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
+            />
+          </Field>
+          <Field label="Ends at">
+            <input
+              type="text"
+              defaultValue="07/28/2025 08:30 PM"
+              className="w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
+            />
+          </Field>
+          <Field label="Duration (minutes)">
+            <input
+              type="number"
+              defaultValue={90}
+              className="w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
+            />
+          </Field>
+        </div>
+      </Card>
+
+      <Card title="Visibility">
+        <div className="space-y-2 text-[13px] text-[#6B6B6B]">
+          <label className="flex items-center justify-between rounded-md border border-[#E5E5E8] bg-[#F5F5F7] px-3 py-2">
+            <div>
+              <p className="font-semibold text-[#121212]">Published</p>
+              <p className="text-[12px] text-[#6B6B6B]">Visible to enrolled learners</p>
+            </div>
+            <input type="checkbox" defaultChecked />
+          </label>
+          <label className="flex items-center justify-between rounded-md border border-[#E5E5E8] bg-[#F5F5F7] px-3 py-2">
+            <div>
+              <p className="font-semibold text-[#121212]">Required</p>
+              <p className="text-[12px] text-[#6B6B6B]">Counts toward module progress</p>
+            </div>
+            <input type="checkbox" defaultChecked />
+          </label>
+        </div>
+      </Card>
+
+      <DangerZone
+        body="Deleting this lesson will remove it and all learner progress records for this lesson."
+        label="Delete lesson"
+        onDelete={onDelete}
+      />
     </div>
   );
 }
