@@ -121,7 +121,9 @@ export function Badge({
         : "bg-[#F5F5F7] text-[#6B6B6B]";
 
   return (
-    <span className={`rounded px-2 py-1 text-[10px] font-semibold ${toneClass}`}>
+    <span
+      className={`rounded px-2 py-1 text-[10px] font-semibold ${toneClass}`}
+    >
       {children}
     </span>
   );
@@ -146,7 +148,9 @@ export function Chip({
             : "bg-[#F5F5F7] text-[#6B6B6B]";
 
   return (
-    <span className={`rounded px-2 py-1 text-[10px] font-semibold ${toneClass}`}>
+    <span
+      className={`rounded px-2 py-1 text-[10px] font-semibold ${toneClass}`}
+    >
       {children}
     </span>
   );
@@ -370,7 +374,8 @@ export function SubmoduleFormSection() {
       </Card>
       <Card title="Prerequisites">
         <p className="mb-2 text-[12px] text-[#6B6B6B]">
-          Submodules that must be completed before this one unlocks within the same module.
+          Submodules that must be completed before this one unlocks within the
+          same module.
         </p>
         <PrerequisiteManager
           emptyLabel="No prerequisites set"
@@ -479,7 +484,8 @@ export function EditLessonFormSection() {
               className="w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
             />
             <p className="mt-2 rounded-md bg-[#F5F5F7] px-3 py-2 text-[12px] text-[#6B6B6B]">
-              Zoom, Google Meet, or MS Teams URL. Shown to learners at session time.
+              Zoom, Google Meet, or MS Teams URL. Shown to learners at session
+              time.
             </p>
           </Field>
 
@@ -560,14 +566,18 @@ export function EditLessonSide({ onDelete }: { onDelete: () => void }) {
           <label className="flex items-center justify-between rounded-md border border-[#E5E5E8] bg-[#F5F5F7] px-3 py-2">
             <div>
               <p className="font-semibold text-[#121212]">Published</p>
-              <p className="text-[12px] text-[#6B6B6B]">Visible to enrolled learners</p>
+              <p className="text-[12px] text-[#6B6B6B]">
+                Visible to enrolled learners
+              </p>
             </div>
             <input type="checkbox" defaultChecked />
           </label>
           <label className="flex items-center justify-between rounded-md border border-[#E5E5E8] bg-[#F5F5F7] px-3 py-2">
             <div>
               <p className="font-semibold text-[#121212]">Required</p>
-              <p className="text-[12px] text-[#6B6B6B]">Counts toward module progress</p>
+              <p className="text-[12px] text-[#6B6B6B]">
+                Counts toward module progress
+              </p>
             </div>
             <input type="checkbox" defaultChecked />
           </label>
@@ -621,7 +631,12 @@ export function VisibilityApiSide({
             </p>
             <label className="block rounded-md border border-[#007AFF] bg-[#EAF3FF] px-3 py-2">
               <div className="flex items-start gap-2">
-                <input type="radio" name="track" defaultChecked className="mt-0.5" />
+                <input
+                  type="radio"
+                  name="track"
+                  defaultChecked
+                  className="mt-0.5"
+                />
                 <div>
                   <p className="font-semibold text-[#121212]">Live track</p>
                   <p className="text-[12px] text-[#6B6B6B]">
@@ -642,12 +657,15 @@ export function VisibilityApiSide({
               </div>
             </label>
             <p className="text-[12px] text-[#6B6B6B]">
-              Track type determines the isRequired flag and the types of lessons you'll add.
+              Track type determines the isRequired flag and the types of lessons
+              you'll add.
             </p>
             <label className="flex items-center justify-between rounded-md border border-[#E5E5E8] bg-[#F5F5F7] px-3 py-2">
               <div>
                 <p className="font-semibold text-[#121212]">Published</p>
-                <p className="text-[12px] text-[#6B6B6B]">Visible to enrolled learners</p>
+                <p className="text-[12px] text-[#6B6B6B]">
+                  Visible to enrolled learners
+                </p>
               </div>
               <input type="checkbox" />
             </label>
@@ -659,7 +677,9 @@ export function VisibilityApiSide({
             <label className="flex items-center justify-between rounded-md border border-[#E5E5E8] bg-[#F5F5F7] px-3 py-2">
               <div>
                 <p className="font-semibold text-[#121212]">Published</p>
-                <p className="text-[12px] text-[#6B6B6B]">Visible to enrolled learners</p>
+                <p className="text-[12px] text-[#6B6B6B]">
+                  Visible to enrolled learners
+                </p>
               </div>
               <input type="checkbox" />
             </label>
@@ -708,7 +728,9 @@ export function VisibilityApiSide({
                 </button>
               </div>
             ) : (
-              <p className="text-[11px] text-[#6B6B6B]">No image selected yet.</p>
+              <p className="text-[11px] text-[#6B6B6B]">
+                No image selected yet.
+              </p>
             )}
           </div>
         </Card>

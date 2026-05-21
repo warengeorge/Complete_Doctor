@@ -1,13 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { GripVertical, Pencil, Plus, Trash2 } from "lucide-react";
-import { courseModulesData } from "@/features/courses/data/course-modules";
+import { GripVertical, Pencil, Trash2 } from "lucide-react";
+import { useCourseModuleDetailQuery } from "@/features/courses/services/useCourseModuleDetailQuery";
+import { useCourseModulesQuery } from "@/features/courses/services/useCourseModulesQuery";
 import {
   CourseDetailModuleViews,
   type ModuleView,
 } from "../course-detail-module-views";
-import { lessons, submodules } from "./data";
+import { lessons } from "./data";
+import { ModuleDetailSection } from "./module-detail-section";
+import { ModuleListSection } from "./module-list-section";
 import {
   Badge,
   Breadcrumb,
@@ -18,8 +21,6 @@ import {
   EditLessonSide,
   FormLayout,
   IconButton,
-  InfoMessage,
-  InfoPanel,
   KeyValues,
   LessonFormSection,
   ModuleFormSection,
@@ -29,7 +30,15 @@ import {
   TableCard,
   VisibilityApiSide,
 } from "./shared";
-import type { CourseDepth, DeleteKind, LessonRow, ToastTone } from "./types";
+import { SubmoduleListSection } from "./submodule-list-section";
+import type {
+  CourseDepth,
+  DeleteKind,
+  LessonRow,
+  ModuleRow,
+  ModuleSubmoduleRow,
+  ToastTone,
+} from "./types";
 import {
   getAvailableModuleViews,
   getDefaultViewForDepth,
@@ -37,16 +46,26 @@ import {
   lessonTone,
   normalizeCourseDepth,
 } from "./utils";
+import {
+  countLessonsFromSubModules,
+  countSubmoduleLessons,
+  formatDisplayDate,
+  getWeekLabel,
+  mapSubmoduleRow,
+} from "./view-helpers";
 
 type CourseDetailModulesProps = {
+  courseId?: string | null;
   depth?: string | null;
   courseTitle?: string | null;
 };
 
 export function CourseDetailModules({
+  courseId,
   depth,
   courseTitle,
 }: CourseDetailModulesProps) {
+  const modulesQuery = useCourseModulesQuery(courseId ?? undefined);
   const courseDepth = useMemo<CourseDepth>(
     () => normalizeCourseDepth(depth),
     [depth],
@@ -74,21 +93,116 @@ export function CourseDetailModules({
   );
   const [deleteKind, setDeleteKind] = useState<DeleteKind>("lesson");
   const [lastView, setLastView] = useState<ModuleView>(defaultView);
+  const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
   const [toast, setToast] = useState<{
     message: string;
     tone: ToastTone;
   } | null>(null);
 
+  const moduleRows = useMemo<ModuleRow[]>(() => {
+    const apiRows = modulesQuery.data ?? [];
+
+    return apiRows.map((module) => {
+      const submoduleCount = Array.isArray(module.subModules)
+        ? module.subModules.length
+        : 0;
+      const lessonCount = Array.isArray(module.subModules)
+        ? module.subModules.reduce<number>(
+            (sum, item) => sum + countSubmoduleLessons(item),
+            0,
+          )
+        : 0;
+
+      return {
+        id: module.id,
+        title: module.title,
+        description: module.description?.trim() || "No description provided.",
+        week:
+          typeof module.weekNumber === "number"
+            ? `Week ${module.weekNumber}`
+            : "—",
+        weekNumber: module.weekNumber,
+        status: module.isPublished ? "Published" : "Draft",
+        required: module.isRequired,
+        subModules: submoduleCount,
+        lessons: lessonCount,
+        prerequisites: [],
+        displayOrder: module.displayOrder,
+        duration: module.duration,
+        createdAt: module.createdAt,
+      };
+    });
+  }, [modulesQuery.data]);
+
+  const selectedModule = useMemo(() => {
+    if (moduleRows.length === 0) {
+      return null;
+    }
+
+    if (!selectedModuleId) {
+      return moduleRows[0];
+    }
+
+    return moduleRows.find((row) => row.id === selectedModuleId) ?? moduleRows[0];
+  }, [moduleRows, selectedModuleId]);
+
+  const moduleDetailQuery = useCourseModuleDetailQuery(
+    courseId ?? undefined,
+    selectedModule?.id,
+  );
+  const selectedModuleDetail = moduleDetailQuery.data;
+
+  const selectedModuleTitle = selectedModuleDetail?.title ?? selectedModule?.title ?? "Module";
+  const selectedModuleIdentifier = selectedModuleDetail?.id ?? selectedModule?.id ?? "—";
+  const selectedModuleWeekLabel =
+    getWeekLabel(selectedModuleDetail?.weekNumber) !== "—"
+      ? getWeekLabel(selectedModuleDetail?.weekNumber)
+      : selectedModule?.week ?? "—";
+  const selectedModuleSubmoduleCount = Array.isArray(selectedModuleDetail?.subModules)
+    ? selectedModuleDetail.subModules.length
+    : selectedModule?.subModules ?? 0;
+  const selectedModuleLessonCount = Array.isArray(selectedModuleDetail?.subModules)
+    ? countLessonsFromSubModules(selectedModuleDetail.subModules)
+    : selectedModule?.lessons ?? 0;
+  const selectedModuleDescription =
+    selectedModuleDetail?.description?.trim() ||
+    selectedModule?.description ||
+    "No description provided.";
+  const selectedModuleDuration =
+    selectedModuleDetail?.duration ?? selectedModule?.duration ?? null;
+  const selectedModuleDisplayOrder =
+    selectedModuleDetail?.displayOrder ?? selectedModule?.displayOrder ?? 0;
+  const selectedModuleCreatedAt =
+    selectedModuleDetail?.createdAt ?? selectedModule?.createdAt ?? "";
+  const selectedModuleIsPublished =
+    selectedModuleDetail?.isPublished ?? selectedModule?.status === "Published";
+  const selectedModuleIsRequired =
+    selectedModuleDetail?.isRequired ?? selectedModule?.required ?? false;
+  const selectedModuleMediaCount = Array.isArray(selectedModuleDetail?.media)
+    ? selectedModuleDetail.media.length
+    : 0;
+  const selectedModuleAssessmentCount = Array.isArray(
+    selectedModuleDetail?.assessments,
+  )
+    ? selectedModuleDetail.assessments.length
+    : 0;
+  const moduleSubmodules = useMemo<ModuleSubmoduleRow[]>(() => {
+    if (!Array.isArray(selectedModuleDetail?.subModules)) {
+      return [];
+    }
+
+    return selectedModuleDetail.subModules.map((item, index) =>
+      mapSubmoduleRow(item, index),
+    );
+  }, [selectedModuleDetail?.subModules]);
+
   const stats = useMemo(() => {
-    const totalModules = courseModulesData.length;
-    const requiredModules = courseModulesData.filter((m) => m.required).length;
-    const publishedModules = courseModulesData.filter(
+    const totalModules = moduleRows.length;
+    const requiredModules = moduleRows.filter((m) => m.required).length;
+    const publishedModules = moduleRows.filter(
       (m) => m.status === "Published",
     ).length;
-    const totalLessons = courseModulesData.reduce(
-      (sum, row) => sum + row.lessons,
-      0,
-    );
+    const totalLessons = moduleRows.reduce((sum, row) => sum + row.lessons, 0);
 
     return {
       totalModules,
@@ -96,31 +210,31 @@ export function CourseDetailModules({
       publishedModules,
       totalLessons,
     };
-  }, []);
+  }, [moduleRows]);
 
   const filteredModules = useMemo(() => {
     const term = searchModules.trim().toLowerCase();
-    if (!term) return courseModulesData;
+    if (!term) return moduleRows;
 
-    return courseModulesData.filter((row) => {
+    return moduleRows.filter((row) => {
       const hay = [row.id, row.title, row.week, ...row.prerequisites]
         .join(" ")
         .toLowerCase();
       return hay.includes(term);
     });
-  }, [searchModules]);
+  }, [moduleRows, searchModules]);
 
   const filteredSubmodules = useMemo(() => {
     const term = searchSubmodules.trim().toLowerCase();
-    if (!term) return submodules;
+    if (!term) return moduleSubmodules;
 
-    return submodules.filter((row) => {
+    return moduleSubmodules.filter((row) => {
       const hay = [row.id, row.title, row.track, ...row.prerequisites]
         .join(" ")
         .toLowerCase();
       return hay.includes(term);
     });
-  }, [searchSubmodules]);
+  }, [moduleSubmodules, searchSubmodules]);
 
   const filteredLessons = useMemo(() => {
     const term = searchLessons.trim().toLowerCase();
@@ -172,6 +286,17 @@ export function CourseDetailModules({
     }
   }, [activeView, availableViews, defaultView, lastView]);
 
+  useEffect(() => {
+    if (!selectedModule && selectedModuleId) {
+      setSelectedModuleId(null);
+      return;
+    }
+
+    if (selectedModule && selectedModule.id !== selectedModuleId) {
+      setSelectedModuleId(selectedModule.id);
+    }
+  }, [selectedModule, selectedModuleId]);
+
   return (
     <div className="space-y-4">
       <CourseDetailModuleViews
@@ -182,152 +307,32 @@ export function CourseDetailModules({
       />
 
       {activeView === "Module list" && (
-        <div className="space-y-4">
-          <Breadcrumb items={["Courses", courseName, "Modules"]} />
-
-          <PageHeader
-            title="Modules"
-            subtitle={`Manage weekly modules for ${courseName}`}
-            meta={[`${courseDepth} depth`, "COHORT", "6 weeks", "2 cohorts"]}
-            actions={
-              <>
-                <button
-                  type="button"
-                  onClick={() => goTo("Curriculum tree")}
-                  className="rounded-lg border border-[#E5E5E8] bg-white px-4 py-2 text-[13px] font-semibold text-[#6B6B6B] hover:bg-[#F5F5F7]"
-                >
-                  Curriculum tree
-                </button>
-                <button
-                  type="button"
-                  onClick={() => goTo("Create module")}
-                  className="inline-flex items-center gap-2 rounded-lg bg-[#007AFF] px-4 py-2 text-[13px] font-semibold text-white hover:bg-[#006DE0]"
-                >
-                  <Plus className="h-4 w-4" />
-                  New module
-                </button>
-              </>
-            }
-          />
-
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard
-              label="Total modules"
-              value={stats.totalModules}
-              color="#007AFF"
-            />
-            <StatCard
-              label="Required modules"
-              value={stats.requiredModules}
-              color="#534AB7"
-            />
-            <StatCard
-              label="Published"
-              value={stats.publishedModules}
-              color="#007AFF"
-            />
-            <StatCard
-              label="Total lessons"
-              value={stats.totalLessons}
-              color="#6B6B6B"
-            />
-          </div>
-
-          <TableCard
-            search={searchModules}
-            onSearch={setSearchModules}
-            placeholder="Search modules..."
-            countLabel={`${filteredModules.length} modules`}
-            trailing={
-              <button
-                type="button"
-                onClick={() => notify("Reorder mode coming soon")}
-                className="rounded-md border border-[#E5E5E8] px-3 py-1.5 text-[12px] font-medium text-[#6B6B6B] hover:bg-[#F5F5F7]"
-              >
-                Reorder
-              </button>
-            }
-          >
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-[#F5F5F7] text-left text-[11px] uppercase tracking-wide text-[#6B6B6B]">
-                  <th className="px-3 py-2" />
-                  <th className="px-3 py-2">Module</th>
-                  <th className="px-3 py-2">Week</th>
-                  <th className="px-3 py-2">Status</th>
-                  <th className="px-3 py-2">Required</th>
-                  {hasSubmodules ? (
-                    <th className="px-3 py-2">SubModules</th>
-                  ) : null}
-                  <th className="px-3 py-2">Lessons</th>
-                  <th className="px-3 py-2">Prerequisites</th>
-                  <th className="px-3 py-2" />
-                </tr>
-              </thead>
-              <tbody>
-                {filteredModules.map((module) => (
-                  <tr
-                    key={module.id}
-                    className="cursor-pointer border-t border-[#E5E5E8] text-[13px] hover:bg-[#F5F5F7]"
-                    onClick={() => goTo("Module detail")}
-                  >
-                    <td className="px-3 py-2 text-[#6B6B6B]">
-                      <GripVertical className="h-4 w-4" />
-                    </td>
-                    <td className="px-3 py-2">
-                      <p className="font-semibold text-[#121212]">
-                        {module.title}
-                      </p>
-                      <p className="text-[11px] text-[#6B6B6B]">{module.id}</p>
-                    </td>
-                    <td className="px-3 py-2 text-[#6B6B6B]">{module.week}</td>
-                    <td className="px-3 py-2">
-                      <Badge tone="published">{module.status}</Badge>
-                    </td>
-                    <td className="px-3 py-2">
-                      <Badge tone={module.required ? "required" : "optional"}>
-                        {module.required ? "Required" : "Optional"}
-                      </Badge>
-                    </td>
-                    {hasSubmodules ? (
-                      <td className="px-3 py-2">{module.subModules}</td>
-                    ) : null}
-                    <td className="px-3 py-2">{module.lessons}</td>
-                    <td className="px-3 py-2">
-                      {module.prerequisites.length ? (
-                        <span className="rounded bg-[#F5F5F7] px-2 py-1 font-mono text-[10px] text-[#6B6B6B]">
-                          {module.prerequisites.join(", ")}
-                        </span>
-                      ) : (
-                        <span className="text-[#6B6B6B]">-</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-2">
-                      <div className="flex justify-end gap-1">
-                        <IconButton
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            goTo("Edit module");
-                          }}
-                          label="Edit module"
-                          icon={<Pencil className="h-3.5 w-3.5" />}
-                        />
-                        <IconButton
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openDelete("module");
-                          }}
-                          label="Delete module"
-                          icon={<Trash2 className="h-3.5 w-3.5" />}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </TableCard>
-        </div>
+        <ModuleListSection
+          courseName={courseName}
+          courseDepth={courseDepth}
+          hasSubmodules={hasSubmodules}
+          stats={stats}
+          searchModules={searchModules}
+          onSearchModules={setSearchModules}
+          filteredModules={filteredModules}
+          isLoading={modulesQuery.isLoading}
+          isError={modulesQuery.isError}
+          onOpenCurriculumTree={() => goTo("Curriculum tree")}
+          onOpenCreateModule={() => goTo("Create module")}
+          onOpenModuleDetail={(moduleId) => {
+            setSelectedModuleId(moduleId);
+            goTo("Module detail");
+          }}
+          onOpenEditModule={(moduleId) => {
+            setSelectedModuleId(moduleId);
+            goTo("Edit module");
+          }}
+          onOpenDeleteModule={(moduleId) => {
+            setSelectedModuleId(moduleId);
+            openDelete("module");
+          }}
+          onNotifyReorder={() => notify("Reorder mode coming soon")}
+        />
       )}
 
       {activeView === "Create module" && (
@@ -353,183 +358,45 @@ export function CourseDetailModules({
       )}
 
       {activeView === "Module detail" && (
-        <div className="space-y-4">
-          <Breadcrumb
-            items={["Courses", courseName, "Modules", "Week 1"]}
-          />
-
-          <PageHeader
-            title="Week 1 - Neuroscience foundations"
-            subtitle={`mod-001 · ${courseName} · Week 1`}
-            actions={
-              <>
-                <button
-                  type="button"
-                  onClick={() => openDelete("module")}
-                  className="rounded-lg border border-[#E5E5E8] px-4 py-2 text-[13px] font-semibold text-[#D92D20] hover:bg-[#FEECEC]"
-                >
-                  Delete
-                </button>
-                <button
-                  type="button"
-                  onClick={() => goTo("Edit module")}
-                  className="rounded-lg border border-[#007AFF] px-4 py-2 text-[13px] font-semibold text-[#007AFF] hover:bg-[#EAF3FF]"
-                >
-                  Edit module
-                </button>
-                <button
-                  type="button"
-                  onClick={() => goTo(hasSubmodules ? "SubModule list" : "Lesson list")}
-                  className="rounded-lg bg-[#007AFF] px-4 py-2 text-[13px] font-semibold text-white hover:bg-[#006DE0]"
-                >
-                  {hasSubmodules ? "View submodules" : "View lessons"}
-                </button>
-              </>
-            }
-          />
-
-          <div className="grid gap-4 xl:grid-cols-[1fr_320px]">
-            <Card title={hasSubmodules ? "SubModules" : "Lessons"}>
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="text-left text-[11px] uppercase tracking-wide text-[#6B6B6B]">
-                    <th className="border-b border-[#E5E5E8] px-2 py-2">
-                      {hasSubmodules ? "SubModule" : "Lesson"}
-                    </th>
-                    {hasSubmodules ? (
-                      <th className="border-b border-[#E5E5E8] px-2 py-2">Track</th>
-                    ) : (
-                      <th className="border-b border-[#E5E5E8] px-2 py-2">Type</th>
-                    )}
-                    <th className="border-b border-[#E5E5E8] px-2 py-2">
-                      Status
-                    </th>
-                    <th className="border-b border-[#E5E5E8] px-2 py-2">
-                      {hasSubmodules ? "Lessons" : "Duration"}
-                    </th>
-                    <th className="border-b border-[#E5E5E8] px-2 py-2" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {hasSubmodules
-                    ? submodules.map((row) => (
-                        <tr
-                          key={row.id}
-                          onClick={() => goTo("Lesson list")}
-                          className="cursor-pointer border-b border-[#E5E5E8] text-[13px] hover:bg-[#F5F5F7]"
-                        >
-                          <td className="px-2 py-2">
-                            <p className="font-semibold">{row.title}</p>
-                            <p className="text-[11px] text-[#6B6B6B]">{row.id}</p>
-                          </td>
-                          <td className="px-2 py-2">
-                            <Chip
-                              tone={row.track === "Live track" ? "purple" : "teal"}
-                            >
-                              {row.track}
-                            </Chip>
-                          </td>
-                          <td className="px-2 py-2">
-                            <Badge tone="published">{row.status}</Badge>
-                          </td>
-                          <td className="px-2 py-2">{row.lessons}</td>
-                          <td className="px-2 py-2">
-                            <div className="flex justify-end gap-1">
-                              <IconButton
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  goTo("Edit submodule");
-                                }}
-                                label="Edit submodule"
-                                icon={<Pencil className="h-3.5 w-3.5" />}
-                              />
-                              <IconButton
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  openDelete("submodule");
-                                }}
-                                label="Delete submodule"
-                                icon={<Trash2 className="h-3.5 w-3.5" />}
-                              />
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    : filteredLessons.map((row) => (
-                        <tr
-                          key={row.id}
-                          onClick={() => goTo("Lesson detail")}
-                          className="cursor-pointer border-b border-[#E5E5E8] text-[13px] hover:bg-[#F5F5F7]"
-                        >
-                          <td className="px-2 py-2">
-                            <p className="font-semibold">{row.title}</p>
-                            <p className="text-[11px] text-[#6B6B6B]">{row.id}</p>
-                          </td>
-                          <td className="px-2 py-2">
-                            <Chip tone={lessonTone(row.type)}>{row.type}</Chip>
-                          </td>
-                          <td className="px-2 py-2">
-                            <Badge tone="published">{row.status}</Badge>
-                          </td>
-                          <td className="px-2 py-2">{row.duration}</td>
-                          <td className="px-2 py-2">
-                            <div className="flex justify-end gap-1">
-                              <IconButton
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  goTo("Edit lesson");
-                                }}
-                                label="Edit lesson"
-                                icon={<Pencil className="h-3.5 w-3.5" />}
-                              />
-                              <IconButton
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  openDelete("lesson");
-                                }}
-                                label="Delete lesson"
-                                icon={<Trash2 className="h-3.5 w-3.5" />}
-                              />
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                </tbody>
-              </table>
-            </Card>
-
-            <div className="space-y-3">
-              <Card title="Details">
-                <KeyValues
-                  rows={[
-                    ["ID", "mod-001"],
-                    ["Course", courseName],
-                    ["Week", "1"],
-                    ["Display order", "10"],
-                    ["Duration", "240 mins"],
-                    ...(hasSubmodules ? ([["SubModules", "2"]] as [string, string][]) : []),
-                    ["Lessons", "5"],
-                    ["Published", "Yes"],
-                    ["Required", "Yes"],
-                  ]}
-                />
-              </Card>
-              <Card title="Description">
-                <p className="text-[13px] leading-relaxed text-[#6B6B6B]">
-                  Core neuroanatomy, neurophysiology, and neurotransmitter
-                  systems underpinning psychiatric understanding.
-                </p>
-              </Card>
-            </div>
-          </div>
-        </div>
+        <ModuleDetailSection
+          courseName={courseName}
+          hasSubmodules={hasSubmodules}
+          selectedModuleTitle={selectedModuleTitle}
+          selectedModuleIdentifier={selectedModuleIdentifier}
+          selectedModuleWeekLabel={selectedModuleWeekLabel}
+          selectedModuleSubmoduleCount={selectedModuleSubmoduleCount}
+          selectedModuleLessonCount={selectedModuleLessonCount}
+          selectedModuleDisplayOrder={selectedModuleDisplayOrder}
+          selectedModuleDuration={selectedModuleDuration}
+          selectedModuleIsPublished={selectedModuleIsPublished}
+          selectedModuleIsRequired={selectedModuleIsRequired}
+          selectedModuleMediaCount={selectedModuleMediaCount}
+          selectedModuleAssessmentCount={selectedModuleAssessmentCount}
+          selectedModuleCreatedAt={selectedModuleCreatedAt}
+          selectedModuleDescription={selectedModuleDescription}
+          selectedModuleAvailable={Boolean(selectedModule)}
+          detailLoading={moduleDetailQuery.isLoading}
+          detailError={moduleDetailQuery.isError}
+          moduleSubmodules={moduleSubmodules}
+          filteredLessons={filteredLessons}
+          onOpenDeleteModule={() => openDelete("module")}
+          onOpenEditModule={() => goTo("Edit module")}
+          onOpenNext={() => goTo(hasSubmodules ? "SubModule list" : "Lesson list")}
+          onOpenLessonDetail={() => goTo("Lesson detail")}
+          onOpenEditLesson={() => goTo("Edit lesson")}
+          onOpenDeleteLesson={() => openDelete("lesson")}
+          onOpenEditSubmodule={() => goTo("Edit submodule")}
+          onOpenDeleteSubmodule={() => openDelete("submodule")}
+          onGoTo={goTo}
+          formatDisplayDate={formatDisplayDate}
+        />
       )}
 
       {activeView === "Edit module" && (
         <FormLayout
           title="Edit module"
-          subtitle="Week 1 - Neuroscience foundations · mod-001"
-          breadcrumbs={["Modules", "Week 1", "Edit"]}
+          subtitle={`${selectedModuleTitle} · ${selectedModuleIdentifier}`}
+          breadcrumbs={["Modules", selectedModuleWeekLabel, "Edit"]}
           onCancel={() => goTo("Module detail")}
           onSubmit={() => {
             notify("Module saved");
@@ -550,146 +417,30 @@ export function CourseDetailModules({
         />
       )}
 
-      {hasSubmodules && activeView === "SubModules" && (
-        <InfoPanel
-          title="SubModules"
-          description="SubModules are grouped topics within a module and can represent live track or reading track content."
-          actionLabel="Open submodule list"
-          onAction={() => goTo("SubModule list")}
-        />
-      )}
-
       {hasSubmodules && activeView === "SubModule list" && (
-        <div className="space-y-4">
-          <Breadcrumb items={["Modules", "Week 1", "SubModules"]} />
-          <PageHeader
-            title="SubModules"
-            subtitle={`Week 1 - Neuroscience foundations · ${courseName}`}
-            meta={["mod-001", "Week 1", "2 submodules", "5 lessons total"]}
-            actions={
-              <>
-                <button
-                  type="button"
-                  onClick={() => goTo("Module detail")}
-                  className="rounded-lg border border-[#E5E5E8] px-4 py-2 text-[13px] font-semibold text-[#6B6B6B] hover:bg-[#F5F5F7]"
-                >
-                  Module detail
-                </button>
-                <button
-                  type="button"
-                  onClick={() => goTo("Create submodule")}
-                  className="rounded-lg bg-[#007AFF] px-4 py-2 text-[13px] font-semibold text-white hover:bg-[#006DE0]"
-                >
-                  New submodule
-                </button>
-              </>
-            }
-          />
-
-          {/* <ContextBanner
-            name="Week 1 - Neuroscience foundations"
-            actionLabel="Module detail"
-            onAction={() => goTo("Module detail")}
-          /> */}
-
-          <InfoMessage>
-            SubModules are topic clusters within a module. Full-depth courses
-            usually include a live track and a reading track.
-          </InfoMessage>
-
-          <TableCard
-            search={searchSubmodules}
-            onSearch={setSearchSubmodules}
-            placeholder="Search submodules..."
-            countLabel={`${filteredSubmodules.length} submodules`}
-          >
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-[#F5F5F7] text-left text-[11px] uppercase tracking-wide text-[#6B6B6B]">
-                  <th className="px-3 py-2" />
-                  <th className="px-3 py-2">SubModule</th>
-                  <th className="px-3 py-2">Track</th>
-                  <th className="px-3 py-2">Status</th>
-                  <th className="px-3 py-2">Required</th>
-                  <th className="px-3 py-2">Lessons</th>
-                  <th className="px-3 py-2">Order</th>
-                  <th className="px-3 py-2">Prerequisites</th>
-                  <th className="px-3 py-2" />
-                </tr>
-              </thead>
-              <tbody>
-                {filteredSubmodules.map((row) => (
-                  <tr
-                    key={row.id}
-                    className="cursor-pointer border-t border-[#E5E5E8] text-[13px] hover:bg-[#F5F5F7]"
-                    onClick={() => goTo("Lesson list")}
-                  >
-                    <td className="px-3 py-2 text-[#6B6B6B]">
-                      <GripVertical className="h-4 w-4" />
-                    </td>
-                    <td className="px-3 py-2">
-                      <p className="font-semibold">{row.title}</p>
-                      <p className="text-[11px] text-[#6B6B6B]">{row.id}</p>
-                    </td>
-                    <td className="px-3 py-2">
-                      <Chip
-                        tone={row.track === "Live track" ? "purple" : "teal"}
-                      >
-                        {row.track}
-                      </Chip>
-                    </td>
-                    <td className="px-3 py-2">
-                      <Badge tone="published">{row.status}</Badge>
-                    </td>
-                    <td className="px-3 py-2">
-                      <Badge tone={row.required ? "required" : "optional"}>
-                        {row.required ? "Required" : "Optional"}
-                      </Badge>
-                    </td>
-                    <td className="px-3 py-2">{row.lessons}</td>
-                    <td className="px-3 py-2">{row.order}</td>
-                    <td className="px-3 py-2">
-                      {row.prerequisites.length ? (
-                        <span className="rounded bg-[#F5F5F7] px-2 py-1 font-mono text-[10px]">
-                          {row.prerequisites.join(", ")}
-                        </span>
-                      ) : (
-                        <span className="text-[#6B6B6B]">-</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-2">
-                      <div className="flex justify-end gap-1">
-                        <IconButton
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            goTo("Edit submodule");
-                          }}
-                          label="Edit submodule"
-                          icon={<Pencil className="h-3.5 w-3.5" />}
-                        />
-                        <IconButton
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openDelete("submodule");
-                          }}
-                          label="Delete submodule"
-                          icon={<Trash2 className="h-3.5 w-3.5" />}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </TableCard>
-        </div>
+        <SubmoduleListSection
+          courseName={courseName}
+          selectedModuleTitle={selectedModuleTitle}
+          selectedModuleIdentifier={selectedModuleIdentifier}
+          selectedModuleWeekLabel={selectedModuleWeekLabel}
+          selectedModuleSubmoduleCount={selectedModuleSubmoduleCount}
+          selectedModuleLessonCount={selectedModuleLessonCount}
+          searchSubmodules={searchSubmodules}
+          onSearchSubmodules={setSearchSubmodules}
+          filteredSubmodules={filteredSubmodules}
+          onOpenModuleDetail={() => goTo("Module detail")}
+          onOpenCreateSubmodule={() => goTo("Create submodule")}
+          onOpenLessonList={() => goTo("Lesson list")}
+          onOpenEditSubmodule={() => goTo("Edit submodule")}
+          onOpenDeleteSubmodule={() => openDelete("submodule")}
+        />
       )}
 
       {hasSubmodules && activeView === "Create submodule" && (
         <FormLayout
           title="New submodule"
-          subtitle="Week 1 - Neuroscience foundations"
-          breadcrumbs={["Modules", "Week 1", "SubModules", "New"]}
+          subtitle={selectedModuleTitle}
+          breadcrumbs={["Modules", selectedModuleWeekLabel, "SubModules", "New"]}
           onCancel={() => goTo("SubModule list")}
           onSubmit={() => {
             notify("Submodule created");
@@ -711,7 +462,7 @@ export function CourseDetailModules({
         <FormLayout
           title="Edit submodule"
           subtitle="Neuroanatomy & functional systems · sub-001"
-          breadcrumbs={["Week 1", "SubModules", "Edit"]}
+          breadcrumbs={[selectedModuleWeekLabel, "SubModules", "Edit"]}
           onCancel={() => goTo("SubModule list")}
           onSubmit={() => {
             notify("Submodule saved");
@@ -737,9 +488,15 @@ export function CourseDetailModules({
           <Breadcrumb
             items={
               hasSubmodules
-                ? ["Modules", "Week 1", "SubModules", "Neuroanatomy", "Lessons"]
+                ? [
+                    "Modules",
+                    selectedModuleWeekLabel,
+                    "SubModules",
+                    "Neuroanatomy",
+                    "Lessons",
+                  ]
                 : hasModules
-                  ? ["Modules", "Week 1", "Lessons"]
+                  ? ["Modules", selectedModuleWeekLabel, "Lessons"]
                   : ["Courses", courseName, "Lessons"]
             }
           />
@@ -747,16 +504,16 @@ export function CourseDetailModules({
             title="Lessons"
             subtitle={
               hasSubmodules
-                ? `Neuroanatomy & functional systems · Week 1 · ${courseName}`
+                ? `Neuroanatomy & functional systems · ${selectedModuleWeekLabel} · ${courseName}`
                 : hasModules
-                  ? `Week 1 - Neuroscience foundations · ${courseName}`
+                  ? `${selectedModuleTitle} · ${courseName}`
                   : courseName
             }
             meta={
               hasSubmodules
                 ? ["sub-001", "Live track", "3 lessons"]
                 : hasModules
-                  ? ["mod-001", "3 lessons"]
+                  ? [selectedModuleIdentifier, `${selectedModuleLessonCount} lessons`]
                   : ["3 lessons"]
             }
             actions={
@@ -907,7 +664,7 @@ export function CourseDetailModules({
             hasSubmodules
               ? "Neuroanatomy & functional systems · sub-001"
               : hasModules
-                ? "Week 1 - Neuroscience foundations · mod-001"
+                ? `${selectedModuleTitle} · ${selectedModuleIdentifier}`
                 : courseName
           }
           breadcrumbs={
@@ -944,9 +701,15 @@ export function CourseDetailModules({
           <Breadcrumb
             items={
               hasSubmodules
-                ? ["Modules", "Week 1", "SubModules", "Lessons", "les-002"]
+                ? [
+                    "Modules",
+                    selectedModuleWeekLabel,
+                    "SubModules",
+                    "Lessons",
+                    "les-002",
+                  ]
                 : hasModules
-                  ? ["Modules", "Week 1", "Lessons", "les-002"]
+                  ? ["Modules", selectedModuleWeekLabel, "Lessons", "les-002"]
                   : ["Courses", "Lessons", "les-002"]
             }
           />
@@ -955,9 +718,9 @@ export function CourseDetailModules({
             title="Live session: cortical anatomy"
             subtitle={
               hasSubmodules
-                ? `les-002 · sub-001 · mod-001 · ${courseName}`
+                ? `les-002 · sub-001 · ${selectedModuleIdentifier} · ${courseName}`
                 : hasModules
-                  ? `les-002 · mod-001 · ${courseName}`
+                  ? `les-002 · ${selectedModuleIdentifier} · ${courseName}`
                   : `les-002 · ${courseName}`
             }
             actions={
@@ -1107,7 +870,9 @@ export function CourseDetailModules({
                     ["Ends", "28 Jul 2025 · 20:30"],
                     ["Display order", "20"],
                     ...(hasSubmodules ? ([["SubModule", "sub-001"]] as [string, string][]) : []),
-                    ...(hasModules ? ([["Module", "mod-001"]] as [string, string][]) : []),
+                    ...(hasModules
+                      ? ([["Module", selectedModuleIdentifier]] as [string, string][])
+                      : []),
                     ["Created", "1 Jan 2025"],
                   ]}
                 />
@@ -1161,7 +926,7 @@ export function CourseDetailModules({
                 ? [
                     `${courseDepth} depth`,
                     "COHORT",
-                    `${courseModulesData.length} modules`,
+                    `${moduleRows.length} modules`,
                     `${stats.totalLessons} lessons`,
                   ]
                 : [`${courseDepth} depth`, "COHORT", `${lessons.length} lessons`]
@@ -1209,7 +974,7 @@ export function CourseDetailModules({
 
           <div className="space-y-2">
             {hasModules
-              ? courseModulesData.map((module, index) => (
+              ? moduleRows.map((module, index) => (
                   <div
                     key={module.id}
                     className="rounded-lg border border-[#E5E5E8] bg-white px-4 py-3"
@@ -1225,8 +990,10 @@ export function CourseDetailModules({
                         </p>
                         <p className="text-[11px] text-[#6B6B6B]">{module.id}</p>
                       </div>
-                      <Badge tone="published">Published</Badge>
-                      <Badge tone="required">Required</Badge>
+                      <Badge tone="published">{module.status}</Badge>
+                      <Badge tone={module.required ? "required" : "optional"}>
+                        {module.required ? "Required" : "Optional"}
+                      </Badge>
                       <span className="text-[11px] text-[#6B6B6B]">
                         {hasSubmodules
                           ? `${module.subModules} submodules · ${module.lessons} lessons`
@@ -1234,7 +1001,10 @@ export function CourseDetailModules({
                       </span>
                       <button
                         type="button"
-                        onClick={() => goTo("Edit module")}
+                        onClick={() => {
+                          setSelectedModuleId(module.id);
+                          goTo("Edit module");
+                        }}
                         className="rounded-md border border-[#007AFF] px-2 py-1 text-[11px] font-semibold text-[#007AFF] hover:bg-[#EAF3FF]"
                       >
                         Edit

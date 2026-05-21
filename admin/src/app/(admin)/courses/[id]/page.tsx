@@ -94,6 +94,7 @@ export default function Course() {
         )}
         {activeTab === "Modules" && (
           <CourseDetailModules
+            courseId={id}
             depth={courseQuery.data?.depth}
             courseTitle={courseQuery.data?.title}
           />

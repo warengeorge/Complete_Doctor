@@ -5,7 +5,6 @@ export const moduleViews = [
   "Create module",
   "Module detail",
   "Edit module",
-  "SubModules",
   "SubModule list",
   "Create submodule",
   "Edit submodule",
