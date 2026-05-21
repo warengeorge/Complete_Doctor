@@ -1,0 +1,13 @@
+export { CreateLessonTab } from "./create-lesson-tab";
+export { CreateModuleTab } from "./create-module-tab";
+export { CreateSubmoduleTab } from "./create-submodule-tab";
+export { CurriculumTreeTab } from "./curriculum-tree-tab";
+export { DeleteConfirmTab } from "./delete-confirm-tab";
+export { EditLessonTab } from "./edit-lesson-tab";
+export { EditModuleTab } from "./edit-module-tab";
+export { EditSubmoduleTab } from "./edit-submodule-tab";
+export { LessonDetailTab } from "./lesson-detail-tab";
+export { LessonListTab } from "./lesson-list-tab";
+export { ModuleDetailTab } from "./module-detail-tab";
+export { ModuleListTab } from "./module-list-tab";
+export { SubmoduleListTab } from "./submodule-list-tab";

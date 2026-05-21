@@ -8,11 +8,11 @@ import {
   InfoMessage,
   PageHeader,
   TableCard,
-} from "./shared";
-import type { ModuleSubmoduleRow } from "./types";
-import { getSubmoduleTrackTone } from "./view-helpers";
+} from "../shared";
+import type { ModuleSubmoduleRow } from "../types";
+import { getSubmoduleTrackTone } from "../view-helpers";
 
-type SubmoduleListSectionProps = {
+type SubmoduleListTabProps = {
   courseName: string;
   selectedModuleTitle: string;
   selectedModuleIdentifier: string;
@@ -29,7 +29,7 @@ type SubmoduleListSectionProps = {
   onOpenDeleteSubmodule: () => void;
 };
 
-export function SubmoduleListSection({
+export function SubmoduleListTab({
   courseName,
   selectedModuleTitle,
   selectedModuleIdentifier,
@@ -44,7 +44,7 @@ export function SubmoduleListSection({
   onOpenLessonList,
   onOpenEditSubmodule,
   onOpenDeleteSubmodule,
-}: SubmoduleListSectionProps) {
+}: SubmoduleListTabProps) {
   return (
     <div className="space-y-4">
       <Breadcrumb items={["Modules", selectedModuleWeekLabel, "SubModules"]} />

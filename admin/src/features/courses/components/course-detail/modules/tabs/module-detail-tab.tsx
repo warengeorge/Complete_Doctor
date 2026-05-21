@@ -1,6 +1,6 @@
 import { Pencil, Trash2 } from "lucide-react";
 
-import type { ModuleView } from "../course-detail-module-views";
+import type { ModuleView } from "../../course-detail-module-views";
 import {
   Badge,
   Breadcrumb,
@@ -10,12 +10,12 @@ import {
   InfoMessage,
   KeyValues,
   PageHeader,
-} from "./shared";
-import type { LessonRow, ModuleSubmoduleRow } from "./types";
-import { getSubmoduleTrackTone } from "./view-helpers";
-import { lessonTone } from "./utils";
+} from "../shared";
+import type { LessonRow, ModuleSubmoduleRow } from "../types";
+import { getSubmoduleTrackTone } from "../view-helpers";
+import { lessonTone } from "../utils";
 
-type ModuleDetailSectionProps = {
+type ModuleDetailTabProps = {
   courseName: string;
   hasSubmodules: boolean;
   selectedModuleTitle: string;
@@ -48,7 +48,7 @@ type ModuleDetailSectionProps = {
   formatDisplayDate: (value: string) => string;
 };
 
-export function ModuleDetailSection({
+export function ModuleDetailTab({
   courseName,
   hasSubmodules,
   selectedModuleTitle,
@@ -79,7 +79,7 @@ export function ModuleDetailSection({
   onOpenDeleteSubmodule,
   onGoTo,
   formatDisplayDate,
-}: ModuleDetailSectionProps) {
+}: ModuleDetailTabProps) {
   return (
     <div className="space-y-4">
       <Breadcrumb items={["Courses", courseName, "Modules", selectedModuleWeekLabel]} />

@@ -7,10 +7,10 @@ import {
   PageHeader,
   StatCard,
   TableCard,
-} from "./shared";
-import type { ModuleRow } from "./types";
+} from "../shared";
+import type { ModuleRow } from "../types";
 
-type ModuleListSectionProps = {
+type ModuleListTabProps = {
   courseName: string;
   courseDepth: string;
   hasSubmodules: boolean;
@@ -33,7 +33,7 @@ type ModuleListSectionProps = {
   onNotifyReorder: () => void;
 };
 
-export function ModuleListSection({
+export function ModuleListTab({
   courseName,
   courseDepth,
   hasSubmodules,
@@ -49,7 +49,7 @@ export function ModuleListSection({
   onOpenEditModule,
   onOpenDeleteModule,
   onNotifyReorder,
-}: ModuleListSectionProps) {
+}: ModuleListTabProps) {
   return (
     <div className="space-y-4">
       <Breadcrumb items={["Courses", courseName, "Modules"]} />
