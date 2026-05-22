@@ -443,8 +443,50 @@ export function LessonFormSection() {
               defaultValue="https://zoom.us/j/completedoctor-week1-live"
               className="w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
             />
+            <p className="mt-2 rounded-md bg-[#F5F5F7] px-3 py-2 text-[12px] text-[#6B6B6B]">
+              Zoom, Google Meet, or MS Teams URL. Shown to learners at session
+              time.
+            </p>
           </Field>
+
+          <div>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[#6B6B6B]">
+              Attachments
+            </p>
+            <div className="flex flex-wrap items-center gap-2 rounded-md border border-[#E5E5E8] bg-[#F5F5F7] px-3 py-2">
+              <span className="text-[16px] text-[#6B6B6B]">📄</span>
+              <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-[#121212]">
+                Week 1 live session slides.pdf
+              </span>
+              <span className="text-[12px] text-[#6B6B6B]">1.8 MB</span>
+              <button
+                type="button"
+                className="rounded-md border border-[#E5E5E8] px-2 py-1 text-[12px] font-medium text-[#D92D20] hover:bg-white"
+              >
+                Remove
+              </button>
+            </div>
+            <button
+              type="button"
+              className="mt-3 rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px] font-semibold text-[#6B6B6B] hover:bg-[#F5F5F7]"
+            >
+              + Upload attachment
+            </button>
+          </div>
         </div>
+      </Card>
+
+      <Card title="Prerequisites">
+        <PrerequisiteManager
+          emptyLabel="No prerequisites set"
+          selectLabel="— Add prerequisite lesson —"
+          options={[
+            "les-001 · Pre-session quiz",
+            "les-002 · Live session: cortical anatomy",
+            "les-003 · Post-session slides",
+          ]}
+          initialTags={["les-001 · Pre-session quiz"]}
+        />
       </Card>
     </div>
   );
@@ -589,6 +631,40 @@ export function EditLessonSide({ onDelete }: { onDelete: () => void }) {
         label="Delete lesson"
         onDelete={onDelete}
       />
+    </div>
+  );
+}
+
+export function CreateLessonSide({ endpoint }: { endpoint: string }) {
+  return (
+    <div className="space-y-3">
+      <Card title="Scheduling">
+        <div className="space-y-3">
+          <Field label="Scheduled at">
+            <input
+              type="text"
+              defaultValue="07/28/2025 07:00 PM"
+              className="w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
+            />
+          </Field>
+          <Field label="Ends at">
+            <input
+              type="text"
+              defaultValue="07/28/2025 08:30 PM"
+              className="w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
+            />
+          </Field>
+          <Field label="Duration (minutes)">
+            <input
+              type="number"
+              defaultValue={90}
+              className="w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
+            />
+          </Field>
+        </div>
+      </Card>
+
+      <VisibilityApiSide variant="lesson" endpoint={endpoint} />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { FormLayout, LessonFormSection, VisibilityApiSide } from "../shared";
+import { CreateLessonSide, FormLayout, LessonFormSection } from "../shared";
 
 type CreateLessonTabProps = {
   hasSubmodules: boolean;
@@ -19,6 +19,12 @@ export function CreateLessonTab({
   onCancel,
   onSubmit,
 }: CreateLessonTabProps) {
+  const endpoint = hasSubmodules
+    ? "POST /api/courses/{id}/modules/{id}/submodules/{id}/lessons"
+    : hasModules
+      ? "POST /api/courses/{id}/modules/{id}/lessons"
+      : "POST /api/courses/{id}/lessons";
+
   return (
     <FormLayout
       title="New lesson"
@@ -40,18 +46,7 @@ export function CreateLessonTab({
       onSubmit={onSubmit}
       submitLabel="Create lesson"
       main={<LessonFormSection />}
-      side={
-        <VisibilityApiSide
-          variant="lesson"
-          endpoint={
-            hasSubmodules
-              ? "POST /api/courses/{id}/modules/{id}/submodules/{id}/lessons"
-              : hasModules
-                ? "POST /api/courses/{id}/modules/{id}/lessons"
-                : "POST /api/courses/{id}/lessons"
-          }
-        />
-      }
+      side={<CreateLessonSide endpoint={endpoint} />}
     />
   );
 }
