@@ -24,9 +24,9 @@ type SubmoduleListTabProps = {
   filteredSubmodules: ModuleSubmoduleRow[];
   onOpenModuleDetail: () => void;
   onOpenCreateSubmodule: () => void;
-  onOpenLessonList: () => void;
-  onOpenEditSubmodule: () => void;
-  onOpenDeleteSubmodule: () => void;
+  onOpenLessonList: (submoduleId: string) => void;
+  onOpenEditSubmodule: (submoduleId: string) => void;
+  onOpenDeleteSubmodule: (submoduleId: string) => void;
 };
 
 export function SubmoduleListTab({
@@ -117,7 +117,7 @@ export function SubmoduleListTab({
                 <tr
                   key={row.id}
                   className="cursor-pointer border-t border-[#E5E5E8] text-[13px] hover:bg-[#F5F5F7]"
-                  onClick={onOpenLessonList}
+                  onClick={() => onOpenLessonList(row.id)}
                 >
                   <td className="px-3 py-2 text-[#6B6B6B]">
                     <GripVertical className="h-4 w-4" />
@@ -153,7 +153,7 @@ export function SubmoduleListTab({
                       <IconButton
                         onClick={(event) => {
                           event.stopPropagation();
-                          onOpenEditSubmodule();
+                          onOpenEditSubmodule(row.id);
                         }}
                         label="Edit submodule"
                         icon={<Pencil className="h-3.5 w-3.5" />}
@@ -161,7 +161,7 @@ export function SubmoduleListTab({
                       <IconButton
                         onClick={(event) => {
                           event.stopPropagation();
-                          onOpenDeleteSubmodule();
+                          onOpenDeleteSubmodule(row.id);
                         }}
                         label="Delete submodule"
                         icon={<Trash2 className="h-3.5 w-3.5" />}

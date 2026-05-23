@@ -17,6 +17,7 @@ export type SubmoduleRow = {
 
 export type LessonRow = {
   id: string;
+  subModuleId: string | null;
   title: string;
   type: "LIVE" | "VIDEO" | "QUIZ" | "READING" | "RESOURCE";
   status: "Published" | "Draft";
@@ -54,10 +55,12 @@ export type ModuleRow = {
 export type ModuleSubmoduleRow = {
   id: string;
   title: string;
+  description: string;
   track: string;
   status: "Published" | "Draft";
   required: boolean;
   lessons: number;
+  duration: number | null;
   order: number;
   prerequisites: string[];
 };

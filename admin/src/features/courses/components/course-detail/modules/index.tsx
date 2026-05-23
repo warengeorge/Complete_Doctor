@@ -100,6 +100,7 @@ export function CourseDetailModules({
   const [deleteKind, setDeleteKind] = useState<DeleteKind>("lesson");
   const [lastView, setLastView] = useState<ModuleView>(defaultView);
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
+  const [selectedSubmoduleId, setSelectedSubmoduleId] = useState<string | null>(null);
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [toast, setToast] = useState<{
     message: string;
@@ -235,16 +236,24 @@ export function CourseDetailModules({
   );
 
   const selectedLesson = useMemo(() => {
-    if (lessonRows.length === 0) {
+    const selectableRows =
+      hasSubmodules && selectedSubmoduleId
+        ? lessonRows.filter((row) => row.subModuleId === selectedSubmoduleId)
+        : lessonRows;
+
+    if (selectableRows.length === 0) {
       return null;
     }
 
     if (!selectedLessonId) {
-      return lessonRows[0];
+      return selectableRows[0];
     }
 
-    return lessonRows.find((row) => row.id === selectedLessonId) ?? lessonRows[0];
-  }, [lessonRows, selectedLessonId]);
+    return (
+      selectableRows.find((row) => row.id === selectedLessonId) ??
+      selectableRows[0]
+    );
+  }, [hasSubmodules, lessonRows, selectedLessonId, selectedSubmoduleId]);
 
   const shouldFetchLessonDetail =
     activeView === "Lesson detail" || activeView === "Edit lesson";
@@ -313,6 +322,11 @@ export function CourseDetailModules({
   const selectedLessonMediaCount = Array.isArray(selectedLessonDetail?.media)
     ? selectedLessonDetail.media.length
     : 0;
+  const selectedLessonDurationMinutes =
+    selectedLessonDetail?.durationMinutes ??
+    (typeof selectedLesson?.duration === "string"
+      ? Number.parseInt(selectedLesson.duration, 10) || null
+      : null);
 
   const moduleSubmodules = useMemo<ModuleSubmoduleRow[]>(() => {
     if (!Array.isArray(selectedModuleDetail?.subModules)) {
@@ -323,6 +337,20 @@ export function CourseDetailModules({
       mapSubmoduleRow(item, index),
     );
   }, [selectedModuleDetail?.subModules]);
+  const selectedSubmodule = useMemo(() => {
+    if (moduleSubmodules.length === 0) {
+      return null;
+    }
+
+    if (!selectedSubmoduleId) {
+      return moduleSubmodules[0];
+    }
+
+    return (
+      moduleSubmodules.find((row) => row.id === selectedSubmoduleId) ??
+      moduleSubmodules[0]
+    );
+  }, [moduleSubmodules, selectedSubmoduleId]);
 
   const stats = useMemo(() => {
     const totalModules = moduleRows.length;
@@ -368,14 +396,18 @@ export function CourseDetailModules({
     const term = searchLessons.trim().toLowerCase();
 
     return lessonRows.filter((row) => {
+      const matchesSubmodule =
+        !hasSubmodules ||
+        !selectedSubmoduleId ||
+        row.subModuleId === selectedSubmoduleId;
       const matchesType = lessonFilter === "All" || row.type === lessonFilter;
       const hay = [row.id, row.title, row.type, ...row.prerequisites]
         .join(" ")
         .toLowerCase();
       const matchesSearch = !term || hay.includes(term);
-      return matchesType && matchesSearch;
+      return matchesSubmodule && matchesType && matchesSearch;
     });
-  }, [lessonFilter, lessonRows, searchLessons]);
+  }, [hasSubmodules, lessonFilter, lessonRows, searchLessons, selectedSubmoduleId]);
 
   function resolveView(view: ModuleView): ModuleView {
     if (availableViews.includes(view)) {
@@ -430,8 +462,20 @@ export function CourseDetailModules({
   }, [selectedModule, selectedModuleId]);
 
   useEffect(() => {
+    setSelectedSubmoduleId(null);
     setSelectedLessonId(null);
   }, [selectedModule?.id]);
+
+  useEffect(() => {
+    if (!selectedSubmodule && selectedSubmoduleId) {
+      setSelectedSubmoduleId(null);
+      return;
+    }
+
+    if (selectedSubmodule && selectedSubmodule.id !== selectedSubmoduleId) {
+      setSelectedSubmoduleId(selectedSubmodule.id);
+    }
+  }, [selectedSubmodule, selectedSubmoduleId]);
 
   useEffect(() => {
     if (!selectedLesson && selectedLessonId) {
@@ -518,14 +562,30 @@ export function CourseDetailModules({
           onOpenDeleteModule={() => openDelete("module")}
           onOpenEditModule={() => goTo("Edit module")}
           onOpenNext={() => goTo(hasSubmodules ? "SubModule list" : "Lesson list")}
+          onOpenLessonListForSubmodule={(submoduleId) => {
+            setSelectedSubmoduleId(submoduleId);
+            goTo("Lesson list");
+          }}
           onOpenLessonDetail={(lessonId) => {
             setSelectedLessonId(lessonId);
             goTo("Lesson detail");
           }}
-          onOpenEditLesson={() => goTo("Edit lesson")}
-          onOpenDeleteLesson={() => openDelete("lesson")}
-          onOpenEditSubmodule={() => goTo("Edit submodule")}
-          onOpenDeleteSubmodule={() => openDelete("submodule")}
+          onOpenEditLesson={(lessonId) => {
+            setSelectedLessonId(lessonId);
+            goTo("Edit lesson");
+          }}
+          onOpenDeleteLesson={(lessonId) => {
+            setSelectedLessonId(lessonId);
+            openDelete("lesson");
+          }}
+          onOpenEditSubmodule={(submoduleId) => {
+            setSelectedSubmoduleId(submoduleId);
+            goTo("Edit submodule");
+          }}
+          onOpenDeleteSubmodule={(submoduleId) => {
+            setSelectedSubmoduleId(submoduleId);
+            openDelete("submodule");
+          }}
           onGoTo={goTo}
           formatDisplayDate={formatDisplayDate}
         />
@@ -536,6 +596,11 @@ export function CourseDetailModules({
           selectedModuleTitle={selectedModuleTitle}
           selectedModuleIdentifier={selectedModuleIdentifier}
           selectedModuleWeekLabel={selectedModuleWeekLabel}
+          selectedModuleWeekNumber={selectedModuleDetail?.weekNumber ?? null}
+          selectedModuleDisplayOrder={selectedModuleDisplayOrder}
+          selectedModuleDescription={selectedModuleDescription}
+          selectedModuleIsPublished={selectedModuleIsPublished}
+          selectedModuleIsRequired={selectedModuleIsRequired}
           onCancel={() => goTo("Module detail")}
           onSubmit={() => {
             notify("Module saved");
@@ -558,9 +623,18 @@ export function CourseDetailModules({
           filteredSubmodules={filteredSubmodules}
           onOpenModuleDetail={() => goTo("Module detail")}
           onOpenCreateSubmodule={() => goTo("Create submodule")}
-          onOpenLessonList={() => goTo("Lesson list")}
-          onOpenEditSubmodule={() => goTo("Edit submodule")}
-          onOpenDeleteSubmodule={() => openDelete("submodule")}
+          onOpenLessonList={(submoduleId) => {
+            setSelectedSubmoduleId(submoduleId);
+            goTo("Lesson list");
+          }}
+          onOpenEditSubmodule={(submoduleId) => {
+            setSelectedSubmoduleId(submoduleId);
+            goTo("Edit submodule");
+          }}
+          onOpenDeleteSubmodule={(submoduleId) => {
+            setSelectedSubmoduleId(submoduleId);
+            openDelete("submodule");
+          }}
         />
       )}
 
@@ -578,6 +652,16 @@ export function CourseDetailModules({
 
       {hasSubmodules && activeView === "Edit submodule" && (
         <EditSubmoduleTab
+          selectedSubmoduleTitle={selectedSubmodule?.title ?? "Submodule"}
+          selectedSubmoduleIdentifier={selectedSubmodule?.id ?? "—"}
+          selectedSubmoduleDescription={
+            selectedSubmodule?.description ?? "No description provided."
+          }
+          selectedSubmoduleDisplayOrder={selectedSubmodule?.order ?? 0}
+          selectedSubmoduleDuration={selectedSubmodule?.duration ?? null}
+          selectedSubmoduleTrack={selectedSubmodule?.track ?? "General track"}
+          selectedSubmoduleIsPublished={selectedSubmodule?.status === "Published"}
+          selectedSubmoduleIsRequired={selectedSubmodule?.required ?? false}
           selectedModuleWeekLabel={selectedModuleWeekLabel}
           onCancel={() => goTo("SubModule list")}
           onSubmit={() => {
@@ -596,6 +680,8 @@ export function CourseDetailModules({
           selectedModuleWeekLabel={selectedModuleWeekLabel}
           selectedModuleTitle={selectedModuleTitle}
           selectedModuleIdentifier={selectedModuleIdentifier}
+          selectedSubmoduleTitle={selectedSubmodule?.title ?? "Submodule"}
+          selectedSubmoduleIdentifier={selectedSubmodule?.id ?? "—"}
           selectedModuleLessonCount={selectedModuleLessonCount}
           searchLessons={searchLessons}
           onSearchLessons={setSearchLessons}
@@ -609,7 +695,14 @@ export function CourseDetailModules({
             setSelectedLessonId(lessonId);
             goTo("Lesson detail");
           }}
-          onOpenDeleteLesson={() => openDelete("lesson")}
+          onOpenEditLesson={(lessonId) => {
+            setSelectedLessonId(lessonId);
+            goTo("Edit lesson");
+          }}
+          onOpenDeleteLesson={(lessonId) => {
+            setSelectedLessonId(lessonId);
+            openDelete("lesson");
+          }}
         />
       )}
 
@@ -659,6 +752,17 @@ export function CourseDetailModules({
 
       {activeView === "Edit lesson" && (
         <EditLessonTab
+          selectedLessonId={selectedLesson?.id ?? null}
+          selectedLessonTitle={selectedLessonTitle}
+          selectedLessonType={selectedLessonType}
+          selectedLessonDescription={selectedLessonDescription}
+          selectedLessonContent={selectedLessonContent}
+          selectedLessonMediaCount={selectedLessonMediaCount}
+          selectedLessonScheduled={selectedLessonScheduled}
+          selectedLessonEndsAt={selectedLessonEndsAt}
+          selectedLessonDurationMinutes={selectedLessonDurationMinutes}
+          selectedLessonPublished={selectedLessonPublished}
+          selectedLessonRequired={selectedLessonRequired}
           onCancel={() => goTo("Lesson detail")}
           onSubmit={() => {
             notify("Lesson saved");

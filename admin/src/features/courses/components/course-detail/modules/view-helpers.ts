@@ -140,6 +140,7 @@ function mapLessonPrerequisites(
 export function mapLessonRow(value: CourseLessonItem): LessonRow {
   return {
     id: value.id,
+    subModuleId: value.subModuleId,
     title: value.title || "Untitled lesson",
     type: normalizeLessonType(value.type),
     status: value.isPublished ? "Published" : "Draft",
@@ -170,6 +171,10 @@ export function mapSubmoduleRow(value: unknown, index: number): ModuleSubmoduleR
     typeof item.title === "string" && item.title.trim()
       ? item.title
       : `Submodule ${index + 1}`;
+  const description =
+    typeof item.description === "string" && item.description.trim()
+      ? item.description
+      : "No description provided.";
   const track =
     typeof item.track === "string" && item.track.trim()
       ? item.track
@@ -188,6 +193,10 @@ export function mapSubmoduleRow(value: unknown, index: number): ModuleSubmoduleR
     : typeof item.lessonsCount === "number"
       ? item.lessonsCount
       : 0;
+  const duration =
+    typeof item.duration === "number" && Number.isFinite(item.duration)
+      ? item.duration
+      : null;
   const order = typeof item.displayOrder === "number" ? item.displayOrder : index;
   const prerequisites = Array.isArray(item.prerequisites)
     ? item.prerequisites.filter(
@@ -198,10 +207,12 @@ export function mapSubmoduleRow(value: unknown, index: number): ModuleSubmoduleR
   return {
     id,
     title,
+    description,
     track,
     status,
     required,
     lessons,
+    duration,
     order,
     prerequisites,
   };

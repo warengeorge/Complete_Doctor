@@ -12,6 +12,8 @@ type LessonListTabProps = {
   selectedModuleWeekLabel: string;
   selectedModuleTitle: string;
   selectedModuleIdentifier: string;
+  selectedSubmoduleTitle: string;
+  selectedSubmoduleIdentifier: string;
   selectedModuleLessonCount: number;
   searchLessons: string;
   onSearchLessons: (value: string) => void;
@@ -22,7 +24,8 @@ type LessonListTabProps = {
   isError: boolean;
   onGoTo: (view: ModuleView) => void;
   onOpenLessonDetail: (lessonId: string) => void;
-  onOpenDeleteLesson: () => void;
+  onOpenEditLesson: (lessonId: string) => void;
+  onOpenDeleteLesson: (lessonId: string) => void;
 };
 
 export function LessonListTab({
@@ -32,6 +35,8 @@ export function LessonListTab({
   selectedModuleWeekLabel,
   selectedModuleTitle,
   selectedModuleIdentifier,
+  selectedSubmoduleTitle,
+  selectedSubmoduleIdentifier,
   selectedModuleLessonCount,
   searchLessons,
   onSearchLessons,
@@ -42,6 +47,7 @@ export function LessonListTab({
   isError,
   onGoTo,
   onOpenLessonDetail,
+  onOpenEditLesson,
   onOpenDeleteLesson,
 }: LessonListTabProps) {
   return (
@@ -49,7 +55,13 @@ export function LessonListTab({
       <Breadcrumb
         items={
           hasSubmodules
-            ? ["Modules", selectedModuleWeekLabel, "SubModules", "Neuroanatomy", "Lessons"]
+            ? [
+                "Modules",
+                selectedModuleWeekLabel,
+                "SubModules",
+                selectedSubmoduleTitle,
+                "Lessons",
+              ]
             : hasModules
               ? ["Modules", selectedModuleWeekLabel, "Lessons"]
               : ["Courses", courseName, "Lessons"]
@@ -59,14 +71,14 @@ export function LessonListTab({
         title="Lessons"
         subtitle={
           hasSubmodules
-            ? `Neuroanatomy & functional systems · ${selectedModuleWeekLabel} · ${courseName}`
+            ? `${selectedSubmoduleTitle} · ${selectedModuleWeekLabel} · ${courseName}`
             : hasModules
               ? `${selectedModuleTitle} · ${courseName}`
               : courseName
         }
         meta={
           hasSubmodules
-            ? ["sub-001", "Live track", "3 lessons"]
+            ? [selectedSubmoduleIdentifier, `${selectedModuleLessonCount} lessons`]
             : hasModules
               ? [selectedModuleIdentifier, `${selectedModuleLessonCount} lessons`]
               : [`${filteredLessons.length} lessons`]
@@ -215,7 +227,7 @@ export function LessonListTab({
                       <IconButton
                         onClick={(event) => {
                           event.stopPropagation();
-                          onGoTo("Edit lesson");
+                          onOpenEditLesson(row.id);
                         }}
                         label="Edit lesson"
                         icon={<Pencil className="h-3.5 w-3.5" />}
@@ -223,7 +235,7 @@ export function LessonListTab({
                       <IconButton
                         onClick={(event) => {
                           event.stopPropagation();
-                          onOpenDeleteLesson();
+                          onOpenDeleteLesson(row.id);
                         }}
                         label="Delete lesson"
                         icon={<Trash2 className="h-3.5 w-3.5" />}

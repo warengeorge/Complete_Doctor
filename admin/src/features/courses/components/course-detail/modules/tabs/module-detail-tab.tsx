@@ -39,11 +39,12 @@ type ModuleDetailTabProps = {
   onOpenDeleteModule: () => void;
   onOpenEditModule: () => void;
   onOpenNext: () => void;
+  onOpenLessonListForSubmodule: (submoduleId: string) => void;
   onOpenLessonDetail: (lessonId: string) => void;
-  onOpenEditLesson: () => void;
-  onOpenDeleteLesson: () => void;
-  onOpenEditSubmodule: () => void;
-  onOpenDeleteSubmodule: () => void;
+  onOpenEditLesson: (lessonId: string) => void;
+  onOpenDeleteLesson: (lessonId: string) => void;
+  onOpenEditSubmodule: (submoduleId: string) => void;
+  onOpenDeleteSubmodule: (submoduleId: string) => void;
   onGoTo: (view: ModuleView) => void;
   formatDisplayDate: (value: string) => string;
 };
@@ -72,6 +73,7 @@ export function ModuleDetailTab({
   onOpenDeleteModule,
   onOpenEditModule,
   onOpenNext,
+  onOpenLessonListForSubmodule,
   onOpenLessonDetail,
   onOpenEditLesson,
   onOpenDeleteLesson,
@@ -155,7 +157,7 @@ export function ModuleDetailTab({
                       moduleSubmodules.map((row) => (
                         <tr
                           key={row.id}
-                          onClick={() => onGoTo("Lesson list")}
+                          onClick={() => onOpenLessonListForSubmodule(row.id)}
                           className="cursor-pointer border-b border-[#E5E5E8] text-[13px] hover:bg-[#F5F5F7]"
                         >
                           <td className="px-2 py-2">
@@ -174,7 +176,7 @@ export function ModuleDetailTab({
                               <IconButton
                                 onClick={(event) => {
                                   event.stopPropagation();
-                                  onOpenEditSubmodule();
+                                  onOpenEditSubmodule(row.id);
                                 }}
                                 label="Edit submodule"
                                 icon={<Pencil className="h-3.5 w-3.5" />}
@@ -182,7 +184,7 @@ export function ModuleDetailTab({
                               <IconButton
                                 onClick={(event) => {
                                   event.stopPropagation();
-                                  onOpenDeleteSubmodule();
+                                  onOpenDeleteSubmodule(row.id);
                                 }}
                                 label="Delete submodule"
                                 icon={<Trash2 className="h-3.5 w-3.5" />}
@@ -226,7 +228,7 @@ export function ModuleDetailTab({
                             <IconButton
                               onClick={(event) => {
                                 event.stopPropagation();
-                                onOpenEditLesson();
+                                onOpenEditLesson(row.id);
                               }}
                               label="Edit lesson"
                               icon={<Pencil className="h-3.5 w-3.5" />}
@@ -234,7 +236,7 @@ export function ModuleDetailTab({
                             <IconButton
                               onClick={(event) => {
                                 event.stopPropagation();
-                                onOpenDeleteLesson();
+                                onOpenDeleteLesson(row.id);
                               }}
                               label="Delete lesson"
                               icon={<Trash2 className="h-3.5 w-3.5" />}
