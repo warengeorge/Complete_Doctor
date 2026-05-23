@@ -1,12 +1,21 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useQueries } from "@tanstack/react-query";
 
 import { useCourseModuleDetailQuery } from "@/features/courses/services/useCourseModuleDetailQuery";
 import { useCourseModuleLessonsQuery } from "@/features/courses/services/useCourseModuleLessonsQuery";
 import { useCourseModulesQuery } from "@/features/courses/services/useCourseModulesQuery";
 import { useCourseLessonDetailQuery } from "@/features/courses/services/useCourseLessonDetailQuery";
-import type { CourseLessonItem } from "@/features/courses/services/course-modules-api";
+import {
+  getCourseModuleByIdRequest,
+  getCourseModuleLessonsRequest,
+  type CourseLessonItem,
+} from "@/features/courses/services/course-modules-api";
+import {
+  COURSE_MODULE_DETAIL_QUERY_KEY,
+  COURSE_MODULE_LESSONS_QUERY_KEY,
+} from "@/features/courses/services/courses-query-keys";
 
 import {
   CourseDetailModuleViews,
@@ -165,6 +174,32 @@ export function CourseDetailModules({
       };
     });
   }, [modulesQuery.data, preloadedModuleMeta]);
+  const moduleIds = useMemo(() => moduleRows.map((module) => module.id), [moduleRows]);
+  const shouldLoadCurriculumTree = activeView === "Curriculum tree";
+
+  const curriculumModuleDetailsQueries = useQueries({
+    queries: moduleIds.map((moduleId) => ({
+      queryKey: [...COURSE_MODULE_DETAIL_QUERY_KEY, courseId, moduleId, "curriculum"],
+      queryFn: () => getCourseModuleByIdRequest(courseId ?? "", moduleId),
+      enabled: Boolean(courseId && shouldLoadCurriculumTree),
+      staleTime: 0,
+      refetchOnMount: "always" as const,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+    })),
+  });
+
+  const curriculumModuleLessonsQueries = useQueries({
+    queries: moduleIds.map((moduleId) => ({
+      queryKey: [...COURSE_MODULE_LESSONS_QUERY_KEY, courseId, moduleId, "curriculum"],
+      queryFn: () => getCourseModuleLessonsRequest(courseId ?? "", moduleId),
+      enabled: Boolean(courseId && shouldLoadCurriculumTree),
+      staleTime: 0,
+      refetchOnMount: "always" as const,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+    })),
+  });
 
   const selectedModule = useMemo(() => {
     if (moduleRows.length === 0) {
@@ -351,6 +386,38 @@ export function CourseDetailModules({
       moduleSubmodules[0]
     );
   }, [moduleSubmodules, selectedSubmoduleId]);
+  const curriculumModules = useMemo(() => {
+    return moduleRows.map((module, index) => {
+      const detailQuery = curriculumModuleDetailsQueries[index];
+      const lessonsQuery = curriculumModuleLessonsQueries[index];
+
+      const submodules = Array.isArray(detailQuery?.data?.subModules)
+        ? detailQuery.data.subModules.map((item, rowIndex) =>
+            mapSubmoduleRow(item, rowIndex),
+          )
+        : [];
+
+      const lessons = Array.isArray(lessonsQuery?.data)
+        ? lessonsQuery.data.map(mapLessonRow)
+        : [];
+
+      return {
+        module,
+        submodules,
+        lessons,
+      };
+    });
+  }, [curriculumModuleDetailsQueries, curriculumModuleLessonsQueries, moduleRows]);
+  const curriculumTreeLoading =
+    shouldLoadCurriculumTree &&
+    (modulesQuery.isLoading ||
+      curriculumModuleDetailsQueries.some((query) => query.isLoading) ||
+      curriculumModuleLessonsQueries.some((query) => query.isLoading));
+  const curriculumTreeError =
+    shouldLoadCurriculumTree &&
+    (modulesQuery.isError ||
+      curriculumModuleDetailsQueries.some((query) => query.isError) ||
+      curriculumModuleLessonsQueries.some((query) => query.isError));
 
   const stats = useMemo(() => {
     const totalModules = moduleRows.length;
@@ -778,13 +845,31 @@ export function CourseDetailModules({
           courseDepth={courseDepth}
           hasModules={hasModules}
           hasSubmodules={hasSubmodules}
+          isLoading={curriculumTreeLoading}
+          isError={curriculumTreeError}
           moduleRows={moduleRows}
+          curriculumModules={curriculumModules}
           totalLessons={stats.totalLessons}
           flatLessons={lessonRows}
           onGoTo={goTo}
           onOpenEditModule={(moduleId) => {
             setSelectedModuleId(moduleId);
             goTo("Edit module");
+          }}
+          onOpenEditSubmodule={(moduleId, submoduleId) => {
+            setSelectedModuleId(moduleId);
+            setSelectedSubmoduleId(submoduleId);
+            goTo("Edit submodule");
+          }}
+          onOpenEditLesson={(moduleId, submoduleId, lessonId) => {
+            if (moduleId) {
+              setSelectedModuleId(moduleId);
+            }
+            if (submoduleId) {
+              setSelectedSubmoduleId(submoduleId);
+            }
+            setSelectedLessonId(lessonId);
+            goTo("Edit lesson");
           }}
         />
       )}
