@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   enrolledStudentsData,
   pendingStudentsData,
@@ -48,11 +49,7 @@ export default function Course() {
   }, [courseQuery.data]);
 
   if (courseQuery.isLoading) {
-    return (
-      <div className="py-20 text-center text-[16px] text-[#6B6B6B]">
-        Loading course...
-      </div>
-    );
+    return <CourseDetailPageSkeleton />;
   }
 
   if (courseQuery.isError) {
@@ -214,4 +211,63 @@ function formatCourseDate(value: string | null) {
     month: "short",
     year: "numeric",
   });
+}
+
+function CourseDetailPageSkeleton() {
+  return (
+    <section className="space-y-8">
+      <div className="rounded-xl border border-[#E5E5E8] bg-white p-6">
+        <div className="flex flex-wrap items-start justify-between gap-6">
+          <div className="space-y-3">
+            <Skeleton className="h-6 w-64" />
+            <Skeleton className="h-4 w-40" />
+            <div className="flex flex-wrap gap-2 pt-1">
+              <Skeleton className="h-6 w-24 rounded-full" />
+              <Skeleton className="h-6 w-28 rounded-full" />
+              <Skeleton className="h-6 w-32 rounded-full" />
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Skeleton className="h-10 w-28 rounded-lg" />
+            <Skeleton className="h-10 w-36 rounded-lg" />
+          </div>
+        </div>
+      </div>
+
+      <div className="w-full border-b border-[#E5E5E8]">
+        <div className="flex gap-4 overflow-x-auto pb-2">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <Skeleton
+              key={`tab-skeleton-${index}`}
+              className="h-8 w-24 shrink-0 rounded-md"
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[2fr_1fr]">
+        <div className="space-y-4 rounded-xl border border-[#E5E5E8] bg-white p-6">
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-[95%]" />
+          <Skeleton className="h-4 w-[88%]" />
+          <Skeleton className="h-4 w-[92%]" />
+          <Skeleton className="h-4 w-[70%]" />
+        </div>
+
+        <div className="space-y-4 rounded-xl border border-[#E5E5E8] bg-white p-6">
+          <Skeleton className="h-5 w-32" />
+          {Array.from({ length: 5 }).map((_, index) => (
+            <div
+              key={`meta-row-skeleton-${index}`}
+              className="flex items-center justify-between gap-3"
+            >
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-28" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 }
