@@ -1,9 +1,8 @@
 import { GripVertical } from "lucide-react";
 
 import type { ModuleView } from "../../course-detail-module-views";
-import { lessons } from "../data";
 import { Badge, Breadcrumb, Chip, PageHeader } from "../shared";
-import type { ModuleRow } from "../types";
+import type { LessonRow, ModuleRow } from "../types";
 import { lessonTone } from "../utils";
 
 type CurriculumTreeTabProps = {
@@ -13,6 +12,7 @@ type CurriculumTreeTabProps = {
   hasSubmodules: boolean;
   moduleRows: ModuleRow[];
   totalLessons: number;
+  flatLessons: LessonRow[];
   onGoTo: (view: ModuleView) => void;
   onOpenEditModule: (moduleId: string) => void;
 };
@@ -24,6 +24,7 @@ export function CurriculumTreeTab({
   hasSubmodules,
   moduleRows,
   totalLessons,
+  flatLessons,
   onGoTo,
   onOpenEditModule,
 }: CurriculumTreeTabProps) {
@@ -43,7 +44,7 @@ export function CurriculumTreeTab({
         meta={
           hasModules
             ? [`${courseDepth} depth`, "COHORT", `${moduleRows.length} modules`, `${totalLessons} lessons`]
-            : [`${courseDepth} depth`, "COHORT", `${lessons.length} lessons`]
+            : [`${courseDepth} depth`, "COHORT", `${flatLessons.length} lessons`]
         }
         actions={
           <>
@@ -118,7 +119,7 @@ export function CurriculumTreeTab({
                 </div>
               </div>
             ))
-          : lessons.map((lesson, index) => (
+          : flatLessons.map((lesson, index) => (
               <div key={lesson.id} className="rounded-lg border border-[#E5E5E8] bg-white px-4 py-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <GripVertical className="h-4 w-4 text-[#6B6B6B]" />

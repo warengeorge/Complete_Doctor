@@ -1,4 +1,5 @@
-import type { ModuleSubmoduleRow } from "./types";
+import type { LessonRow, ModuleSubmoduleRow } from "./types";
+import type { CourseLessonItem } from "@/features/courses/services/course-modules-api";
 
 export function formatDisplayDate(value: string) {
   const date = new Date(value);
@@ -10,6 +11,26 @@ export function formatDisplayDate(value: string) {
     day: "2-digit",
     month: "short",
     year: "numeric",
+  });
+}
+
+export function formatDisplayDateTime(value: string | null | undefined) {
+  if (!value) {
+    return "—";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "—";
+  }
+
+  return date.toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
   });
 }
 
@@ -41,11 +62,103 @@ export function countLessonsFromSubModules(subModules: unknown[] | undefined) {
   );
 }
 
+export function countLessonsFromModule(value: unknown): number {
+  if (!value || typeof value !== "object") {
+    return 0;
+  }
+
+  const item = value as { lessons?: unknown[]; subModules?: unknown[] };
+  if (Array.isArray(item.lessons)) {
+    return item.lessons.length;
+  }
+
+  return countLessonsFromSubModules(item.subModules);
+}
+
 export function getSubmoduleTrackTone(track: string) {
   const normalized = track.trim().toLowerCase();
   if (normalized.includes("live")) return "purple" as const;
   if (normalized.includes("read")) return "teal" as const;
   return "gray" as const;
+}
+
+function normalizeLessonType(value: string | null | undefined): LessonRow["type"] {
+  const normalized = value?.toUpperCase();
+  if (
+    normalized === "LIVE" ||
+    normalized === "VIDEO" ||
+    normalized === "QUIZ" ||
+    normalized === "READING" ||
+    normalized === "RESOURCE"
+  ) {
+    return normalized;
+  }
+  return "RESOURCE";
+}
+
+export function formatLessonDuration(durationMinutes: number | null | undefined) {
+  if (typeof durationMinutes === "number" && durationMinutes > 0) {
+    return `${durationMinutes} min`;
+  }
+  return "—";
+}
+
+export function formatLessonSchedule(isoDate: string | null | undefined) {
+  return formatDisplayDateTime(isoDate);
+}
+
+function mapLessonPrerequisites(
+  value: CourseLessonItem["isPrerequisiteFor"] | undefined,
+) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((entry) => {
+      if (typeof entry === "string") return entry.trim();
+      if (!entry || typeof entry !== "object") return "";
+
+      const asObject = entry as {
+        prerequisiteId?: string;
+        dependentId?: string;
+      };
+
+      if (typeof asObject.prerequisiteId === "string") {
+        return asObject.prerequisiteId.trim();
+      }
+
+      if (typeof asObject.dependentId === "string") {
+        return asObject.dependentId.trim();
+      }
+
+      return "";
+    })
+    .filter((entry) => entry.length > 0);
+}
+
+export function mapLessonRow(value: CourseLessonItem): LessonRow {
+  return {
+    id: value.id,
+    title: value.title || "Untitled lesson",
+    type: normalizeLessonType(value.type),
+    status: value.isPublished ? "Published" : "Draft",
+    required: value.isRequired,
+    duration: formatLessonDuration(value.durationMinutes),
+    scheduled: formatLessonSchedule(value.scheduledAt),
+    prerequisites: mapLessonPrerequisites(value.isPrerequisiteFor),
+  };
+}
+
+export function isCourseLessonItemLike(value: unknown): value is CourseLessonItem {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "id" in value &&
+    typeof value.id === "string" &&
+    "title" in value &&
+    typeof value.title === "string"
+  );
 }
 
 export function mapSubmoduleRow(value: unknown, index: number): ModuleSubmoduleRow {

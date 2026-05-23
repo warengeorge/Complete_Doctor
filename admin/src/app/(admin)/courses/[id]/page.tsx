@@ -97,6 +97,7 @@ export default function Course() {
             courseId={id}
             depth={courseQuery.data?.depth}
             courseTitle={courseQuery.data?.title}
+            preloadedModules={courseQuery.data?.modules}
           />
         )}
         {activeTab === "Events & Schedule" && (

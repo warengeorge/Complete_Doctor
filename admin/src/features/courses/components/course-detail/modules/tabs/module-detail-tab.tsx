@@ -39,7 +39,7 @@ type ModuleDetailTabProps = {
   onOpenDeleteModule: () => void;
   onOpenEditModule: () => void;
   onOpenNext: () => void;
-  onOpenLessonDetail: () => void;
+  onOpenLessonDetail: (lessonId: string) => void;
   onOpenEditLesson: () => void;
   onOpenDeleteLesson: () => void;
   onOpenEditSubmodule: () => void;
@@ -205,7 +205,7 @@ export function ModuleDetailTab({
                     filteredLessons.map((row) => (
                       <tr
                         key={row.id}
-                        onClick={onOpenLessonDetail}
+                        onClick={() => onOpenLessonDetail(row.id)}
                         className="cursor-pointer border-b border-[#E5E5E8] text-[13px] hover:bg-[#F5F5F7]"
                       >
                         <td className="px-2 py-2">

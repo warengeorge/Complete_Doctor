@@ -3,13 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { useCourseModuleDetailQuery } from "@/features/courses/services/useCourseModuleDetailQuery";
+import { useCourseModuleLessonsQuery } from "@/features/courses/services/useCourseModuleLessonsQuery";
 import { useCourseModulesQuery } from "@/features/courses/services/useCourseModulesQuery";
+import { useCourseLessonDetailQuery } from "@/features/courses/services/useCourseLessonDetailQuery";
+import type { CourseLessonItem } from "@/features/courses/services/course-modules-api";
 
 import {
   CourseDetailModuleViews,
   type ModuleView,
 } from "../course-detail-module-views";
-import { lessons } from "./data";
 import {
   CreateLessonTab,
   CreateModuleTab,
@@ -40,10 +42,14 @@ import {
   normalizeCourseDepth,
 } from "./utils";
 import {
+  countLessonsFromModule,
   countLessonsFromSubModules,
-  countSubmoduleLessons,
   formatDisplayDate,
+  formatDisplayDateTime,
+  formatLessonDuration,
   getWeekLabel,
+  isCourseLessonItemLike,
+  mapLessonRow,
   mapSubmoduleRow,
 } from "./view-helpers";
 
@@ -51,12 +57,18 @@ type CourseDetailModulesProps = {
   courseId?: string | null;
   depth?: string | null;
   courseTitle?: string | null;
+  preloadedModules?: Array<{
+    id?: string;
+    lessons?: unknown[];
+    subModules?: unknown[];
+  }> | null;
 };
 
 export function CourseDetailModules({
   courseId,
   depth,
   courseTitle,
+  preloadedModules,
 }: CourseDetailModulesProps) {
   const modulesQuery = useCourseModulesQuery(courseId ?? undefined);
   const courseDepth = useMemo<CourseDepth>(
@@ -88,24 +100,49 @@ export function CourseDetailModules({
   const [deleteKind, setDeleteKind] = useState<DeleteKind>("lesson");
   const [lastView, setLastView] = useState<ModuleView>(defaultView);
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
+  const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [toast, setToast] = useState<{
     message: string;
     tone: ToastTone;
   } | null>(null);
+  const preloadedModuleMeta = useMemo(() => {
+    const entries = new Map<string, { lessons: number; subModules: number }>();
+
+    for (const module of preloadedModules ?? []) {
+      if (!module || typeof module !== "object") {
+        continue;
+      }
+
+      const id =
+        typeof module.id === "string" && module.id.trim().length > 0
+          ? module.id
+          : null;
+      if (!id) {
+        continue;
+      }
+
+      entries.set(id, {
+        lessons: countLessonsFromModule(module),
+        subModules: Array.isArray(module.subModules) ? module.subModules.length : 0,
+      });
+    }
+
+    return entries;
+  }, [preloadedModules]);
 
   const moduleRows = useMemo<ModuleRow[]>(() => {
     const apiRows = modulesQuery.data ?? [];
 
     return apiRows.map((module) => {
+      const preloadedMeta = preloadedModuleMeta.get(module.id);
       const submoduleCount = Array.isArray(module.subModules)
         ? module.subModules.length
-        : 0;
-      const lessonCount = Array.isArray(module.subModules)
-        ? module.subModules.reduce<number>(
-            (sum, item) => sum + countSubmoduleLessons(item),
-            0,
-          )
-        : 0;
+        : (preloadedMeta?.subModules ?? 0);
+      const lessonCountFromModulesApi = countLessonsFromModule(module);
+      const lessonCount =
+        lessonCountFromModulesApi > 0
+          ? lessonCountFromModulesApi
+          : (preloadedMeta?.lessons ?? 0);
 
       return {
         id: module.id,
@@ -126,7 +163,7 @@ export function CourseDetailModules({
         createdAt: module.createdAt,
       };
     });
-  }, [modulesQuery.data]);
+  }, [modulesQuery.data, preloadedModuleMeta]);
 
   const selectedModule = useMemo(() => {
     if (moduleRows.length === 0) {
@@ -141,6 +178,10 @@ export function CourseDetailModules({
   }, [moduleRows, selectedModuleId]);
 
   const moduleDetailQuery = useCourseModuleDetailQuery(
+    courseId ?? undefined,
+    selectedModule?.id,
+  );
+  const moduleLessonsQuery = useCourseModuleLessonsQuery(
     courseId ?? undefined,
     selectedModule?.id,
   );
@@ -159,9 +200,65 @@ export function CourseDetailModules({
   )
     ? selectedModuleDetail.subModules.length
     : selectedModule?.subModules ?? 0;
-  const selectedModuleLessonCount = Array.isArray(selectedModuleDetail?.subModules)
-    ? countLessonsFromSubModules(selectedModuleDetail.subModules)
-    : selectedModule?.lessons ?? 0;
+  const lessonItems = useMemo<CourseLessonItem[]>(() => {
+    if (Array.isArray(moduleLessonsQuery.data) && moduleLessonsQuery.data.length > 0) {
+      return moduleLessonsQuery.data;
+    }
+
+    if (Array.isArray(selectedModuleDetail?.lessons)) {
+      return selectedModuleDetail.lessons.filter(isCourseLessonItemLike);
+    }
+
+    if (Array.isArray(selectedModuleDetail?.subModules)) {
+      const nestedLessons = selectedModuleDetail.subModules.flatMap((subModule) => {
+        if (
+          subModule &&
+          typeof subModule === "object" &&
+          "lessons" in subModule &&
+          Array.isArray((subModule as { lessons?: unknown[] }).lessons)
+        ) {
+          return (subModule as { lessons: unknown[] }).lessons;
+        }
+
+        return [];
+      });
+
+      return nestedLessons.filter(isCourseLessonItemLike);
+    }
+
+    return [];
+  }, [moduleLessonsQuery.data, selectedModuleDetail?.lessons, selectedModuleDetail?.subModules]);
+
+  const lessonRows = useMemo<LessonRow[]>(
+    () => lessonItems.map(mapLessonRow),
+    [lessonItems],
+  );
+
+  const selectedLesson = useMemo(() => {
+    if (lessonRows.length === 0) {
+      return null;
+    }
+
+    if (!selectedLessonId) {
+      return lessonRows[0];
+    }
+
+    return lessonRows.find((row) => row.id === selectedLessonId) ?? lessonRows[0];
+  }, [lessonRows, selectedLessonId]);
+
+  const shouldFetchLessonDetail =
+    activeView === "Lesson detail" || activeView === "Edit lesson";
+  const lessonDetailQuery = useCourseLessonDetailQuery(
+    selectedLesson?.id ?? undefined,
+    shouldFetchLessonDetail,
+  );
+  const selectedLessonDetail = lessonDetailQuery.data ?? null;
+
+  const selectedModuleLessonCount = lessonRows.length
+    ? lessonRows.length
+    : Array.isArray(selectedModuleDetail?.subModules)
+      ? countLessonsFromSubModules(selectedModuleDetail.subModules)
+      : selectedModule?.lessons ?? 0;
   const selectedModuleDescription =
     selectedModuleDetail?.description?.trim() ||
     selectedModule?.description ||
@@ -183,6 +280,38 @@ export function CourseDetailModules({
     selectedModuleDetail?.assessments,
   )
     ? selectedModuleDetail.assessments.length
+    : 0;
+  const selectedLessonTitle =
+    selectedLessonDetail?.title ?? selectedLesson?.title ?? "Lesson";
+  const selectedLessonType =
+    selectedLessonDetail?.type ?? selectedLesson?.type ?? "RESOURCE";
+  const selectedLessonPublished =
+    selectedLessonDetail?.isPublished ?? selectedLesson?.status === "Published";
+  const selectedLessonRequired =
+    selectedLessonDetail?.isRequired ?? selectedLesson?.required ?? false;
+  const selectedLessonDuration =
+    selectedLessonDetail?.durationMinutes !== undefined
+      ? formatLessonDuration(selectedLessonDetail.durationMinutes)
+      : selectedLesson?.duration ?? "—";
+  const selectedLessonScheduled =
+    selectedLessonDetail?.scheduledAt !== undefined
+      ? formatDisplayDateTime(selectedLessonDetail.scheduledAt)
+      : selectedLesson?.scheduled ?? "—";
+  const selectedLessonEndsAt =
+    selectedLessonDetail?.endsAt !== undefined
+      ? formatDisplayDateTime(selectedLessonDetail.endsAt)
+      : "—";
+  const selectedLessonDescription =
+    selectedLessonDetail?.description?.trim() || "No description provided.";
+  const selectedLessonContent =
+    selectedLessonDetail?.content?.trim() || "No lesson content provided.";
+  const selectedLessonLocation = selectedLessonDetail?.location?.trim() || "Online";
+  const selectedLessonCreatedAt = selectedLessonDetail?.createdAt
+    ? formatDisplayDate(selectedLessonDetail.createdAt)
+    : "—";
+  const selectedLessonPrerequisites = selectedLesson?.prerequisites ?? [];
+  const selectedLessonMediaCount = Array.isArray(selectedLessonDetail?.media)
+    ? selectedLessonDetail.media.length
     : 0;
 
   const moduleSubmodules = useMemo<ModuleSubmoduleRow[]>(() => {
@@ -238,7 +367,7 @@ export function CourseDetailModules({
   const filteredLessons = useMemo(() => {
     const term = searchLessons.trim().toLowerCase();
 
-    return lessons.filter((row) => {
+    return lessonRows.filter((row) => {
       const matchesType = lessonFilter === "All" || row.type === lessonFilter;
       const hay = [row.id, row.title, row.type, ...row.prerequisites]
         .join(" ")
@@ -246,7 +375,7 @@ export function CourseDetailModules({
       const matchesSearch = !term || hay.includes(term);
       return matchesType && matchesSearch;
     });
-  }, [lessonFilter, searchLessons]);
+  }, [lessonFilter, lessonRows, searchLessons]);
 
   function resolveView(view: ModuleView): ModuleView {
     if (availableViews.includes(view)) {
@@ -299,6 +428,21 @@ export function CourseDetailModules({
       setSelectedModuleId(selectedModule.id);
     }
   }, [selectedModule, selectedModuleId]);
+
+  useEffect(() => {
+    setSelectedLessonId(null);
+  }, [selectedModule?.id]);
+
+  useEffect(() => {
+    if (!selectedLesson && selectedLessonId) {
+      setSelectedLessonId(null);
+      return;
+    }
+
+    if (selectedLesson && selectedLesson.id !== selectedLessonId) {
+      setSelectedLessonId(selectedLesson.id);
+    }
+  }, [selectedLesson, selectedLessonId]);
 
   return (
     <div className="space-y-4">
@@ -374,7 +518,10 @@ export function CourseDetailModules({
           onOpenDeleteModule={() => openDelete("module")}
           onOpenEditModule={() => goTo("Edit module")}
           onOpenNext={() => goTo(hasSubmodules ? "SubModule list" : "Lesson list")}
-          onOpenLessonDetail={() => goTo("Lesson detail")}
+          onOpenLessonDetail={(lessonId) => {
+            setSelectedLessonId(lessonId);
+            goTo("Lesson detail");
+          }}
           onOpenEditLesson={() => goTo("Edit lesson")}
           onOpenDeleteLesson={() => openDelete("lesson")}
           onOpenEditSubmodule={() => goTo("Edit submodule")}
@@ -455,7 +602,13 @@ export function CourseDetailModules({
           lessonFilter={lessonFilter}
           onLessonFilterChange={setLessonFilter}
           filteredLessons={filteredLessons}
+          isLoading={moduleLessonsQuery.isLoading}
+          isError={moduleLessonsQuery.isError}
           onGoTo={goTo}
+          onOpenLessonDetail={(lessonId) => {
+            setSelectedLessonId(lessonId);
+            goTo("Lesson detail");
+          }}
           onOpenDeleteLesson={() => openDelete("lesson")}
         />
       )}
@@ -482,9 +635,25 @@ export function CourseDetailModules({
           selectedModuleWeekLabel={selectedModuleWeekLabel}
           selectedModuleIdentifier={selectedModuleIdentifier}
           courseName={courseName}
+          selectedLessonId={selectedLesson?.id ?? null}
+          selectedLessonTitle={selectedLessonTitle}
+          selectedLessonType={selectedLessonType}
+          selectedLessonPublished={selectedLessonPublished}
+          selectedLessonRequired={selectedLessonRequired}
+          selectedLessonDuration={selectedLessonDuration}
+          selectedLessonScheduled={selectedLessonScheduled}
+          selectedLessonEndsAt={selectedLessonEndsAt}
+          selectedLessonDescription={selectedLessonDescription}
+          selectedLessonContent={selectedLessonContent}
+          selectedLessonLocation={selectedLessonLocation}
+          selectedLessonCreatedAt={selectedLessonCreatedAt}
+          selectedLessonPrerequisites={selectedLessonPrerequisites}
+          selectedLessonMediaCount={selectedLessonMediaCount}
+          lessonDetailLoading={lessonDetailQuery.isLoading}
+          lessonDetailError={lessonDetailQuery.isError}
+          lessonDetailSource={selectedLessonDetail}
           onOpenDeleteLesson={() => openDelete("lesson")}
           onGoTo={goTo}
-          onNotify={notify}
         />
       )}
 
@@ -507,6 +676,7 @@ export function CourseDetailModules({
           hasSubmodules={hasSubmodules}
           moduleRows={moduleRows}
           totalLessons={stats.totalLessons}
+          flatLessons={lessonRows}
           onGoTo={goTo}
           onOpenEditModule={(moduleId) => {
             setSelectedModuleId(moduleId);

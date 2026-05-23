@@ -18,7 +18,10 @@ type LessonListTabProps = {
   lessonFilter: LessonRow["type"] | "All";
   onLessonFilterChange: (value: LessonRow["type"] | "All") => void;
   filteredLessons: LessonRow[];
+  isLoading: boolean;
+  isError: boolean;
   onGoTo: (view: ModuleView) => void;
+  onOpenLessonDetail: (lessonId: string) => void;
   onOpenDeleteLesson: () => void;
 };
 
@@ -35,7 +38,10 @@ export function LessonListTab({
   lessonFilter,
   onLessonFilterChange,
   filteredLessons,
+  isLoading,
+  isError,
   onGoTo,
+  onOpenLessonDetail,
   onOpenDeleteLesson,
 }: LessonListTabProps) {
   return (
@@ -63,7 +69,7 @@ export function LessonListTab({
             ? ["sub-001", "Live track", "3 lessons"]
             : hasModules
               ? [selectedModuleIdentifier, `${selectedModuleLessonCount} lessons`]
-              : ["3 lessons"]
+              : [`${filteredLessons.length} lessons`]
         }
         actions={
           <>
@@ -141,63 +147,92 @@ export function LessonListTab({
             </tr>
           </thead>
           <tbody>
-            {filteredLessons.map((row) => (
-              <tr
-                key={row.id}
-                className="cursor-pointer border-t border-[#E5E5E8] text-[13px] hover:bg-[#F5F5F7]"
-                onClick={() => onGoTo("Lesson detail")}
-              >
-                <td className="px-3 py-2 text-[#6B6B6B]">
-                  <GripVertical className="h-4 w-4" />
-                </td>
-                <td className="px-3 py-2">
-                  <p className="font-semibold">{row.title}</p>
-                  <p className="text-[11px] text-[#6B6B6B]">{row.id}</p>
-                </td>
-                <td className="px-3 py-2">
-                  <Chip tone={lessonTone(row.type)}>{row.type}</Chip>
-                </td>
-                <td className="px-3 py-2">
-                  <Badge tone="published">{row.status}</Badge>
-                </td>
-                <td className="px-3 py-2">
-                  <Badge tone={row.required ? "required" : "optional"}>
-                    {row.required ? "Required" : "Optional"}
-                  </Badge>
-                </td>
-                <td className="px-3 py-2">{row.duration}</td>
-                <td className="px-3 py-2">{row.scheduled}</td>
-                <td className="px-3 py-2">
-                  {row.prerequisites.length ? (
-                    <span className="rounded bg-[#F5F5F7] px-2 py-1 font-mono text-[10px]">
-                      {row.prerequisites.join(", ")}
-                    </span>
-                  ) : (
-                    <span className="text-[#6B6B6B]">-</span>
-                  )}
-                </td>
-                <td className="px-3 py-2">
-                  <div className="flex justify-end gap-1">
-                    <IconButton
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onGoTo("Edit lesson");
-                      }}
-                      label="Edit lesson"
-                      icon={<Pencil className="h-3.5 w-3.5" />}
-                    />
-                    <IconButton
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onOpenDeleteLesson();
-                      }}
-                      label="Delete lesson"
-                      icon={<Trash2 className="h-3.5 w-3.5" />}
-                    />
-                  </div>
+            {isLoading ? (
+              <tr>
+                <td
+                  colSpan={9}
+                  className="px-3 py-6 text-center text-[13px] text-[#6B6B6B]"
+                >
+                  Loading lessons...
                 </td>
               </tr>
-            ))}
+            ) : isError ? (
+              <tr>
+                <td
+                  colSpan={9}
+                  className="px-3 py-6 text-center text-[13px] text-[#D92D20]"
+                >
+                  Unable to load lessons.
+                </td>
+              </tr>
+            ) : filteredLessons.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={9}
+                  className="px-3 py-6 text-center text-[13px] text-[#6B6B6B]"
+                >
+                  No lessons found.
+                </td>
+              </tr>
+            ) : (
+              filteredLessons.map((row) => (
+                <tr
+                  key={row.id}
+                  className="cursor-pointer border-t border-[#E5E5E8] text-[13px] hover:bg-[#F5F5F7]"
+                  onClick={() => onOpenLessonDetail(row.id)}
+                >
+                  <td className="px-3 py-2 text-[#6B6B6B]">
+                    <GripVertical className="h-4 w-4" />
+                  </td>
+                  <td className="px-3 py-2">
+                    <p className="font-semibold">{row.title}</p>
+                    <p className="text-[11px] text-[#6B6B6B]">{row.id}</p>
+                  </td>
+                  <td className="px-3 py-2">
+                    <Chip tone={lessonTone(row.type)}>{row.type}</Chip>
+                  </td>
+                  <td className="px-3 py-2">
+                    <Badge tone="published">{row.status}</Badge>
+                  </td>
+                  <td className="px-3 py-2">
+                    <Badge tone={row.required ? "required" : "optional"}>
+                      {row.required ? "Required" : "Optional"}
+                    </Badge>
+                  </td>
+                  <td className="px-3 py-2">{row.duration}</td>
+                  <td className="px-3 py-2">{row.scheduled}</td>
+                  <td className="px-3 py-2">
+                    {row.prerequisites.length ? (
+                      <span className="rounded bg-[#F5F5F7] px-2 py-1 font-mono text-[10px]">
+                        {row.prerequisites.join(", ")}
+                      </span>
+                    ) : (
+                      <span className="text-[#6B6B6B]">-</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2">
+                    <div className="flex justify-end gap-1">
+                      <IconButton
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onGoTo("Edit lesson");
+                        }}
+                        label="Edit lesson"
+                        icon={<Pencil className="h-3.5 w-3.5" />}
+                      />
+                      <IconButton
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onOpenDeleteLesson();
+                        }}
+                        label="Delete lesson"
+                        icon={<Trash2 className="h-3.5 w-3.5" />}
+                      />
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </TableCard>

@@ -26,6 +26,43 @@ export type CourseModuleItem = {
 
 export type CourseModuleDetailItem = CourseModuleItem & {
   assessments?: unknown[];
+  lessons?: unknown[];
+};
+
+export type CourseLessonItem = {
+  id: string;
+  courseId: string;
+  courseModuleId: string;
+  subModuleId: string | null;
+  title: string;
+  type: string;
+  description: string | null;
+  content: string | null;
+  displayOrder: number;
+  isPublished: boolean;
+  isRequired: boolean;
+  isPrerequisiteFor?: Array<
+    | string
+    | {
+        prerequisiteId?: string;
+        dependentId?: string;
+      }
+  >;
+  durationMinutes: number | null;
+  scheduledAt: string | null;
+  endsAt: string | null;
+  location: string | null;
+  createdAt: string;
+  updatedAt: string;
+  media?: unknown[];
+};
+
+export type CourseLessonDetailItem = CourseLessonItem & {
+  courseModule?: {
+    id?: string;
+    title?: string;
+    courseId?: string;
+  } | null;
 };
 
 type CourseModulesPayload =
@@ -62,6 +99,40 @@ type CourseModuleDetailResponse =
   | CourseModuleDetailEnvelope
   | CourseModuleDetailPayload;
 
+type CourseLessonsPayload =
+  | CourseLessonItem[]
+  | {
+      data?: CourseLessonItem[] | null;
+    }
+  | null
+  | undefined;
+
+type CourseLessonsEnvelope = {
+  success?: boolean;
+  message?: string;
+  data?: CourseLessonsPayload;
+};
+
+type CourseLessonsResponse = CourseLessonsEnvelope | CourseLessonsPayload;
+
+type CourseLessonDetailPayload =
+  | CourseLessonDetailItem
+  | {
+      data?: CourseLessonDetailItem | null;
+    }
+  | null
+  | undefined;
+
+type CourseLessonDetailEnvelope = {
+  success?: boolean;
+  message?: string;
+  data?: CourseLessonDetailPayload;
+};
+
+type CourseLessonDetailResponse =
+  | CourseLessonDetailEnvelope
+  | CourseLessonDetailPayload;
+
 function isCourseModuleItem(value: unknown): value is CourseModuleItem {
   return (
     typeof value === "object" &&
@@ -90,6 +161,57 @@ function extractModuleArray(payload: CourseModulesPayload): CourseModuleItem[] {
   }
 
   return [];
+}
+
+function isCourseLessonItem(value: unknown): value is CourseLessonItem {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "id" in value &&
+    typeof value.id === "string" &&
+    "title" in value &&
+    typeof value.title === "string"
+  );
+}
+
+function isCourseLessonDetailItem(value: unknown): value is CourseLessonDetailItem {
+  return isCourseLessonItem(value);
+}
+
+function extractLessonArray(payload: CourseLessonsPayload): CourseLessonItem[] {
+  if (Array.isArray(payload)) {
+    return payload.filter(isCourseLessonItem);
+  }
+
+  if (
+    payload &&
+    typeof payload === "object" &&
+    "data" in payload &&
+    Array.isArray(payload.data)
+  ) {
+    return payload.data.filter(isCourseLessonItem);
+  }
+
+  return [];
+}
+
+function extractLessonDetail(
+  payload: CourseLessonDetailPayload,
+): CourseLessonDetailItem | null {
+  if (isCourseLessonDetailItem(payload)) {
+    return payload;
+  }
+
+  if (
+    payload &&
+    typeof payload === "object" &&
+    "data" in payload &&
+    isCourseLessonDetailItem(payload.data)
+  ) {
+    return payload.data;
+  }
+
+  return null;
 }
 
 function extractModuleDetail(
@@ -174,6 +296,65 @@ export async function getCourseModuleByIdRequest(
   } catch (error) {
     throw new Error(
       getApiErrorMessage(error, "Unable to fetch module details."),
+    );
+  }
+}
+
+export async function getCourseModuleLessonsRequest(
+  courseId: string,
+  moduleId: string,
+): Promise<CourseLessonItem[]> {
+  try {
+    const { data } = await bffClient.get<CourseLessonsResponse>(
+      `/courses/${courseId}/modules/${moduleId}/lessons`,
+    );
+
+    if (isModulesEnvelope(data) && data.success === false) {
+      throw new Error(
+        typeof data.message === "string"
+          ? data.message
+          : "Unable to fetch lessons.",
+      );
+    }
+
+    if (isModulesEnvelope(data)) {
+      return extractLessonArray(data.data as CourseLessonsPayload);
+    }
+
+    return extractLessonArray(data as CourseLessonsPayload);
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error, "Unable to fetch lessons."));
+  }
+}
+
+export async function getCourseLessonByIdRequest(
+  lessonId: string,
+): Promise<CourseLessonDetailItem> {
+  try {
+    const { data } = await bffClient.get<CourseLessonDetailResponse>(
+      `/lessons/${lessonId}`,
+    );
+
+    if (isModulesEnvelope(data) && data.success === false) {
+      throw new Error(
+        typeof data.message === "string"
+          ? data.message
+          : "Unable to fetch lesson details.",
+      );
+    }
+
+    const lessonDetail = isModulesEnvelope(data)
+      ? extractLessonDetail(data.data as CourseLessonDetailPayload)
+      : extractLessonDetail(data as CourseLessonDetailPayload);
+
+    if (!lessonDetail) {
+      throw new Error("Lesson details are missing.");
+    }
+
+    return lessonDetail;
+  } catch (error) {
+    throw new Error(
+      getApiErrorMessage(error, "Unable to fetch lesson details."),
     );
   }
 }
