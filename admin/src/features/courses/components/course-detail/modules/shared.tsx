@@ -121,7 +121,9 @@ export function Badge({
         : "bg-[#F5F5F7] text-[#6B6B6B]";
 
   return (
-    <span className={`rounded px-2 py-1 text-[10px] font-semibold ${toneClass}`}>
+    <span
+      className={`rounded px-2 py-1 text-[10px] font-semibold ${toneClass}`}
+    >
       {children}
     </span>
   );
@@ -146,7 +148,9 @@ export function Chip({
             : "bg-[#F5F5F7] text-[#6B6B6B]";
 
   return (
-    <span className={`rounded px-2 py-1 text-[10px] font-semibold ${toneClass}`}>
+    <span
+      className={`rounded px-2 py-1 text-[10px] font-semibold ${toneClass}`}
+    >
       {children}
     </span>
   );
@@ -272,7 +276,23 @@ export function FormLayout({
   );
 }
 
-export function ModuleFormSection() {
+type ModuleFormSectionProps = {
+  initialValues?: {
+    title?: string;
+    weekNumber?: number | null;
+    displayOrder?: number;
+    description?: string;
+  };
+};
+
+export function ModuleFormSection({ initialValues }: ModuleFormSectionProps) {
+  const title = initialValues?.title ?? "Week 1 - Neuroscience foundations";
+  const weekNumber = initialValues?.weekNumber ?? 1;
+  const displayOrder = initialValues?.displayOrder ?? 10;
+  const description =
+    initialValues?.description ??
+    "Core neuroanatomy, neurophysiology, and neurotransmitter systems underpinning psychiatric understanding.";
+
   return (
     <div className="space-y-3">
       <Card title="Basic information">
@@ -280,7 +300,7 @@ export function ModuleFormSection() {
           <Field label="Module title">
             <input
               type="text"
-              defaultValue="Week 1 - Neuroscience foundations"
+              defaultValue={title}
               className="w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
             />
           </Field>
@@ -289,14 +309,14 @@ export function ModuleFormSection() {
             <Field label="Week number">
               <input
                 type="number"
-                defaultValue={1}
+                defaultValue={weekNumber}
                 className="w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
               />
             </Field>
             <Field label="Display order">
               <input
                 type="number"
-                defaultValue={10}
+                defaultValue={displayOrder}
                 className="w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
               />
             </Field>
@@ -304,7 +324,7 @@ export function ModuleFormSection() {
 
           <Field label="Description">
             <textarea
-              defaultValue="Core neuroanatomy, neurophysiology, and neurotransmitter systems underpinning psychiatric understanding."
+              defaultValue={description}
               className="min-h-[88px] w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
             />
           </Field>
@@ -330,7 +350,23 @@ export function ModuleFormSection() {
   );
 }
 
-export function SubmoduleFormSection() {
+type SubmoduleFormSectionProps = {
+  initialValues?: {
+    title?: string;
+    displayOrder?: number;
+    duration?: number | null;
+    description?: string;
+  };
+};
+
+export function SubmoduleFormSection({ initialValues }: SubmoduleFormSectionProps) {
+  const title = initialValues?.title ?? "Neuroanatomy & functional systems";
+  const displayOrder = initialValues?.displayOrder ?? 10;
+  const duration = initialValues?.duration ?? 90;
+  const description =
+    initialValues?.description ??
+    "Cortical structures, limbic system, basal ganglia, and their clinical relevance.";
+
   return (
     <div className="space-y-3">
       <Card title="Basic information">
@@ -338,7 +374,7 @@ export function SubmoduleFormSection() {
           <Field label="SubModule title">
             <input
               type="text"
-              defaultValue="Neuroanatomy & functional systems"
+              defaultValue={title}
               className="w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
             />
           </Field>
@@ -347,14 +383,14 @@ export function SubmoduleFormSection() {
             <Field label="Display order">
               <input
                 type="number"
-                defaultValue={10}
+                defaultValue={displayOrder}
                 className="w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
               />
             </Field>
             <Field label="Duration (minutes)">
               <input
                 type="number"
-                defaultValue={90}
+                defaultValue={duration}
                 className="w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
               />
             </Field>
@@ -362,7 +398,7 @@ export function SubmoduleFormSection() {
 
           <Field label="Description">
             <textarea
-              defaultValue="Cortical structures, limbic system, basal ganglia, and their clinical relevance."
+              defaultValue={description}
               className="min-h-[88px] w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
             />
           </Field>
@@ -370,7 +406,8 @@ export function SubmoduleFormSection() {
       </Card>
       <Card title="Prerequisites">
         <p className="mb-2 text-[12px] text-[#6B6B6B]">
-          Submodules that must be completed before this one unlocks within the same module.
+          Submodules that must be completed before this one unlocks within the
+          same module.
         </p>
         <PrerequisiteManager
           emptyLabel="No prerequisites set"
@@ -438,48 +475,9 @@ export function LessonFormSection() {
               defaultValue="https://zoom.us/j/completedoctor-week1-live"
               className="w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
             />
-          </Field>
-        </div>
-      </Card>
-    </div>
-  );
-}
-
-export function EditLessonFormSection() {
-  return (
-    <div className="space-y-3">
-      <Card
-        title="Content"
-        action={
-          <span className="rounded bg-[#EEF3FF] px-2 py-1 text-[11px] font-semibold text-[#1D4ED8]">
-            LIVE type
-          </span>
-        }
-      >
-        <div className="space-y-4">
-          <Field label="Title">
-            <input
-              type="text"
-              defaultValue="Live session: cortical anatomy"
-              className="w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
-            />
-          </Field>
-
-          <Field label="Description">
-            <textarea
-              defaultValue="Interactive live session covering cortical anatomy and functional mapping."
-              className="min-h-[88px] w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
-            />
-          </Field>
-
-          <Field label="Meeting URL">
-            <input
-              type="url"
-              defaultValue="https://zoom.us/j/completedoctor-week1-live"
-              className="w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
-            />
             <p className="mt-2 rounded-md bg-[#F5F5F7] px-3 py-2 text-[12px] text-[#6B6B6B]">
-              Zoom, Google Meet, or MS Teams URL. Shown to learners at session time.
+              Zoom, Google Meet, or MS Teams URL. Shown to learners at session
+              time.
             </p>
           </Field>
 
@@ -526,7 +524,187 @@ export function EditLessonFormSection() {
   );
 }
 
-export function EditLessonSide({ onDelete }: { onDelete: () => void }) {
+type EditLessonFormSectionProps = {
+  initialValues?: {
+    type?: string;
+    title?: string;
+    description?: string;
+    content?: string;
+    mediaCount?: number;
+  };
+};
+
+export function EditLessonFormSection({ initialValues }: EditLessonFormSectionProps) {
+  const lessonType = initialValues?.type ?? "LIVE";
+  const title = initialValues?.title ?? "Live session: cortical anatomy";
+  const description =
+    initialValues?.description ??
+    "Interactive live session covering cortical anatomy and functional mapping.";
+  const content =
+    initialValues?.content ?? "https://zoom.us/j/completedoctor-week1-live";
+  const mediaCount = initialValues?.mediaCount ?? 0;
+  const isUrl = /^https?:\/\//i.test(content);
+
+  return (
+    <div className="space-y-3">
+      <Card
+        title="Content"
+        action={
+          <span className="rounded bg-[#EEF3FF] px-2 py-1 text-[11px] font-semibold text-[#1D4ED8]">
+            {lessonType} type
+          </span>
+        }
+      >
+        <div className="space-y-4">
+          <Field label="Title">
+            <input
+              type="text"
+              defaultValue={title}
+              className="w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
+            />
+          </Field>
+
+          <Field label="Description">
+            <textarea
+              defaultValue={description}
+              className="min-h-[88px] w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
+            />
+          </Field>
+
+          <Field label={isUrl ? "Meeting URL" : "Content"}>
+            <input
+              type={isUrl ? "url" : "text"}
+              defaultValue={content}
+              className="w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
+            />
+            <p className="mt-2 rounded-md bg-[#F5F5F7] px-3 py-2 text-[12px] text-[#6B6B6B]">
+              {isUrl
+                ? "Zoom, Google Meet, or MS Teams URL. Shown to learners at session time."
+                : "Lesson content shown to learners."}
+            </p>
+          </Field>
+
+          <div>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[#6B6B6B]">
+              Attachments ({mediaCount})
+            </p>
+            {mediaCount > 0 ? (
+              <div className="flex flex-wrap items-center gap-2 rounded-md border border-[#E5E5E8] bg-[#F5F5F7] px-3 py-2">
+                <span className="text-[16px] text-[#6B6B6B]">📄</span>
+                <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-[#121212]">
+                  {mediaCount} media file(s) attached
+                </span>
+              </div>
+            ) : (
+              <p className="rounded-md border border-dashed border-[#E5E5E8] px-3 py-2 text-[12px] text-[#6B6B6B]">
+                No attachments yet.
+              </p>
+            )}
+            <button
+              type="button"
+              className="mt-3 rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px] font-semibold text-[#6B6B6B] hover:bg-[#F5F5F7]"
+            >
+              + Upload attachment
+            </button>
+          </div>
+        </div>
+      </Card>
+
+      <Card title="Prerequisites">
+        <PrerequisiteManager
+          emptyLabel="No prerequisites set"
+          selectLabel="— Add prerequisite lesson —"
+          options={[
+            "les-001 · Pre-session quiz",
+            "les-002 · Live session: cortical anatomy",
+            "les-003 · Post-session slides",
+          ]}
+          initialTags={["les-001 · Pre-session quiz"]}
+        />
+      </Card>
+    </div>
+  );
+}
+
+type EditLessonSideProps = {
+  initialValues?: {
+    scheduledAt?: string;
+    endsAt?: string;
+    durationMinutes?: number | null;
+    isPublished?: boolean;
+    isRequired?: boolean;
+  };
+  onDelete: () => void;
+};
+
+export function EditLessonSide({ initialValues, onDelete }: EditLessonSideProps) {
+  const scheduledAt = initialValues?.scheduledAt ?? "07/28/2025 07:00 PM";
+  const endsAt = initialValues?.endsAt ?? "07/28/2025 08:30 PM";
+  const durationMinutes = initialValues?.durationMinutes ?? 90;
+  const isPublished = initialValues?.isPublished ?? true;
+  const isRequired = initialValues?.isRequired ?? true;
+
+  return (
+    <div className="space-y-3">
+      <Card title="Scheduling">
+        <div className="space-y-3">
+          <Field label="Scheduled at">
+            <input
+              type="text"
+              defaultValue={scheduledAt}
+              className="w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
+            />
+          </Field>
+          <Field label="Ends at">
+            <input
+              type="text"
+              defaultValue={endsAt}
+              className="w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
+            />
+          </Field>
+          <Field label="Duration (minutes)">
+            <input
+              type="number"
+              defaultValue={durationMinutes}
+              className="w-full rounded-md border border-[#E5E5E8] px-3 py-2 text-[13px]"
+            />
+          </Field>
+        </div>
+      </Card>
+
+      <Card title="Visibility">
+        <div className="space-y-2 text-[13px] text-[#6B6B6B]">
+          <label className="flex items-center justify-between rounded-md border border-[#E5E5E8] bg-[#F5F5F7] px-3 py-2">
+            <div>
+              <p className="font-semibold text-[#121212]">Published</p>
+              <p className="text-[12px] text-[#6B6B6B]">
+                Visible to enrolled learners
+              </p>
+            </div>
+            <input type="checkbox" defaultChecked={isPublished} />
+          </label>
+          <label className="flex items-center justify-between rounded-md border border-[#E5E5E8] bg-[#F5F5F7] px-3 py-2">
+            <div>
+              <p className="font-semibold text-[#121212]">Required</p>
+              <p className="text-[12px] text-[#6B6B6B]">
+                Counts toward module progress
+              </p>
+            </div>
+            <input type="checkbox" defaultChecked={isRequired} />
+          </label>
+        </div>
+      </Card>
+
+      <DangerZone
+        body="Deleting this lesson will remove it and all learner progress records for this lesson."
+        label="Delete lesson"
+        onDelete={onDelete}
+      />
+    </div>
+  );
+}
+
+export function CreateLessonSide({ endpoint }: { endpoint: string }) {
   return (
     <div className="space-y-3">
       <Card title="Scheduling">
@@ -555,30 +733,7 @@ export function EditLessonSide({ onDelete }: { onDelete: () => void }) {
         </div>
       </Card>
 
-      <Card title="Visibility">
-        <div className="space-y-2 text-[13px] text-[#6B6B6B]">
-          <label className="flex items-center justify-between rounded-md border border-[#E5E5E8] bg-[#F5F5F7] px-3 py-2">
-            <div>
-              <p className="font-semibold text-[#121212]">Published</p>
-              <p className="text-[12px] text-[#6B6B6B]">Visible to enrolled learners</p>
-            </div>
-            <input type="checkbox" defaultChecked />
-          </label>
-          <label className="flex items-center justify-between rounded-md border border-[#E5E5E8] bg-[#F5F5F7] px-3 py-2">
-            <div>
-              <p className="font-semibold text-[#121212]">Required</p>
-              <p className="text-[12px] text-[#6B6B6B]">Counts toward module progress</p>
-            </div>
-            <input type="checkbox" defaultChecked />
-          </label>
-        </div>
-      </Card>
-
-      <DangerZone
-        body="Deleting this lesson will remove it and all learner progress records for this lesson."
-        label="Delete lesson"
-        onDelete={onDelete}
-      />
+      <VisibilityApiSide variant="lesson" endpoint={endpoint} />
     </div>
   );
 }
@@ -588,14 +743,24 @@ export function VisibilityApiSide({
   showApiPreview = true,
   showCoverImageUpload = false,
   variant = "module",
+  initialValues,
 }: {
   endpoint?: string;
   showApiPreview?: boolean;
   showCoverImageUpload?: boolean;
   variant?: "module" | "submodule" | "lesson";
+  initialValues?: {
+    track?: string;
+    isPublished?: boolean;
+    isRequired?: boolean;
+  };
 }) {
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const coverInputRef = useRef<HTMLInputElement | null>(null);
+  const track = initialValues?.track ?? "Live track";
+  const isPublished = initialValues?.isPublished ?? false;
+  const isRequired = initialValues?.isRequired ?? true;
+  const isLiveTrack = track.trim().toLowerCase().includes("live");
 
   function onCoverChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -619,9 +784,20 @@ export function VisibilityApiSide({
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[#6B6B6B]">
               Track type
             </p>
-            <label className="block rounded-md border border-[#007AFF] bg-[#EAF3FF] px-3 py-2">
+            <label
+              className={`block rounded-md px-3 py-2 ${
+                isLiveTrack
+                  ? "border border-[#007AFF] bg-[#EAF3FF]"
+                  : "border border-[#E5E5E8]"
+              }`}
+            >
               <div className="flex items-start gap-2">
-                <input type="radio" name="track" defaultChecked className="mt-0.5" />
+                <input
+                  type="radio"
+                  name="track"
+                  defaultChecked={isLiveTrack}
+                  className="mt-0.5"
+                />
                 <div>
                   <p className="font-semibold text-[#121212]">Live track</p>
                   <p className="text-[12px] text-[#6B6B6B]">
@@ -630,9 +806,20 @@ export function VisibilityApiSide({
                 </div>
               </div>
             </label>
-            <label className="block rounded-md border border-[#E5E5E8] px-3 py-2">
+            <label
+              className={`block rounded-md px-3 py-2 ${
+                isLiveTrack
+                  ? "border border-[#E5E5E8]"
+                  : "border border-[#007AFF] bg-[#EAF3FF]"
+              }`}
+            >
               <div className="flex items-start gap-2">
-                <input type="radio" name="track" className="mt-0.5" />
+                <input
+                  type="radio"
+                  name="track"
+                  defaultChecked={!isLiveTrack}
+                  className="mt-0.5"
+                />
                 <div>
                   <p className="font-semibold text-[#121212]">Reading track</p>
                   <p className="text-[12px] text-[#6B6B6B]">
@@ -642,14 +829,17 @@ export function VisibilityApiSide({
               </div>
             </label>
             <p className="text-[12px] text-[#6B6B6B]">
-              Track type determines the isRequired flag and the types of lessons you'll add.
+              Track type determines the isRequired flag and the types of lessons
+              you'll add.
             </p>
             <label className="flex items-center justify-between rounded-md border border-[#E5E5E8] bg-[#F5F5F7] px-3 py-2">
               <div>
                 <p className="font-semibold text-[#121212]">Published</p>
-                <p className="text-[12px] text-[#6B6B6B]">Visible to enrolled learners</p>
+                <p className="text-[12px] text-[#6B6B6B]">
+                  Visible to enrolled learners
+                </p>
               </div>
-              <input type="checkbox" />
+              <input type="checkbox" defaultChecked={isPublished} />
             </label>
           </div>
         </Card>
@@ -659,9 +849,11 @@ export function VisibilityApiSide({
             <label className="flex items-center justify-between rounded-md border border-[#E5E5E8] bg-[#F5F5F7] px-3 py-2">
               <div>
                 <p className="font-semibold text-[#121212]">Published</p>
-                <p className="text-[12px] text-[#6B6B6B]">Visible to enrolled learners</p>
+                <p className="text-[12px] text-[#6B6B6B]">
+                  Visible to enrolled learners
+                </p>
               </div>
-              <input type="checkbox" />
+              <input type="checkbox" defaultChecked={isPublished} />
             </label>
             {variant !== "lesson" ? (
               <label className="flex items-center justify-between rounded-md border border-[#E5E5E8] bg-[#F5F5F7] px-3 py-2">
@@ -671,7 +863,7 @@ export function VisibilityApiSide({
                     Counts toward certificate completion
                   </p>
                 </div>
-                <input type="checkbox" defaultChecked />
+                <input type="checkbox" defaultChecked={isRequired} />
               </label>
             ) : null}
           </div>
@@ -708,7 +900,9 @@ export function VisibilityApiSide({
                 </button>
               </div>
             ) : (
-              <p className="text-[11px] text-[#6B6B6B]">No image selected yet.</p>
+              <p className="text-[11px] text-[#6B6B6B]">
+                No image selected yet.
+              </p>
             )}
           </div>
         </Card>

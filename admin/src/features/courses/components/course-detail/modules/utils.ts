@@ -64,7 +64,6 @@ export function getAvailableModuleViews(depth: CourseDepth): ModuleView[] {
   if (depth === "MODULES_ONLY") {
     return moduleViews.filter(
       (view) =>
-        view !== "SubModules" &&
         view !== "SubModule list" &&
         view !== "Create submodule" &&
         view !== "Edit submodule",

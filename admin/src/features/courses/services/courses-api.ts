@@ -35,6 +35,11 @@ export type CourseDetail = CoursesApiItem & {
   earlyBirdPrice?: string | number | null;
   earlyBirdAvailableUntil?: string | null;
   instructors?: Array<{ name?: string | null } | string> | null;
+  modules?: Array<{
+    id: string;
+    lessons?: unknown[];
+    subModules?: unknown[];
+  }> | null;
 };
 
 type CoursesApiCategory = {

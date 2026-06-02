@@ -17,6 +17,7 @@ export type SubmoduleRow = {
 
 export type LessonRow = {
   id: string;
+  subModuleId: string | null;
   title: string;
   type: "LIVE" | "VIDEO" | "QUIZ" | "READING" | "RESOURCE";
   status: "Published" | "Draft";
@@ -33,4 +34,33 @@ export type DeleteConfig = {
   cta: string;
   success: string;
   next: ModuleView;
+};
+
+export type ModuleRow = {
+  id: string;
+  title: string;
+  description: string;
+  week: string;
+  weekNumber: number | null;
+  status: "Published" | "Draft";
+  required: boolean;
+  subModules: number;
+  lessons: number;
+  prerequisites: string[];
+  displayOrder: number;
+  duration: number | null;
+  createdAt: string;
+};
+
+export type ModuleSubmoduleRow = {
+  id: string;
+  title: string;
+  description: string;
+  track: string;
+  status: "Published" | "Draft";
+  required: boolean;
+  lessons: number;
+  duration: number | null;
+  order: number;
+  prerequisites: string[];
 };

@@ -26,6 +26,7 @@ export const submodules: SubmoduleRow[] = [
 export const lessons: LessonRow[] = [
   {
     id: "les-001",
+    subModuleId: null,
     title: "Pre-session quiz: cortical anatomy",
     type: "QUIZ",
     status: "Published",
@@ -36,6 +37,7 @@ export const lessons: LessonRow[] = [
   },
   {
     id: "les-002",
+    subModuleId: null,
     title: "Live session: cortical anatomy",
     type: "LIVE",
     status: "Published",
@@ -46,6 +48,7 @@ export const lessons: LessonRow[] = [
   },
   {
     id: "les-003",
+    subModuleId: null,
     title: "Post-session slides & notes",
     type: "RESOURCE",
     status: "Published",
