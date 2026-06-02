@@ -26,6 +26,7 @@ type LessonDetailTabProps = {
   lessonDetailSource: CourseLessonDetailItem | null;
   onOpenDeleteLesson: () => void;
   onGoTo: (view: ModuleView) => void;
+  onCopyMeetingUrl: (meetingUrl: string) => void;
 };
 
 export function LessonDetailTab({
@@ -52,6 +53,7 @@ export function LessonDetailTab({
   lessonDetailSource,
   onOpenDeleteLesson,
   onGoTo,
+  onCopyMeetingUrl,
 }: LessonDetailTabProps) {
   const subtitle = hasSubmodules
     ? `${selectedLessonId ?? "—"} · ${selectedModuleIdentifier} · ${courseName}`
@@ -156,7 +158,7 @@ export function LessonDetailTab({
                     disabled={!meetingUrlIsAvailable}
                     onClick={() => {
                       if (!meetingUrlIsAvailable) return;
-                      void navigator.clipboard?.writeText(selectedLessonMeetingUrl);
+                      onCopyMeetingUrl(selectedLessonMeetingUrl);
                     }}
                     className="rounded-md border border-[#E5E5E8] px-3 py-1.5 text-[12px] font-semibold text-[#6B6B6B] hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
                   >
