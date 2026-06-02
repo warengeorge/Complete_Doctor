@@ -349,7 +349,8 @@ export function CourseDetailModules({
     selectedLessonDetail?.description?.trim() || "No description provided.";
   const selectedLessonContent =
     selectedLessonDetail?.content?.trim() || "No lesson content provided.";
-  const selectedLessonLocation = selectedLessonDetail?.location?.trim() || "Online";
+  const selectedLessonMeetingUrl =
+    selectedLessonDetail?.location?.trim() || "No meeting URL provided.";
   const selectedLessonCreatedAt = selectedLessonDetail?.createdAt
     ? formatDisplayDate(selectedLessonDetail.createdAt)
     : "—";
@@ -804,8 +805,7 @@ export function CourseDetailModules({
           selectedLessonScheduled={selectedLessonScheduled}
           selectedLessonEndsAt={selectedLessonEndsAt}
           selectedLessonDescription={selectedLessonDescription}
-          selectedLessonContent={selectedLessonContent}
-          selectedLessonLocation={selectedLessonLocation}
+          selectedLessonMeetingUrl={selectedLessonMeetingUrl}
           selectedLessonCreatedAt={selectedLessonCreatedAt}
           selectedLessonPrerequisites={selectedLessonPrerequisites}
           selectedLessonMediaCount={selectedLessonMediaCount}

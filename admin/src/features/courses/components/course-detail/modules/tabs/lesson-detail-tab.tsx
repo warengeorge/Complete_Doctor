@@ -17,8 +17,7 @@ type LessonDetailTabProps = {
   selectedLessonScheduled: string;
   selectedLessonEndsAt: string;
   selectedLessonDescription: string;
-  selectedLessonContent: string;
-  selectedLessonLocation: string;
+  selectedLessonMeetingUrl: string;
   selectedLessonCreatedAt: string;
   selectedLessonPrerequisites: string[];
   selectedLessonMediaCount: number;
@@ -44,8 +43,7 @@ export function LessonDetailTab({
   selectedLessonScheduled,
   selectedLessonEndsAt,
   selectedLessonDescription,
-  selectedLessonContent,
-  selectedLessonLocation,
+  selectedLessonMeetingUrl,
   selectedLessonCreatedAt,
   selectedLessonPrerequisites,
   selectedLessonMediaCount,
@@ -60,6 +58,8 @@ export function LessonDetailTab({
     : hasModules
       ? `${selectedLessonId ?? "—"} · ${selectedModuleIdentifier} · ${courseName}`
       : `${selectedLessonId ?? "—"} · ${courseName}`;
+  const lessonUnlocks = lessonDetailSource?.isPrerequisiteFor?.length ?? 0;
+  const meetingUrlIsAvailable = selectedLessonMeetingUrl !== "No meeting URL provided.";
 
   return (
     <div className="space-y-4">
@@ -145,25 +145,75 @@ export function LessonDetailTab({
             <div className="space-y-4 text-[13px]">
               <div>
                 <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-[#6B6B6B]">
+                  Meeting URL
+                </p>
+                <div className="flex flex-wrap items-center gap-2 rounded-md border border-[#E5E5E8] bg-[#F5F5F7] px-3 py-2">
+                  <span className="min-w-0 flex-1 break-all text-[13px] font-medium text-[#007AFF]">
+                    {selectedLessonMeetingUrl}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={!meetingUrlIsAvailable}
+                    onClick={() => {
+                      if (!meetingUrlIsAvailable) return;
+                      void navigator.clipboard?.writeText(selectedLessonMeetingUrl);
+                    }}
+                    className="rounded-md border border-[#E5E5E8] px-3 py-1.5 text-[12px] font-semibold text-[#6B6B6B] hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Copy
+                  </button>
+                  {meetingUrlIsAvailable ? (
+                    <a
+                      href={selectedLessonMeetingUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-md border border-[#E5E5E8] px-3 py-1.5 text-[12px] font-semibold text-[#007AFF] hover:bg-white"
+                    >
+                      Open
+                    </a>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled
+                      className="rounded-md border border-[#E5E5E8] px-3 py-1.5 text-[12px] font-semibold text-[#6B6B6B] opacity-50"
+                    >
+                      Open
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-[#6B6B6B]">
                   Description
                 </p>
-                <p className="text-[14px] text-[#121212]">
+                <p className="text-[14px] leading-relaxed text-[#121212]">
                   {selectedLessonDescription}
                 </p>
               </div>
 
               <div>
-                <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-[#6B6B6B]">
-                  Content
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[#6B6B6B]">
+                  Attachments ({selectedLessonMediaCount})
                 </p>
-                <p className="text-[14px] text-[#121212]">{selectedLessonContent}</p>
-              </div>
-
-              <div>
-                <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-[#6B6B6B]">
-                  Location
-                </p>
-                <p className="text-[14px] text-[#121212]">{selectedLessonLocation}</p>
+                {selectedLessonMediaCount > 0 ? (
+                  <div className="flex flex-wrap items-center gap-3 rounded-md border border-[#E5E5E8] bg-[#F5F5F7] px-3 py-2">
+                    <span className="text-[16px] text-[#6B6B6B]">📄</span>
+                    <span className="min-w-0 flex-1 truncate text-[13px] font-semibold text-[#121212]">
+                      {selectedLessonMediaCount} media file(s) attached
+                    </span>
+                    <button
+                      type="button"
+                      className="rounded-md border border-[#E5E5E8] px-3 py-1.5 text-[12px] font-semibold text-[#6B6B6B] hover:bg-white"
+                    >
+                      Download
+                    </button>
+                  </div>
+                ) : (
+                  <span className="text-[12px] text-[#6B6B6B]">
+                    No attachments
+                  </span>
+                )}
               </div>
             </div>
           </Card>
@@ -172,7 +222,7 @@ export function LessonDetailTab({
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[#6B6B6B]">
-                  Prerequisites
+                  Unlocked by completing
                 </p>
                 {selectedLessonPrerequisites.length > 0 ? (
                   <span className="inline-flex rounded bg-[#FFF3EE] px-2 py-1 font-mono text-[11px] text-[#C2410C]">
@@ -184,13 +234,15 @@ export function LessonDetailTab({
               </div>
               <div>
                 <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[#6B6B6B]">
-                  Unlocks
+                  Completing this unlocks
                 </p>
-                <span className="text-[12px] text-[#6B6B6B]">
-                  {(lessonDetailSource?.isPrerequisiteFor?.length ?? 0) > 0
-                    ? `${lessonDetailSource?.isPrerequisiteFor?.length ?? 0} lesson(s)`
-                    : "None"}
-                </span>
+                {lessonUnlocks > 0 ? (
+                  <span className="inline-flex rounded bg-[#F5F5F7] px-2 py-1 font-mono text-[11px] text-[#6B6B6B]">
+                    {lessonUnlocks} lesson(s)
+                  </span>
+                ) : (
+                  <span className="text-[12px] text-[#6B6B6B]">None</span>
+                )}
               </div>
             </div>
           </Card>
@@ -228,7 +280,6 @@ export function LessonDetailTab({
                 ...(hasModules
                   ? ([["Module", selectedModuleIdentifier]] as [string, string][])
                   : []),
-                ["Media", String(selectedLessonMediaCount)],
                 ["Created", selectedLessonCreatedAt],
               ]}
             />
